@@ -35,7 +35,7 @@ Once you have a copy of the source, you can install the requirements with:
 .. code-block:: console
 
     $ pip install pipenv
-    $ pipenv install --dev
+    $ pipenv install
 
 
 .. _Github repo: https://github.com/devWhyqueue/plagdef
