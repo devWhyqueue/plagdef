@@ -2,8 +2,8 @@
 PlagDef
 =======
 
-.. image:: https://img.shields.io/travis/devWhyqueue/plagdef.svg
-        :target: https://travis-ci.org/github/devWhyqueue/plagdef
+.. image:: https://travis-ci.org/devWhyqueue/plagdef.svg?branch=main
+    :target: https://travis-ci.org/devWhyqueue/plagdef
 
 
 
