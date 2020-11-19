@@ -2,17 +2,8 @@
 PlagDef
 =======
 
-
-.. image:: https://img.shields.io/pypi/v/plagdef.svg
-        :target: https://pypi.python.org/pypi/plagdef
-
 .. image:: https://img.shields.io/travis/devWhyqueue/plagdef.svg
-        :target: https://travis-ci.com/devWhyqueue/plagdef
-
-.. image:: https://readthedocs.org/projects/plagdef/badge/?version=latest
-        :target: https://plagdef.readthedocs.io/en/latest/?badge=latest
-        :alt: Documentation Status
-
+        :target: https://travis-ci.org/github/devWhyqueue/plagdef
 
 
 
