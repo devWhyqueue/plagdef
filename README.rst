@@ -20,7 +20,6 @@ PlagDef supports plagiarism detection for student assignments.
 
 
 * Free software: MIT license
-* Documentation: https://plagdef.readthedocs.io.
 
 
 Features
