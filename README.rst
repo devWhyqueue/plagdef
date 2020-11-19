@@ -32,7 +32,8 @@ Installation
 ------------
 
 
-### Stable release
+Stable release
+******************
 
 To install PlagDef, run this command in your terminal:
 
@@ -49,7 +50,8 @@ you through the process.
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 
 
-### From sources
+From sources
+**************
 
 The sources for PlagDef can be downloaded from the `Github repo`_.
 
