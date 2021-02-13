@@ -4,6 +4,8 @@ PlagDef
 
 .. image:: https://travis-ci.org/devWhyqueue/plagdef.svg?branch=main
     :target: https://travis-ci.org/devWhyqueue/plagdef
+.. image:: https://sonarcloud.io/api/project_badges/measure?project=devWhyqueue_plagdef&metric=coverage
+    :target: https://sonarcloud.io/dashboard?id=devWhyqueue_plagdef
 
 
 

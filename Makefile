@@ -18,9 +18,10 @@ test-all: ## run tests on every Python version with tox
 	pipenv run tox
 
 coverage: ## check code coverage quickly with the default Python
+	pipenv run coverage erase
 	pipenv run coverage run --source plagdef -m pytest
 	pipenv run coverage report -m
-	pipenv run coverage html
+	pipenv run coverage xml
 
 run: ## starts the CLI
 	pipenv run cli.py

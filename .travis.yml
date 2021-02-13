@@ -1,13 +1,16 @@
-# Config file for automatic testing at travis-ci.com
-
 language: python
 python:
   - 3.9
   - 3.8
   - 3.7
+  
+addons:
+  sonarcloud:
+    organization: "devwhyqueue-github"
+    token: "$SONAR_TOKEN"
 
-# Command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: "make"
 
-# Command to run tests, e.g. python setup.py test
-script: pipenv run tox
+script:
+  - make test-all
+  - sonar-scanner
