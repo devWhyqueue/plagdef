@@ -1,14 +1,24 @@
-"""Console script for plagdef."""
+"""Console script for PlagDef."""
 import sys
+
 import click
+
+from model import detect_matches, Report
 
 
 @click.command()
-def main(args=None):
-    """Console script for plagdef."""
-    click.echo("Replace this message by putting your code into "
-               "plagdef.cli.main")
-    click.echo("See click documentation at https://click.palletsprojects.com/")
+@click.argument('docdir', type=click.Path(exists=True))
+@click.option('--outdir', '-o', type=click.Path(), default='out', help='Output directory for XML reports.')
+def main(docdir: click.Path, outdir: click.Path):
+    """
+    \b
+    PlagDef supports plagiarism detection for student assignments.
+    It must be provided a directory DOCDIR containing documents to be examined.
+    """
+    matches = detect_matches(docdir)
+    report = Report(matches, outdir)
+    click.echo(report.text())
+    # TODO: Add XML option
     return 0
 
 
