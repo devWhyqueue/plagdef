@@ -4,9 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pystemmer = "*"
-nltk = "*"
-lxml = "*"
+pystemmer = "==2.0.1"
+nltk = "==3.5"
+lxml = "==4.6.2"
 
 [dev-packages]
 bump2version = "==0.5.11"
@@ -17,4 +17,4 @@ coverage = "==5.4"
 click = "==7.0"
 pytest = "==4.6.5"
 pytest-runner = "==5.1"
-tox-travis = "*"
+tox-travis = "==0.12"
