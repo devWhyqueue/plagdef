@@ -2,7 +2,7 @@ from os import listdir
 from os.path import join, isfile
 from pathlib import Path
 
-import model
+from plagdef import model
 
 
 class DocumentFileRepository:

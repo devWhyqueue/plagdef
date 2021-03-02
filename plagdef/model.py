@@ -6,8 +6,8 @@ from pathlib import Path
 from lxml import etree
 from lxml.builder import E
 
-from plagdef import SGSPLAG
-from repository import DocumentFileRepository
+from plagdef.algorithm import SGSPLAG
+from plagdef.repository import DocumentFileRepository
 
 
 class MyConfig:

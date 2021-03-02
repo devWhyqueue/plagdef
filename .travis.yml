@@ -3,14 +3,21 @@ python:
   - 3.9
   - 3.8
   - 3.7
-  
+
 addons:
-  sonarcloud:
-    organization: "devwhyqueue-github"
-    token: "$SONAR_TOKEN"
+    sonarcloud:
+        organization: "devwhyqueue-github"
+        token: "$SONAR_TOKEN"
 
 install: "make"
 
 script:
-  - make test-all
-  - sonar-scanner
+    - make test-all
+    - sonar-scanner
+
+deploy:
+    provider: pypi
+    username: "__token__"
+    password: "$PYPI_TOKEN"
+    on:
+        tags: true
