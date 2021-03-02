@@ -7,7 +7,7 @@ PlagDef supports plagiarism detection for student assignments.
 
 # Installation
 
-Get from PyPI:
+Get it from PyPI:
 
 ```
 $ pip install plagdef
