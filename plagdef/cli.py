@@ -15,8 +15,6 @@ def main(docdir: click.Path, outdir: click.Path):
     PlagDef supports plagiarism detection for student assignments.
     It must be provided a directory DOCDIR containing documents to be examined.
     """
-    for p in sys.path:
-        print(p)
     matches = detect_matches(docdir)
     report = Report(matches, outdir)
     click.echo(report.text())
