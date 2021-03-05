@@ -16,14 +16,14 @@ Get it from PyPI:
 $ pip install plagdef
 ````
 
-...or build it yourself:
+Or build it yourself:
 
 ```
 $ git clone git://github.com/devWhyqueue/plagdef
 $ pip install -e .
 ````
 
-...and install necessary NLTK data:
+And install necessary NLTK data:
 
 ```
 $ pipenv run python -m nltk.downloader punkt
