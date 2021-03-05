@@ -3,12 +3,15 @@ import pathlib
 import sys
 
 import click
+import pkg_resources
 from click import UsageError
 
 from plagdef.algorithm import InvalidConfigError
 from plagdef.model import find_matches, generate_text_report, generate_xml_reports
 from plagdef.repositories import DocumentFileRepository, UnsupportedFileFormatError, DocumentPairReportFileRepository, \
     ConfigFileRepository, NoDocumentFilePairFoundError
+
+CONFIG_PATH = 'config/alg.ini'
 
 
 @click.command(context_settings=dict(help_option_names=["-h", "--help"]))
@@ -22,10 +25,11 @@ def main(docdir: click.Path, xmldir: click.Path) -> int:
     """
     try:
         doc_repo = DocumentFileRepository(pathlib.Path(str(docdir)))
-        config_repo = ConfigFileRepository(pathlib.Path('settings.ini'))
+        config_path = pkg_resources.resource_filename(__name__, CONFIG_PATH)
+        config_repo = ConfigFileRepository(pathlib.Path(config_path))
         matches = find_matches(doc_repo, config_repo)
         click.echo(f'Found {len(matches) if len(matches) else "no"} suspicious document pair'
-                   f'{"s" if len(matches) > 1 else ""}.')
+                   f'{"s" if len(matches) > 1 else ""}.\n')
         if matches:
             if xmldir:
                 doc_pair_report_repo = DocumentPairReportFileRepository(pathlib.Path(str(xmldir)))

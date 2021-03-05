@@ -21,7 +21,7 @@ def test_output_if_no_matches_found(tmp_path, config):
         runner = CliRunner()
         result = runner.invoke(main, [str(tmp_path)])
     assert result.exit_code == 0
-    assert result.output == 'Found no suspicious document pair.\n'
+    assert result.output == 'Found no suspicious document pair.\n\n'
 
 
 def test_output_if_one_match_found(matches, tmp_path, config):
