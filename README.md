@@ -26,7 +26,7 @@ $ pip install -e .
 And install necessary NLTK data:
 
 ```
-$ pipenv run python -m nltk.downloader punkt
+$ python -m nltk.downloader punkt
 ````
 
 # Usage
