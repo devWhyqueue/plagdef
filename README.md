@@ -30,9 +30,10 @@ $ plagdef -h
 
 # Development
 
-Clone the repo and install dependencies:
+Clone the repo and install dependencies/resources:
 
 ```
 $ git clone git://github.com/devWhyqueue/plagdef
-$ pipenv install
+$ pipenv install --dev
+$ pipenv run python -m nltk.downloader punkt
 ````
