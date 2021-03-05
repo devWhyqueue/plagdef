@@ -37,3 +37,12 @@ $ git clone git://github.com/devWhyqueue/plagdef
 $ pipenv install --dev
 $ pipenv run python -m nltk.downloader punkt
 ````
+
+# Publish to PyPI
+
+In your virtual environment build and upload PlagDef:
+
+```
+$ python -m build
+$ twine upload dist/*
+````
