@@ -52,5 +52,5 @@ def test_init_creates_documents(tmp_path):
     repo = DocumentFileRepository(tmp_path)
     docs = repo.list()
     assert len(docs) == 2
-    assert docs[0] == Document('doc1', 'This is a document.\n')
-    assert docs[1] == Document('doc2', 'This also is a document.\n')
+    assert Document('doc1', 'This is a document.\n') in docs
+    assert Document('doc2', 'This also is a document.\n') in docs

@@ -26,7 +26,7 @@ def test_add_all_writes_report_files_to_out_path(tmp_path):
     repo = DocumentPairReportFileRepository(tmp_path)
     repo.add(DocumentPairReport(doc1, doc2, 'Some content\n', 'fmt'))
     repo.add(DocumentPairReport(doc3, doc4, 'Some other content\n', 'fmt'))
-    report_files = list(tmp_path.iterdir())
+    report_files = sorted(tmp_path.iterdir())
     assert len(report_files) == 2
     assert report_files[0].suffix, report_files[1].suffix == '.fmt'
     assert report_files[0].stem == f'{doc1.name}-{doc2.name}'
