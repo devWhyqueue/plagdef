@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import copy
 import math
 import string
-import typing
 from dataclasses import dataclass
 from itertools import combinations
 
@@ -1084,7 +1085,7 @@ class InvalidConfigError(Exception):
     pass
 
 
-def find_matches(docs: list[Document], config: typing.Dict) -> list[DocumentPairMatches]:
+def find_matches(docs: list[Document], config: dict) -> list[DocumentPairMatches]:
     matches = []
     for doc1, doc2 in combinations(docs, 2):
         doc_pair_matches = DocumentPairMatches(doc1, doc2)
