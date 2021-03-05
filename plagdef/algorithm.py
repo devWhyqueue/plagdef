@@ -1,6 +1,8 @@
 import copy
 import math
 import string
+from dataclasses import dataclass
+from itertools import combinations
 
 import Stemmer
 import nltk
@@ -845,7 +847,7 @@ MAIN CLASS
 
 class SGSPLAG:
     def __init__(self, susp_text, src_text, config):
-        self.__dict__.update(config.__dict__)
+        self.__dict__.update(config)
 
         self.susp_text = susp_text
         self.src_text = src_text
@@ -1040,3 +1042,60 @@ class SGSPLAG:
                 arg2 = plag[1][0], plag[1][1]
                 detections.append([arg1, arg2])
         return detections, type_plag, summary_flag
+
+
+@dataclass(frozen=True)
+class Document:
+    name: str
+    text: str
+
+
+@dataclass(frozen=True)
+class Section:
+    doc: Document
+    offset: int
+    length: int
+
+
+@dataclass(frozen=True)
+class Match:
+    sec1: Section
+    sec2: Section
+
+
+class DocumentPairMatches:
+    def __init__(self, doc1: Document, doc2: Document):
+        self.doc1 = doc1
+        self.doc2 = doc2
+        self._matches = []
+
+    def add(self, match: Match):
+        self._matches.append(match)
+
+    def list(self):
+        return self._matches
+
+    def empty(self):
+        return not self._matches
+
+
+class InvalidConfigError(Exception):
+    pass
+
+
+def find_matches(docs: list[Document], config: dict) -> list[DocumentPairMatches]:
+    matches = []
+    for doc1, doc2 in combinations(docs, 2):
+        doc_pair_matches = DocumentPairMatches(doc1, doc2)
+        sgsplag_obj = SGSPLAG(doc1.text, doc2.text, config)
+        try:
+            type_plag, summary_flag = sgsplag_obj.process()
+        except AttributeError as e:
+            raise InvalidConfigError('The given config seems to be invalid.') from e
+        for det in sgsplag_obj.detections:
+            match = Match(Section(doc1, det[0][0], det[0][1] - det[0][0]),
+                          Section(doc2, det[1][0], det[1][1] - det[1][0]))
+            doc_pair_matches.add(match)
+        if not doc_pair_matches.empty():
+            matches.append(doc_pair_matches)
+    return matches
