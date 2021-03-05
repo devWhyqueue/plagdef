@@ -13,6 +13,8 @@ install: "make"
 
 script:
     - make test-all
+
+after_success:
     - sonar-scanner
 
 deploy:
