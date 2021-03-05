@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from plagdef.algorithm import Document
 from plagdef.model import DocumentPairReport
 

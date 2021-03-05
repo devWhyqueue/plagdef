@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from ast import literal_eval
 from configparser import ConfigParser
 from itertools import islice
