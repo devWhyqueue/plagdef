@@ -21,5 +21,6 @@ deploy:
     provider: pypi
     username: "__token__"
     password: "$PYPI_TOKEN"
+    distributions: sdist bdist_wheel
     on:
         tags: true
