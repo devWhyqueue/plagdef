@@ -13,11 +13,11 @@ from plagdef.tests.test_algorithm import config
 @fixture
 def matches():
     doc1, doc2 = Document('doc1', 'This is a document.\n'), Document('doc2', 'This also is a document.\n')
-    doc1_doc2_matches = DocumentPairMatches(doc1, doc2)
+    doc1_doc2_matches = DocumentPairMatches()
     doc1_doc2_matches.add(Match(Section(doc1, 0, 5), Section(doc2, 0, 5)))
     doc1_doc2_matches.add(Match(Section(doc1, 5, 10), Section(doc2, 5, 10)))
     doc3, doc4 = Document('doc3', 'This is another document.\n'), Document('doc4', 'This also is another document.\n')
-    doc3_doc4_matches = DocumentPairMatches(doc3, doc4)
+    doc3_doc4_matches = DocumentPairMatches()
     doc3_doc4_matches.add(Match(Section(doc3, 2, 6), Section(doc4, 2, 8)))
     return [doc1_doc2_matches, doc3_doc4_matches]
 

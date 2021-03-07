@@ -1065,30 +1065,47 @@ class Match:
     sec2: Section
 
 
-class DocumentPairMatches:
-    def __init__(self, doc1: Document, doc2: Document):
-        self.doc1 = doc1
-        self.doc2 = doc2
-        self._matches = []
-
-    def add(self, match: Match):
-        self._matches.append(match)
-
-    def list(self):
-        return self._matches
-
-    def empty(self):
-        return not self._matches
+class DifferentDocumentPairError(Exception):
+    pass
 
 
 class InvalidConfigError(Exception):
     pass
 
 
+class DocumentPairMatches:
+    def __init__(self):
+        self._matches: list[Match] = []
+
+    def add(self, match: Match):
+        if self._matches:
+            doc_pair1, doc_pair2 = (self._matches[-1].sec1.doc, self._matches[-1].sec2.doc), \
+                                   (match.sec1.doc, match.sec2.doc)
+            if not doc_pair1 == doc_pair2:
+                raise DifferentDocumentPairError(f'Only matches of document pair {doc_pair1} can be added.')
+        self._matches.append(match)
+
+    @property
+    def doc1(self) -> Document:
+        if not self.empty():
+            return self._matches[0].sec1.doc
+
+    @property
+    def doc2(self) -> Document:
+        if not self.empty():
+            return self._matches[0].sec2.doc
+
+    def list(self) -> [Match]:
+        return self._matches
+
+    def empty(self) -> bool:
+        return not self._matches
+
+
 def find_matches(docs: list[Document], config: dict) -> list[DocumentPairMatches]:
     matches = []
     for doc1, doc2 in combinations(docs, 2):
-        doc_pair_matches = DocumentPairMatches(doc1, doc2)
+        doc_pair_matches = DocumentPairMatches()
         sgsplag_obj = SGSPLAG(doc1.text, doc2.text, config)
         try:
             type_plag, summary_flag = sgsplag_obj.process()
