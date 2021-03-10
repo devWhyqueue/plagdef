@@ -26,6 +26,7 @@ $ pip install -e .
 And install necessary NLTK data:
 
 ```
+$ pip install nltk
 $ python -m nltk.downloader punkt
 ````
 
