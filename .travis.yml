@@ -9,15 +9,16 @@ install: "make"
 script:
     - make test-all
 
+addons:
+    sonarcloud:
+        organization: "devwhyqueue-github"
+        token: "$SONAR_TOKEN"
+
+after_success:
+    - sonar-scanner
+
 jobs:
     include:
-        -   stage: after_sucess
-            python: 3.9
-            addons:
-                sonarcloud:
-                    organization: "devwhyqueue-github"
-                    token: "$SONAR_TOKEN"
-            script: sonar-scanner
         -   stage: deploy
             python: 3.9
             deploy:
