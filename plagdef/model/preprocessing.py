@@ -59,7 +59,7 @@ class Document:
         self.name = name
         self.text = text
         self.vocab = Counter()  # <lemma, sent_freq>
-        self.sents = [Sentence]
+        self.sents: list[Sentence] = []
         self._min_sent_len = min_sent_len
         self._rem_stop_words = rem_stop_words
         self._preprocess(nlp_model)
