@@ -21,6 +21,8 @@ jobs:
     include:
         -   stage: deploy
             python: 3.9
+            install: skip
+            script: skip
             deploy:
                 provider: pypi
                 username: "__token__"
