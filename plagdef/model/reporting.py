@@ -1,26 +1,21 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 
 from lxml import etree
 from lxml.builder import E
 
-from plagdef import algorithm
+from plagdef.model.legacy.algorithm import DocumentPairMatches
+from plagdef.model.preprocessing import Document
 
 
 @dataclass(frozen=True)
 class DocumentPairReport:
-    doc1: algorithm.Document
-    doc2: algorithm.Document
+    doc1: Document
+    doc2: Document
     content: str
     format: str
 
 
-def find_matches(doc_repo, config_repo) -> list[algorithm.DocumentPairMatches]:
-    return algorithm.find_matches(doc_repo.list(), config_repo.get())
-
-
-def generate_text_report(matches: list[algorithm.DocumentPairMatches]) -> str:
+def generate_text_report(matches: list[DocumentPairMatches]) -> str:
     doc_pair_reports = []
     for doc_pair_matches in matches:
         doc1, doc2 = doc_pair_matches.doc1, doc_pair_matches.doc2
@@ -37,11 +32,11 @@ def generate_text_report(matches: list[algorithm.DocumentPairMatches]) -> str:
     return intro + ''.join(f'{doc_pair_report.content}' for doc_pair_report in doc_pair_reports)
 
 
-def generate_xml_reports(matches: list[algorithm.DocumentPairMatches], doc_pair_report_repo):
+def generate_xml_reports(matches: list[DocumentPairMatches], doc_pair_report_repo):
     for doc_pair_matches in matches:
         root = E.report(doc1=doc_pair_matches.doc1.name, doc2=doc_pair_matches.doc2.name)
         for match in doc_pair_matches.list():
-            root.append(E.detection(
+            root.append(E.match(
                 doc1_offset=str(match.sec1.offset), doc1_length=str(match.sec1.length),
                 doc2_offset=str(match.sec2.offset), doc2_length=str(match.sec2.length)
             ))

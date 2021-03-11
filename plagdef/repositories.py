@@ -7,23 +7,24 @@ from os import listdir
 from os.path import join, isfile
 from pathlib import Path
 
-from plagdef.algorithm import Document
+from plagdef.model.legacy.algorithm import Document
+from plagdef.model.preprocessing import DocumentFactory
 
 
 class DocumentFileRepository:
-    def __init__(self, dir_path: Path):
+    def __init__(self, dir_path: Path, doc_factory: DocumentFactory):
         if not dir_path.is_dir():
             raise NotADirectoryError(f'The given path {dir_path} does not point to an existing directory!')
         if not any(dir_path.iterdir()) or not next(islice(dir_path.iterdir(), 1, None), None):
             raise NoDocumentFilePairFoundError(f'The directory {dir_path} must contain at least two documents.')
         doc_files = [Path(join(dir_path, f)) for f in listdir(dir_path) if isfile(join(dir_path, f))]
         try:
-            self._documents = [Document(f.stem, f.read_text(encoding='utf-8')) for f in doc_files]
+            self._documents = [doc_factory.create(f.stem, f.read_text(encoding='utf-8')) for f in doc_files]
         except UnicodeDecodeError as e:
             raise UnsupportedFileFormatError(f'The directory {dir_path} contains files in an unsupported format.') \
                 from e
 
-    def list(self) -> list[Document]:
+    def list(self) -> [Document]:
         return self._documents
 
 

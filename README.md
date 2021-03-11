@@ -8,12 +8,6 @@
 
 PlagDef supports plagiarism detection for student assignments.
 
-# Requirements
-
-PlagDef uses PyStemmer which needs the Microsoft Visual C++ Build Tools.
-
-Download and install them from here: https://go.microsoft.com/fwlink/?LinkId=691126
-
 # Installation
 
 Get it from PyPI:
@@ -29,10 +23,12 @@ $ git clone git://github.com/devWhyqueue/plagdef
 $ pip install -e .
 ````
 
-And install necessary NLTK data:
+And install necessary resources:
 
 ```
 $ python -m nltk.downloader punkt
+$ python -m spacy download en_core_web_sm
+$ python -m spacy download de_core_news_sm
 ````
 
 # Usage
@@ -51,6 +47,8 @@ Clone the repo and install dependencies/resources:
 $ git clone git://github.com/devWhyqueue/plagdef
 $ pipenv install --dev
 $ pipenv run python -m nltk.downloader punkt
+$ pipenv run python -m spacy download en_core_web_sm
+$ pipenv run python -m spacy download de_core_news_sm
 ````
 
 # Publish to PyPI

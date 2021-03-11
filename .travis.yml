@@ -1,26 +1,28 @@
 language: python
 python:
-  - 3.9
-  - 3.8
-  - 3.7
-
-addons:
-    sonarcloud:
-        organization: "devwhyqueue-github"
-        token: "$SONAR_TOKEN"
+    - 3.9
+    - 3.8
+    - 3.7
 
 install: "make"
 
 script:
     - make test-all
 
-after_success:
-    - sonar-scanner
-
-deploy:
-    provider: pypi
-    username: "__token__"
-    password: "$PYPI_TOKEN"
-    distributions: sdist bdist_wheel
-    on:
-        tags: true
+jobs:
+    include:
+        -   stage: after_sucess
+            python: 3.9
+            addons:
+                sonarcloud:
+                    organization: "devwhyqueue-github"
+                    token: "$SONAR_TOKEN"
+            script: sonar-scanner
+        -   stage: deploy
+            python: 3.9
+            provider: pypi
+                username: "__token__"
+                password: "$PYPI_TOKEN"
+                distributions: sdist bdist_wheel
+                on:
+                    tags: true

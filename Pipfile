@@ -4,10 +4,10 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pystemmer = "~=2.0"
 nltk = "~=3.5"
 lxml = "~=4.6"
 click = "~=7.0"
+spacy = "~=3.0"
 
 [dev-packages]
 flake8 = "~=3.7"
@@ -18,3 +18,4 @@ tox-travis = "~=0.12"
 twine = "~=3.3"
 build = "~=0.3"
 fpdf2 = "~=2.3"
+pystemmer = "~=2.0"
