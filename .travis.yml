@@ -23,6 +23,7 @@ jobs:
             python: 3.9
             install: skip
             script: skip
+            after_success: skip
             deploy:
                 provider: pypi
                 username: "__token__"
