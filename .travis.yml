@@ -20,7 +20,8 @@ jobs:
             script: sonar-scanner
         -   stage: deploy
             python: 3.9
-            provider: pypi
+            deploy:
+                provider: pypi
                 username: "__token__"
                 password: "$PYPI_TOKEN"
                 distributions: sdist bdist_wheel
