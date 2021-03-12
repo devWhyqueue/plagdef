@@ -9,6 +9,7 @@ from itertools import combinations
 import nltk
 
 from plagdef.model.preprocessing import Document, Preprocessor
+from plagdef.model.seeding import SentenceMatcher
 
 
 def sum_vect(dic1, dic2):
@@ -55,22 +56,6 @@ def cosine_measure(d1, d2):
         if word in d2:
             dot_prod += d1[word] * d2[word]
     return dot_prod / det
-
-
-def dice_coeff(d1, d2):
-    """
-    DESCRIPTION: Compute the dice coefficient in sparse (dictionary) representation
-    INPUT: d1 <dictionary> - Sparse vector 1
-           d2 <dictionary> - Sparse vector 2
-    OUTPUT: Dice coefficient
-    """
-    if len(d1) + len(d2) == 0:
-        return 0
-    intj = 0
-    for i in d1.keys():
-        if i in d2:
-            intj += 1
-    return 2 * intj / float(len(d1) + len(d2))
 
 
 def adjacent_sents(a, b, th):
@@ -550,7 +535,7 @@ class SGSPLAG:
         self.susp_bow = {}
         self.detections = None
 
-    def process(self, preprocessor):
+    def process(self, preprocessor, sent_matcher):
         """
         DESCRIPTION: Process the plagiarism pipeline
         INPUT: self <SGSPLAG object>
@@ -558,23 +543,9 @@ class SGSPLAG:
                 summary_flag <int> - Summary plagarism flag
         """
         preprocessor.preprocess(self)
-        self.detections, type_plag, summary_flag = self.compare()
+        self.detections, type_plag, summary_flag = self.compare(sent_matcher)
         return type_plag, summary_flag
 
-    def seeding(self):
-        """
-        DESCRIPTION: Creates the seeds from pair of sentece similarity using dice and cosine similarity
-        INPUT: self <SGSPLAG object>
-        OUTPUT: ps <list of tuple (int, int, float, float)> - Seeds
-        """
-        ps = []
-        for c in range(len(self.susp_bow)):
-            for r in range(len(self.src_bow)):
-                v1 = cosine_measure(self.susp_bow[c], self.src_bow[r])
-                v2 = dice_coeff(self.susp_bow[c], self.src_bow[r])
-                if v1 > self.th1 and v2 > self.th2:
-                    ps.append((c, r, v1, v2))
-        return ps
 
     def extension(self, ps):
         """
@@ -616,7 +587,7 @@ class SGSPLAG:
 
         return plags
 
-    def compare(self):
+    def compare(self, sent_matcher):
         """
         DESCRIPTION: Test a suspicious document for near-duplicate plagiarism with regards to a source document and
         return a feature list depending on the type_plag and summary_flag flags.
@@ -627,7 +598,7 @@ class SGSPLAG:
                 summary_flag <int> - Summary flag
         """
         detections = []
-        ps = self.seeding()
+        ps = sent_matcher.seeding(self)
         plags, psr, sim_frag = self.extension(ps)
         plags = self.filtering(plags, psr)
         if self.verbatim != 0:
@@ -738,8 +709,8 @@ def find_matches(docs: list[Document], config: dict) -> list[DocumentPairMatches
         doc_pair_matches = DocumentPairMatches()
         sgsplag_obj = SGSPLAG(doc1.text, doc2.text, config)
         try:
-            sgsplag_obj.process(Preprocessor(doc1, doc2))
-        except AttributeError as e:
+            sgsplag_obj.process(Preprocessor(doc1, doc2), SentenceMatcher(config['th1'], config['th2']))
+        except (KeyError, AttributeError) as e:
             raise InvalidConfigError('The given config seems to be invalid.') from e
         for det in sgsplag_obj.detections:
             match = Match(Section(doc1, det[0][0], det[0][1] - det[0][0]),

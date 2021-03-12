@@ -65,15 +65,13 @@ class Document:
         self._preprocess(nlp_model)
 
     def _preprocess(self, nlp_model: Language):
-        stop_words = nlp_model.Defaults.stop_words
         parsed_doc = nlp_model(self.text)
 
         for sent in parsed_doc.sents:
             if self._rem_stop_words:
-                sent_lemmas = [token.lemma_ for token in sent if (token.is_alpha or token.is_digit)
-                               and token.lower_ not in stop_words]
+                sent_lemmas = [token.lemma_ for token in sent if token.text.isalnum() and not token.is_stop]
             else:
-                sent_lemmas = [token.lemma_ for token in sent if token.is_alpha or token.is_digit]
+                sent_lemmas = [token.lemma_ for token in sent if token.text.isalnum()]
 
             self.sents.append(Sentence(self, sent.start_char, sent.end_char, Counter(sent_lemmas)))
             for lemma in set(sent_lemmas):

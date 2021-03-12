@@ -2,6 +2,7 @@ from pytest import fixture
 
 from plagdef.model.legacy.algorithm import DocumentPairMatches, Match, Section
 from plagdef.model.preprocessing import DocumentFactory
+from plagdef.model.seeding import SentenceMatcher
 
 
 @fixture(scope='session')
@@ -17,6 +18,11 @@ def config():
 @fixture(scope='session')
 def doc_factory(config):
     return DocumentFactory('eng', config['min_sent_len'], config['rem_stop_words'])
+
+
+@fixture(scope='session')
+def sent_matcher(config):
+    return SentenceMatcher(config['th1'], config['th2'])
 
 
 @fixture

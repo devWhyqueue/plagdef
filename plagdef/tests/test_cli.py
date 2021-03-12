@@ -18,7 +18,7 @@ def test_output_if_no_matches_found(tmp_path, config):
         patch('plagdef.cli.ConfigFileRepository', return_value=ConfigFakeRepository(config)), \
         patch('plagdef.cli.find_matches', return_value=[]):
         runner = CliRunner()
-        result = runner.invoke(main, ['-l', 'eng', '-l', 'eng', str(tmp_path)])
+        result = runner.invoke(main, ['-l', 'eng', str(tmp_path)])
     assert result.exit_code == 0
     assert result.output == 'Found no suspicious document pair.\n\n'
 
@@ -112,5 +112,5 @@ def test_invalid_config_error_caught(tmp_path, config):
 def test_unsupported_language_error_caught(tmp_path):
     with patch('plagdef.cli.DocumentFileRepository', side_effect=UnsupportedLanguageError()):
         runner = CliRunner()
-        result = runner.invoke(main, ['-l', 'eng', str(tmp_path)])
+        result = runner.invoke(main, ['-l', 'fre', str(tmp_path)])
         assert result.exit_code == 2
