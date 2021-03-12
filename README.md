@@ -27,8 +27,8 @@ And install necessary resources:
 
 ```
 $ python -m nltk.downloader punkt
-$ python -m spacy download en_core_web_sm
-$ python -m spacy download de_core_news_sm
+$ python -m spacy download en_core_web_trf
+$ python -m spacy download de_dep_news_trf
 ````
 
 # Usage
@@ -47,8 +47,8 @@ Clone the repo and install dependencies/resources:
 $ git clone git://github.com/devWhyqueue/plagdef
 $ pipenv install --dev
 $ pipenv run python -m nltk.downloader punkt
-$ pipenv run python -m spacy download en_core_web_sm
-$ pipenv run python -m spacy download de_core_news_sm
+$ pipenv run python -m spacy download en_core_web_trf
+$ pipenv run python -m spacy download de_dep_news_trf
 ````
 
 # Publish to PyPI

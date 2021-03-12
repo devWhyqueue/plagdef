@@ -81,6 +81,13 @@ def test_doc_preprocess_sent_bows(real_docs):
                  'consent': 1})]
 
 
+def test_doc_preprocess_not_any_of_sent_bows_empty():
+    doc_factory = DocumentFactory('ger', 3, False)
+    doc = doc_factory.create('doc1', 'Das ist ein schöner Satz.\n\nNoch ein schöner Satz.')
+    assert len([sent.bow for sent in doc.sents]) == 2
+    assert any([len(sent.bow) for sent in doc.sents])
+
+
 def test_doc_join_small_sents_at_start(doc_factory):
     doc = doc_factory.create('doc1', 'Short sentence. Short sentence should be joined with this one.')
     assert len(doc.sents) == 1

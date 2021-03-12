@@ -30,7 +30,7 @@ class SentenceMatcher:
         Compute the cosine similarity cos-sim = sum_i=1_n{a_i * b_i} / sqrt{sum_i=1_n{(a_i)^2}} * sqrt{sum_i=1_n{(
         b_i)^2}}
         """
-        aligned_vecs = [(sent1.bow[lemma], sent2.bow[lemma]) for lemma in sent1.bow.keys() if lemma in sent2.bow.keys()]
+        aligned_vecs = [(sent1.bow[lemma], sent2.bow[lemma]) for lemma in sent1.bow if lemma in sent2.bow]
         a, b = [v[0] for v in aligned_vecs], [v[1] for v in aligned_vecs]
         return dot(a, b) / (norm(list(sent1.bow.values())) * norm(list(sent2.bow.values())))
 

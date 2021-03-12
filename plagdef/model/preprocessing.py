@@ -29,9 +29,9 @@ class DocumentFactory:
         self._min_sent_len = min_sent_len
         self._rem_stop_words = rem_stop_words
         if lang == 'eng':
-            self._nlp_model = spacy.load('en_core_web_sm')
+            self._nlp_model = spacy.load('en_core_web_trf')
         elif lang == 'ger':
-            self._nlp_model = spacy.load('de_core_news_sm')
+            self._nlp_model = spacy.load('de_dep_news_trf')
         else:
             raise UnsupportedLanguageError(f'The language "{lang}" is currently not supported.')
 
@@ -72,10 +72,11 @@ class Document:
                 sent_lemmas = [token.lemma_ for token in sent if token.text.isalnum() and not token.is_stop]
             else:
                 sent_lemmas = [token.lemma_ for token in sent if token.text.isalnum()]
-
-            self.sents.append(Sentence(self, sent.start_char, sent.end_char, Counter(sent_lemmas)))
-            for lemma in set(sent_lemmas):
-                self.vocab[lemma] += 1
+            if len(sent_lemmas):
+                lemma_count = Counter(sent_lemmas)
+                self.sents.append(Sentence(self, sent.start_char, sent.end_char, lemma_count))
+                for lemma in lemma_count.keys():
+                    self.vocab[lemma] += 1
 
         self._join_small_sentences()
 
