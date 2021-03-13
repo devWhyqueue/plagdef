@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/">
+        <file>res/search_white.png</file>
+        <file>res/folder_open_white.png</file>
+        <file>res/logo.png</file>
+        <file>res/lang_white.png</file>
+        <file>res/plagiarism_white.png</file>
+        <file>res/icon.ico</file>
+        <file>res/add_circle_white.png</file>
+        <file>res/ger_flag.png</file>
+        <file>res/uk_flag.png</file>
+    </qresource>
+</RCC>
