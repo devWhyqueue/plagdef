@@ -1,25 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-    <class>main</class>
-    <widget class="QMainWindow" name="main">
+    <class>main_window</class>
+    <widget class="QMainWindow" name="main_window">
         <property name="geometry">
             <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>600</width>
-                <height>380</height>
+                <width>655</width>
+                <height>430</height>
             </rect>
         </property>
         <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
             </sizepolicy>
         </property>
+        <property name="minimumSize">
+            <size>
+                <width>655</width>
+                <height>430</height>
+            </size>
+        </property>
         <property name="maximumSize">
             <size>
-                <width>600</width>
-                <height>380</height>
+                <width>1000</width>
+                <height>600</height>
             </size>
         </property>
         <property name="windowTitle">
@@ -33,66 +39,22 @@
         <property name="styleSheet">
             <string notr="true">background-color: rgb(77, 80, 87);</string>
         </property>
-        <widget class="QWidget" name="centralwidget">
+        <widget class="QWidget" name="main_widget">
             <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                 </sizepolicy>
             </property>
             <property name="minimumSize">
                 <size>
-                    <width>600</width>
-                    <height>380</height>
+                    <width>0</width>
+                    <height>0</height>
                 </size>
             </property>
-            <layout class="QVBoxLayout" name="verticalLayout_2">
-                <property name="sizeConstraint">
-                    <enum>QLayout::SetMaximumSize</enum>
-                </property>
-                <property name="leftMargin">
-                    <number>20</number>
-                </property>
-                <property name="topMargin">
-                    <number>10</number>
-                </property>
-                <property name="rightMargin">
-                    <number>20</number>
-                </property>
-                <property name="bottomMargin">
-                    <number>20</number>
-                </property>
+            <layout class="QVBoxLayout" name="verticalLayout">
                 <item>
                     <spacer name="top_spacer">
-                        <property name="orientation">
-                            <enum>Qt::Vertical</enum>
-                        </property>
-                        <property name="sizeType">
-                            <enum>QSizePolicy::Expanding</enum>
-                        </property>
-                        <property name="sizeHint" stdset="0">
-                            <size>
-                                <width>20</width>
-                                <height>10</height>
-                            </size>
-                        </property>
-                    </spacer>
-                </item>
-                <item>
-                    <widget class="QLabel" name="logo_label">
-                        <property name="maximumSize">
-                            <size>
-                                <width>16777215</width>
-                                <height>45</height>
-                            </size>
-                        </property>
-                        <property name="text">
-                            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;:/res/logo.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                        </property>
-                    </widget>
-                </item>
-                <item>
-                    <spacer name="logo_process_spacer">
                         <property name="orientation">
                             <enum>Qt::Vertical</enum>
                         </property>
@@ -108,67 +70,546 @@
                     </spacer>
                 </item>
                 <item>
-                    <layout class="QGridLayout" name="process_actions_grid">
-                        <item row="0" column="0">
-                            <layout class="QVBoxLayout" name="docs_layout">
-                                <property name="sizeConstraint">
-                                    <enum>QLayout::SetDefaultConstraint</enum>
-                                </property>
-                                <item>
-                                    <widget class="QLabel" name="docs_label">
-                                        <property name="text">
-                                            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span
-                                                style=&quot; font-size:14pt; color:#ffffff;&quot;&gt;Documents&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+                    <widget class="QLabel" name="logo_label">
+                        <property name="sizePolicy">
+                            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                                <horstretch>0</horstretch>
+                                <verstretch>0</verstretch>
+                            </sizepolicy>
+                        </property>
+                        <property name="minimumSize">
+                            <size>
+                                <width>0</width>
+                                <height>43</height>
+                            </size>
+                        </property>
+                        <property name="maximumSize">
+                            <size>
+                                <width>16777215</width>
+                                <height>16777215</height>
+                            </size>
+                        </property>
+                        <property name="text">
+                            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;:/res/logo.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                        </property>
+                    </widget>
+                </item>
+                <item>
+                    <spacer name="logo_stacked_widget_spacer">
+                        <property name="orientation">
+                            <enum>Qt::Vertical</enum>
+                        </property>
+                        <property name="sizeType">
+                            <enum>QSizePolicy::Expanding</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                            <size>
+                                <width>20</width>
+                                <height>0</height>
+                            </size>
+                        </property>
+                    </spacer>
+                </item>
+                <item>
+                    <widget class="QStackedWidget" name="stacked_widget">
+                        <widget class="QWidget" name="results_widget">
+                            <layout class="QVBoxLayout" name="verticalLayout_5">
+                                <item alignment="Qt::AlignHCenter">
+                                    <widget class="QTableWidget" name="results_table">
+                                        <property name="sizePolicy">
+                                            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                                                <horstretch>0</horstretch>
+                                                <verstretch>0</verstretch>
+                                            </sizepolicy>
+                                        </property>
+                                        <property name="minimumSize">
+                                            <size>
+                                                <width>602</width>
+                                                <height>0</height>
+                                            </size>
+                                        </property>
+                                        <property name="horizontalScrollBarPolicy">
+                                            <enum>Qt::ScrollBarAsNeeded</enum>
+                                        </property>
+                                        <property name="sizeAdjustPolicy">
+                                            <enum>QAbstractScrollArea::AdjustIgnored</enum>
+                                        </property>
+                                        <property name="showDropIndicator" stdset="0">
+                                            <bool>true</bool>
+                                        </property>
+                                        <property name="alternatingRowColors">
+                                            <bool>false</bool>
+                                        </property>
+                                        <property name="selectionMode">
+                                            <enum>QAbstractItemView::NoSelection</enum>
+                                        </property>
+                                        <property name="showGrid">
+                                            <bool>true</bool>
+                                        </property>
+                                        <property name="gridStyle">
+                                            <enum>Qt::DotLine</enum>
+                                        </property>
+                                        <property name="cornerButtonEnabled">
+                                            <bool>false</bool>
+                                        </property>
+                                        <property name="columnCount">
+                                            <number>6</number>
+                                        </property>
+                                        <attribute name="horizontalHeaderVisible">
+                                            <bool>true</bool>
+                                        </attribute>
+                                        <attribute name="horizontalHeaderCascadingSectionResizes">
+                                            <bool>false</bool>
+                                        </attribute>
+                                        <attribute name="horizontalHeaderHighlightSections">
+                                            <bool>false</bool>
+                                        </attribute>
+                                        <attribute name="verticalHeaderVisible">
+                                            <bool>false</bool>
+                                        </attribute>
+                                        <attribute name="verticalHeaderHighlightSections">
+                                            <bool>false</bool>
+                                        </attribute>
+                                        <row>
+                                            <property name="text">
+                                                <string>1</string>
+                                            </property>
+                                            <property name="foreground">
+                                                <brush brushstyle="NoBrush">
+                                                    <color alpha="255">
+                                                        <red>0</red>
+                                                        <green>0</green>
+                                                        <blue>0</blue>
+                                                    </color>
+                                                </brush>
+                                            </property>
+                                        </row>
+                                        <column>
+                                            <property name="text">
+                                                <string>doc1</string>
+                                            </property>
+                                        </column>
+                                        <column>
+                                            <property name="text">
+                                                <string>doc1_offset</string>
+                                            </property>
+                                        </column>
+                                        <column>
+                                            <property name="text">
+                                                <string>doc1_length</string>
+                                            </property>
+                                        </column>
+                                        <column>
+                                            <property name="text">
+                                                <string>doc2</string>
+                                            </property>
+                                        </column>
+                                        <column>
+                                            <property name="text">
+                                                <string>doc2_offset</string>
+                                            </property>
+                                        </column>
+                                        <column>
+                                            <property name="text">
+                                                <string>doc2_length</string>
+                                            </property>
+                                        </column>
+                                        <item row="0" column="0">
+                                            <property name="text">
+                                                <string>doc1_name</string>
+                                            </property>
+                                            <property name="background">
+                                                <brush brushstyle="NoBrush">
+                                                    <color alpha="255">
+                                                        <red>255</red>
+                                                        <green>255</green>
+                                                        <blue>255</blue>
+                                                    </color>
+                                                </brush>
+                                            </property>
+                                        </item>
+                                        <item row="0" column="1">
+                                            <property name="text">
+                                                <string>0</string>
+                                            </property>
+                                        </item>
+                                        <item row="0" column="2">
+                                            <property name="text">
+                                                <string>5</string>
+                                            </property>
+                                        </item>
+                                        <item row="0" column="3">
+                                            <property name="text">
+                                                <string>doc2_name</string>
+                                            </property>
+                                        </item>
+                                        <item row="0" column="4">
+                                            <property name="text">
+                                                <string>0</string>
+                                            </property>
+                                        </item>
+                                        <item row="0" column="5">
+                                            <property name="text">
+                                                <string>10</string>
+                                            </property>
+                                        </item>
+                                    </widget>
+                                </item>
+                                <item alignment="Qt::AlignHCenter">
+                                    <widget class="QPushButton" name="xml_button">
+                                        <property name="sizePolicy">
+                                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                                <horstretch>0</horstretch>
+                                                <verstretch>0</verstretch>
+                                            </sizepolicy>
+                                        </property>
+                                        <property name="minimumSize">
+                                            <size>
+                                                <width>130</width>
+                                                <height>50</height>
+                                            </size>
+                                        </property>
+                                        <property name="maximumSize">
+                                            <size>
+                                                <width>130</width>
+                                                <height>50</height>
+                                            </size>
+                                        </property>
+                                        <property name="font">
+                                            <font>
+                                                <pointsize>10</pointsize>
+                                            </font>
+                                        </property>
+                                        <property name="styleSheet">
+                                            <string notr="true">QPushButton {
+                                                border-radius: 25px;
+                                                border: 3px solid rgb(242, 141, 1);
+                                                border-style: outset;
+                                                color: rgb(255, 255, 255);
+                                                background-color: rgb(242, 141, 1);
+                                                }
+
+                                                :hover{
+                                                background-color: #b56900;
+                                                border-color: #b56900;
+                                                }
+
+                                                :pressed {
+                                                border-style: inset;
+                                                }
                                             </string>
+                                        </property>
+                                        <property name="text">
+                                            <string>Export to XML</string>
+                                        </property>
+                                        <property name="flat">
+                                            <bool>false</bool>
+                                        </property>
+                                    </widget>
+                                </item>
+                                <item alignment="Qt::AlignHCenter">
+                                    <widget class="QPushButton" name="again_button_res">
+                                        <property name="sizePolicy">
+                                            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                                                <horstretch>0</horstretch>
+                                                <verstretch>0</verstretch>
+                                            </sizepolicy>
+                                        </property>
+                                        <property name="font">
+                                            <font>
+                                                <pointsize>10</pointsize>
+                                            </font>
+                                        </property>
+                                        <property name="styleSheet">
+                                            <string notr="true">QPushButton {
+                                                color: #f28d01;
+                                                }
+
+                                                :hover{
+                                                color: #b56900;
+                                                }
+                                            </string>
+                                        </property>
+                                        <property name="text">
+                                            <string>Again?</string>
+                                        </property>
+                                        <property name="flat">
+                                            <bool>true</bool>
                                         </property>
                                     </widget>
                                 </item>
                                 <item>
-                                    <widget class="QLabel" name="docs_icon">
+                                    <spacer name="again_bottom_spacer_res">
+                                        <property name="orientation">
+                                            <enum>Qt::Vertical</enum>
+                                        </property>
+                                        <property name="sizeHint" stdset="0">
+                                            <size>
+                                                <width>20</width>
+                                                <height>104</height>
+                                            </size>
+                                        </property>
+                                    </spacer>
+                                </item>
+                            </layout>
+                        </widget>
+                        <widget class="QWidget" name="error_widget">
+                            <layout class="QVBoxLayout" name="verticalLayout_4">
+                                <item alignment="Qt::AlignHCenter">
+                                    <widget class="QLabel" name="error_label">
+                                        <property name="sizePolicy">
+                                            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                                                <horstretch>0</horstretch>
+                                                <verstretch>0</verstretch>
+                                            </sizepolicy>
+                                        </property>
                                         <property name="minimumSize">
                                             <size>
-                                                <width>130</width>
+                                                <width>0</width>
                                                 <height>0</height>
                                             </size>
                                         </property>
                                         <property name="text">
                                             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img
-                                                src=&quot;:/res/add_circle_white.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+                                                src=&quot;:/res/error_white.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+                                            </string>
+                                        </property>
+                                        <property name="alignment">
+                                            <set>Qt::AlignCenter</set>
+                                        </property>
+                                    </widget>
+                                </item>
+                                <item alignment="Qt::AlignHCenter">
+                                    <widget class="QLabel" name="error_msg_label">
+                                        <property name="text">
+                                            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span
+                                                style=&quot; font-size:14pt; color:#ffffff;&quot;&gt;{errorMsg}&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
                                             </string>
                                         </property>
                                     </widget>
                                 </item>
-                            </layout>
-                        </item>
-                        <item row="0" column="1" colspan="2">
-                            <widget class="Line" name="docs_lang_line">
-                                <property name="sizePolicy">
-                                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                                        <horstretch>0</horstretch>
-                                        <verstretch>0</verstretch>
-                                    </sizepolicy>
-                                </property>
-                                <property name="minimumSize">
-                                    <size>
-                                        <width>50</width>
-                                        <height>0</height>
-                                    </size>
-                                </property>
-                                <property name="lineWidth">
-                                    <number>0</number>
-                                </property>
-                                <property name="midLineWidth">
-                                    <number>5</number>
-                                </property>
-                                <property name="orientation">
-                                    <enum>Qt::Horizontal</enum>
-                                </property>
-                            </widget>
-                        </item>
-                        <item row="0" column="3">
-                            <layout class="QVBoxLayout" name="lang_layout">
+                                <item alignment="Qt::AlignHCenter">
+                                    <widget class="QPushButton" name="again_button_err">
+                                        <property name="sizePolicy">
+                                            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                                                <horstretch>0</horstretch>
+                                                <verstretch>0</verstretch>
+                                            </sizepolicy>
+                                        </property>
+                                        <property name="font">
+                                            <font>
+                                                <pointsize>10</pointsize>
+                                            </font>
+                                        </property>
+                                        <property name="styleSheet">
+                                            <string notr="true">QPushButton {
+                                                color: #f28d01;
+                                                }
+
+                                                :hover{
+                                                color: #b56900;
+                                                }
+                                            </string>
+                                        </property>
+                                        <property name="text">
+                                            <string>Again?</string>
+                                        </property>
+                                        <property name="flat">
+                                            <bool>true</bool>
+                                        </property>
+                                    </widget>
+                                </item>
                                 <item>
+                                    <spacer name="again_bottom_spacer_err">
+                                        <property name="orientation">
+                                            <enum>Qt::Vertical</enum>
+                                        </property>
+                                        <property name="sizeHint" stdset="0">
+                                            <size>
+                                                <width>20</width>
+                                                <height>106</height>
+                                            </size>
+                                        </property>
+                                    </spacer>
+                                </item>
+                            </layout>
+                        </widget>
+                        <widget class="QWidget" name="no_results_widget">
+                            <layout class="QVBoxLayout" name="verticalLayout_3">
+                                <item alignment="Qt::AlignHCenter|Qt::AlignBottom">
+                                    <widget class="QLabel" name="done_label">
+                                        <property name="sizePolicy">
+                                            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                                                <horstretch>0</horstretch>
+                                                <verstretch>0</verstretch>
+                                            </sizepolicy>
+                                        </property>
+                                        <property name="minimumSize">
+                                            <size>
+                                                <width>0</width>
+                                                <height>0</height>
+                                            </size>
+                                        </property>
+                                        <property name="text">
+                                            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img
+                                                src=&quot;:/res/done_circle_white.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+                                            </string>
+                                        </property>
+                                        <property name="alignment">
+                                            <set>Qt::AlignCenter</set>
+                                        </property>
+                                    </widget>
+                                </item>
+                                <item alignment="Qt::AlignHCenter|Qt::AlignTop">
+                                    <widget class="QLabel" name="none_found_label">
+                                        <property name="text">
+                                            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span
+                                                style=&quot; font-size:14pt; color:#ffffff;&quot;&gt;No matches found.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+                                            </string>
+                                        </property>
+                                    </widget>
+                                </item>
+                                <item alignment="Qt::AlignHCenter|Qt::AlignTop">
+                                    <widget class="QPushButton" name="again_button">
+                                        <property name="sizePolicy">
+                                            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                                                <horstretch>0</horstretch>
+                                                <verstretch>0</verstretch>
+                                            </sizepolicy>
+                                        </property>
+                                        <property name="font">
+                                            <font>
+                                                <pointsize>10</pointsize>
+                                            </font>
+                                        </property>
+                                        <property name="styleSheet">
+                                            <string notr="true">QPushButton {
+                                                color: #f28d01;
+                                                }
+
+                                                :hover{
+                                                color: #b56900;
+                                                }
+                                            </string>
+                                        </property>
+                                        <property name="text">
+                                            <string>Again?</string>
+                                        </property>
+                                        <property name="flat">
+                                            <bool>true</bool>
+                                        </property>
+                                    </widget>
+                                </item>
+                                <item>
+                                    <spacer name="again_bottom_spacer">
+                                        <property name="orientation">
+                                            <enum>Qt::Vertical</enum>
+                                        </property>
+                                        <property name="sizeHint" stdset="0">
+                                            <size>
+                                                <width>20</width>
+                                                <height>40</height>
+                                            </size>
+                                        </property>
+                                    </spacer>
+                                </item>
+                            </layout>
+                        </widget>
+                        <widget class="QWidget" name="loading_widget">
+                            <layout class="QVBoxLayout" name="verticalLayout_2">
+                                <item>
+                                    <layout class="QHBoxLayout" name="loading_layout">
+                                        <item>
+                                            <spacer name="loading_left_spacer">
+                                                <property name="orientation">
+                                                    <enum>Qt::Horizontal</enum>
+                                                </property>
+                                                <property name="sizeHint" stdset="0">
+                                                    <size>
+                                                        <width>40</width>
+                                                        <height>20</height>
+                                                    </size>
+                                                </property>
+                                            </spacer>
+                                        </item>
+                                        <item>
+                                            <widget class="QLabel" name="loading_movie_label">
+                                                <property name="sizePolicy">
+                                                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                                        <horstretch>0</horstretch>
+                                                        <verstretch>0</verstretch>
+                                                    </sizepolicy>
+                                                </property>
+                                                <property name="minimumSize">
+                                                    <size>
+                                                        <width>150</width>
+                                                        <height>150</height>
+                                                    </size>
+                                                </property>
+                                                <property name="text">
+                                                    <string/>
+                                                </property>
+                                                <property name="alignment">
+                                                    <set>Qt::AlignCenter</set>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item>
+                                            <spacer name="loading_right_spacer">
+                                                <property name="orientation">
+                                                    <enum>Qt::Horizontal</enum>
+                                                </property>
+                                                <property name="sizeHint" stdset="0">
+                                                    <size>
+                                                        <width>40</width>
+                                                        <height>20</height>
+                                                    </size>
+                                                </property>
+                                            </spacer>
+                                        </item>
+                                    </layout>
+                                </item>
+                                <item>
+                                    <widget class="QLabel" name="loading_label">
+                                        <property name="text">
+                                            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span
+                                                style=&quot; font-size:14pt; color:#ffffff;&quot;&gt;Looking for text
+                                                matches...&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+                                            </string>
+                                        </property>
+                                    </widget>
+                                </item>
+                                <item>
+                                    <spacer name="loading_label_bottom_spacer">
+                                        <property name="orientation">
+                                            <enum>Qt::Vertical</enum>
+                                        </property>
+                                        <property name="sizeHint" stdset="0">
+                                            <size>
+                                                <width>20</width>
+                                                <height>40</height>
+                                            </size>
+                                        </property>
+                                    </spacer>
+                                </item>
+                            </layout>
+                        </widget>
+                        <widget class="QWidget" name="configure_widget">
+                            <layout class="QGridLayout" name="gridLayout_2">
+                                <item row="0" column="2">
                                     <widget class="QLabel" name="lang_label">
+                                        <property name="sizePolicy">
+                                            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                                                <horstretch>0</horstretch>
+                                                <verstretch>0</verstretch>
+                                            </sizepolicy>
+                                        </property>
+                                        <property name="minimumSize">
+                                            <size>
+                                                <width>90</width>
+                                                <height>25</height>
+                                            </size>
+                                        </property>
                                         <property name="text">
                                             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span
                                                 style=&quot; font-size:14pt; color:#ffffff;&quot;&gt;Language&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
@@ -176,12 +617,24 @@
                                         </property>
                                     </widget>
                                 </item>
-                                <item>
+                                <item row="1" column="2">
                                     <widget class="QLabel" name="lang_icon">
+                                        <property name="sizePolicy">
+                                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                                <horstretch>0</horstretch>
+                                                <verstretch>0</verstretch>
+                                            </sizepolicy>
+                                        </property>
                                         <property name="minimumSize">
                                             <size>
-                                                <width>130</width>
-                                                <height>0</height>
+                                                <width>96</width>
+                                                <height>96</height>
+                                            </size>
+                                        </property>
+                                        <property name="maximumSize">
+                                            <size>
+                                                <width>96</width>
+                                                <height>96</height>
                                             </size>
                                         </property>
                                         <property name="text">
@@ -191,37 +644,20 @@
                                         </property>
                                     </widget>
                                 </item>
-                            </layout>
-                        </item>
-                        <item row="0" column="4">
-                            <widget class="Line" name="lang_detect_line">
-                                <property name="sizePolicy">
-                                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                                        <horstretch>0</horstretch>
-                                        <verstretch>0</verstretch>
-                                    </sizepolicy>
-                                </property>
-                                <property name="minimumSize">
-                                    <size>
-                                        <width>50</width>
-                                        <height>0</height>
-                                    </size>
-                                </property>
-                                <property name="lineWidth">
-                                    <number>0</number>
-                                </property>
-                                <property name="midLineWidth">
-                                    <number>5</number>
-                                </property>
-                                <property name="orientation">
-                                    <enum>Qt::Horizontal</enum>
-                                </property>
-                            </widget>
-                        </item>
-                        <item row="0" column="5">
-                            <layout class="QVBoxLayout" name="detect_layout">
-                                <item>
+                                <item row="0" column="4" alignment="Qt::AlignHCenter">
                                     <widget class="QLabel" name="detect_label">
+                                        <property name="sizePolicy">
+                                            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                                                <horstretch>0</horstretch>
+                                                <verstretch>0</verstretch>
+                                            </sizepolicy>
+                                        </property>
+                                        <property name="minimumSize">
+                                            <size>
+                                                <width>85</width>
+                                                <height>25</height>
+                                            </size>
+                                        </property>
                                         <property name="text">
                                             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span
                                                 style=&quot; font-size:14pt; color:#ffffff;&quot;&gt;Detection&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
@@ -229,12 +665,49 @@
                                         </property>
                                     </widget>
                                 </item>
-                                <item>
-                                    <widget class="QLabel" name="detect_icon">
+                                <item row="1" column="1">
+                                    <widget class="Line" name="docs_lang_line">
+                                        <property name="sizePolicy">
+                                            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                                                <horstretch>0</horstretch>
+                                                <verstretch>0</verstretch>
+                                            </sizepolicy>
+                                        </property>
                                         <property name="minimumSize">
                                             <size>
-                                                <width>130</width>
+                                                <width>50</width>
                                                 <height>0</height>
+                                            </size>
+                                        </property>
+                                        <property name="lineWidth">
+                                            <number>0</number>
+                                        </property>
+                                        <property name="midLineWidth">
+                                            <number>5</number>
+                                        </property>
+                                        <property name="orientation">
+                                            <enum>Qt::Horizontal</enum>
+                                        </property>
+                                    </widget>
+                                </item>
+                                <item row="1" column="4" alignment="Qt::AlignHCenter">
+                                    <widget class="QLabel" name="detect_icon">
+                                        <property name="sizePolicy">
+                                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                                <horstretch>0</horstretch>
+                                                <verstretch>0</verstretch>
+                                            </sizepolicy>
+                                        </property>
+                                        <property name="minimumSize">
+                                            <size>
+                                                <width>96</width>
+                                                <height>96</height>
+                                            </size>
+                                        </property>
+                                        <property name="maximumSize">
+                                            <size>
+                                                <width>96</width>
+                                                <height>96</height>
                                             </size>
                                         </property>
                                         <property name="text">
@@ -244,19 +717,104 @@
                                         </property>
                                     </widget>
                                 </item>
-                            </layout>
-                        </item>
-                        <item row="1" column="0" colspan="2">
-                            <layout class="QVBoxLayout" name="open_layout">
-                                <item alignment="Qt::AlignHCenter|Qt::AlignTop">
-                                    <widget class="QPushButton" name="open_button">
+                                <item row="2" column="1">
+                                    <spacer name="open_lang_spacer">
+                                        <property name="orientation">
+                                            <enum>Qt::Horizontal</enum>
+                                        </property>
+                                        <property name="sizeType">
+                                            <enum>QSizePolicy::Expanding</enum>
+                                        </property>
+                                        <property name="sizeHint" stdset="0">
+                                            <size>
+                                                <width>40</width>
+                                                <height>20</height>
+                                            </size>
+                                        </property>
+                                    </spacer>
+                                </item>
+                                <item row="2" column="3">
+                                    <spacer name="lang_detect_spacer">
+                                        <property name="orientation">
+                                            <enum>Qt::Horizontal</enum>
+                                        </property>
+                                        <property name="sizeType">
+                                            <enum>QSizePolicy::Preferred</enum>
+                                        </property>
+                                        <property name="sizeHint" stdset="0">
+                                            <size>
+                                                <width>40</width>
+                                                <height>20</height>
+                                            </size>
+                                        </property>
+                                    </spacer>
+                                </item>
+                                <item row="1" column="0" alignment="Qt::AlignHCenter">
+                                    <widget class="QLabel" name="docs_icon">
                                         <property name="sizePolicy">
-                                            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                                                 <horstretch>0</horstretch>
                                                 <verstretch>0</verstretch>
                                             </sizepolicy>
                                         </property>
                                         <property name="minimumSize">
+                                            <size>
+                                                <width>96</width>
+                                                <height>96</height>
+                                            </size>
+                                        </property>
+                                        <property name="maximumSize">
+                                            <size>
+                                                <width>96</width>
+                                                <height>96</height>
+                                            </size>
+                                        </property>
+                                        <property name="text">
+                                            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img
+                                                src=&quot;:/res/add_circle_white.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+                                            </string>
+                                        </property>
+                                    </widget>
+                                </item>
+                                <item row="0" column="0" alignment="Qt::AlignHCenter">
+                                    <widget class="QLabel" name="docs_label">
+                                        <property name="sizePolicy">
+                                            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                                                <horstretch>0</horstretch>
+                                                <verstretch>0</verstretch>
+                                            </sizepolicy>
+                                        </property>
+                                        <property name="minimumSize">
+                                            <size>
+                                                <width>100</width>
+                                                <height>25</height>
+                                            </size>
+                                        </property>
+                                        <property name="text">
+                                            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span
+                                                style=&quot; font-size:14pt; color:#ffffff;&quot;&gt;Documents&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+                                            </string>
+                                        </property>
+                                    </widget>
+                                </item>
+                                <item row="2" column="4" alignment="Qt::AlignHCenter|Qt::AlignTop">
+                                    <widget class="QPushButton" name="detect_button">
+                                        <property name="enabled">
+                                            <bool>false</bool>
+                                        </property>
+                                        <property name="sizePolicy">
+                                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                                <horstretch>0</horstretch>
+                                                <verstretch>0</verstretch>
+                                            </sizepolicy>
+                                        </property>
+                                        <property name="minimumSize">
+                                            <size>
+                                                <width>130</width>
+                                                <height>50</height>
+                                            </size>
+                                        </property>
+                                        <property name="maximumSize">
                                             <size>
                                                 <width>130</width>
                                                 <height>50</height>
@@ -275,170 +833,13 @@
                                                 color: rgb(255, 255, 255);
                                                 }
 
-                                                :hover{
+                                                :enabled {
                                                 background-color: rgb(242, 141, 1);
                                                 }
 
-                                                :pressed {
-                                                border-style: inset;
-                                                }
-                                            </string>
-                                        </property>
-                                        <property name="text">
-                                            <string>Open folder</string>
-                                        </property>
-                                        <property name="icon">
-                                            <iconset resource="resources.qrc">
-                                                <normaloff>:/res/folder_open_white.png</normaloff>
-                                                :/res/folder_open_white.png
-                                            </iconset>
-                                        </property>
-                                        <property name="autoDefault">
-                                            <bool>false</bool>
-                                        </property>
-                                        <property name="default">
-                                            <bool>false</bool>
-                                        </property>
-                                    </widget>
-                                </item>
-                            </layout>
-                        </item>
-                        <item row="1" column="2">
-                            <spacer name="open_lang_spacer">
-                                <property name="orientation">
-                                    <enum>Qt::Horizontal</enum>
-                                </property>
-                                <property name="sizeType">
-                                    <enum>QSizePolicy::Expanding</enum>
-                                </property>
-                                <property name="sizeHint" stdset="0">
-                                    <size>
-                                        <width>40</width>
-                                        <height>20</height>
-                                    </size>
-                                </property>
-                            </spacer>
-                        </item>
-                        <item row="1" column="3">
-                            <layout class="QVBoxLayout" name="verticalLayout">
-                                <property name="sizeConstraint">
-                                    <enum>QLayout::SetDefaultConstraint</enum>
-                                </property>
-                                <item alignment="Qt::AlignHCenter">
-                                    <widget class="QRadioButton" name="eng_radio">
-                                        <property name="sizePolicy">
-                                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                                                <horstretch>0</horstretch>
-                                                <verstretch>0</verstretch>
-                                            </sizepolicy>
-                                        </property>
-                                        <property name="minimumSize">
-                                            <size>
-                                                <width>100</width>
-                                                <height>0</height>
-                                            </size>
-                                        </property>
-                                        <property name="styleSheet">
-                                            <string notr="true">color: rgb(255, 255, 255);</string>
-                                        </property>
-                                        <property name="text">
-                                            <string>English</string>
-                                        </property>
-                                        <property name="icon">
-                                            <iconset resource="resources.qrc">
-                                                <normaloff>:/res/uk_flag.png</normaloff>:/res/uk_flag.png
-                                            </iconset>
-                                        </property>
-                                        <property name="iconSize">
-                                            <size>
-                                                <width>32</width>
-                                                <height>32</height>
-                                            </size>
-                                        </property>
-                                    </widget>
-                                </item>
-                                <item alignment="Qt::AlignHCenter">
-                                    <widget class="QRadioButton" name="ger_radio">
-                                        <property name="sizePolicy">
-                                            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                                                <horstretch>0</horstretch>
-                                                <verstretch>0</verstretch>
-                                            </sizepolicy>
-                                        </property>
-                                        <property name="minimumSize">
-                                            <size>
-                                                <width>100</width>
-                                                <height>0</height>
-                                            </size>
-                                        </property>
-                                        <property name="styleSheet">
-                                            <string notr="true">color: rgb(255, 255, 255);</string>
-                                        </property>
-                                        <property name="text">
-                                            <string>German</string>
-                                        </property>
-                                        <property name="icon">
-                                            <iconset resource="resources.qrc">
-                                                <normaloff>:/res/ger_flag.png</normaloff>:/res/ger_flag.png
-                                            </iconset>
-                                        </property>
-                                        <property name="iconSize">
-                                            <size>
-                                                <width>32</width>
-                                                <height>32</height>
-                                            </size>
-                                        </property>
-                                    </widget>
-                                </item>
-                            </layout>
-                        </item>
-                        <item row="1" column="4">
-                            <spacer name="lang_detect_spacer">
-                                <property name="orientation">
-                                    <enum>Qt::Horizontal</enum>
-                                </property>
-                                <property name="sizeType">
-                                    <enum>QSizePolicy::Preferred</enum>
-                                </property>
-                                <property name="sizeHint" stdset="0">
-                                    <size>
-                                        <width>40</width>
-                                        <height>20</height>
-                                    </size>
-                                </property>
-                            </spacer>
-                        </item>
-                        <item row="1" column="5">
-                            <layout class="QVBoxLayout" name="start_detect_layout">
-                                <item alignment="Qt::AlignHCenter">
-                                    <widget class="QPushButton" name="detect_button">
-                                        <property name="sizePolicy">
-                                            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                                                <horstretch>0</horstretch>
-                                                <verstretch>0</verstretch>
-                                            </sizepolicy>
-                                        </property>
-                                        <property name="minimumSize">
-                                            <size>
-                                                <width>128</width>
-                                                <height>50</height>
-                                            </size>
-                                        </property>
-                                        <property name="font">
-                                            <font>
-                                                <pointsize>10</pointsize>
-                                            </font>
-                                        </property>
-                                        <property name="styleSheet">
-                                            <string notr="true">QPushButton {
-                                                border-radius: 25px;
-                                                border: 3px solid rgb(242, 141, 1);
-                                                border-style: outset;
-                                                color: rgb(255, 255, 255);
-                                                }
-
                                                 :hover{
-                                                background-color: rgb(242, 141, 1);
+                                                background-color: #b56900;
+                                                border-color: #b56900;
                                                 }
 
                                                 :pressed {
@@ -462,19 +863,291 @@
                                         </property>
                                     </widget>
                                 </item>
-                                <item>
-                                    <widget class="QCheckBox" name="xml_radio">
-                                        <property name="styleSheet">
-                                            <string notr="true">color: rgb(255, 255, 255);</string>
+                                <item row="1" column="3">
+                                    <widget class="Line" name="lang_detect_line">
+                                        <property name="sizePolicy">
+                                            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                                                <horstretch>0</horstretch>
+                                                <verstretch>0</verstretch>
+                                            </sizepolicy>
                                         </property>
-                                        <property name="text">
-                                            <string>Generate XML reports</string>
+                                        <property name="minimumSize">
+                                            <size>
+                                                <width>50</width>
+                                                <height>0</height>
+                                            </size>
+                                        </property>
+                                        <property name="lineWidth">
+                                            <number>0</number>
+                                        </property>
+                                        <property name="midLineWidth">
+                                            <number>5</number>
+                                        </property>
+                                        <property name="orientation">
+                                            <enum>Qt::Horizontal</enum>
                                         </property>
                                     </widget>
                                 </item>
+                                <item row="2" column="2">
+                                    <layout class="QVBoxLayout" name="sel_lang_layout">
+                                        <item alignment="Qt::AlignHCenter|Qt::AlignTop">
+                                            <widget class="QRadioButton" name="eng_radio">
+                                                <property name="enabled">
+                                                    <bool>false</bool>
+                                                </property>
+                                                <property name="sizePolicy">
+                                                    <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                                                        <horstretch>0</horstretch>
+                                                        <verstretch>0</verstretch>
+                                                    </sizepolicy>
+                                                </property>
+                                                <property name="minimumSize">
+                                                    <size>
+                                                        <width>100</width>
+                                                        <height>32</height>
+                                                    </size>
+                                                </property>
+                                                <property name="styleSheet">
+                                                    <string notr="true">color: rgb(255, 255, 255);</string>
+                                                </property>
+                                                <property name="text">
+                                                    <string>English</string>
+                                                </property>
+                                                <property name="icon">
+                                                    <iconset resource="resources.qrc">
+                                                        <normaloff>:/res/uk_flag.png</normaloff>:/res/uk_flag.png
+                                                    </iconset>
+                                                </property>
+                                                <property name="iconSize">
+                                                    <size>
+                                                        <width>32</width>
+                                                        <height>32</height>
+                                                    </size>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item alignment="Qt::AlignHCenter|Qt::AlignTop">
+                                            <widget class="QRadioButton" name="ger_radio">
+                                                <property name="enabled">
+                                                    <bool>false</bool>
+                                                </property>
+                                                <property name="sizePolicy">
+                                                    <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                                                        <horstretch>0</horstretch>
+                                                        <verstretch>0</verstretch>
+                                                    </sizepolicy>
+                                                </property>
+                                                <property name="minimumSize">
+                                                    <size>
+                                                        <width>100</width>
+                                                        <height>32</height>
+                                                    </size>
+                                                </property>
+                                                <property name="styleSheet">
+                                                    <string notr="true">color: rgb(255, 255, 255);</string>
+                                                </property>
+                                                <property name="text">
+                                                    <string>German</string>
+                                                </property>
+                                                <property name="icon">
+                                                    <iconset resource="resources.qrc">
+                                                        <normaloff>:/res/ger_flag.png</normaloff>:/res/ger_flag.png
+                                                    </iconset>
+                                                </property>
+                                                <property name="iconSize">
+                                                    <size>
+                                                        <width>32</width>
+                                                        <height>32</height>
+                                                    </size>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item alignment="Qt::AlignHCenter|Qt::AlignTop">
+                                            <widget class="QLabel" name="sel_lang_label">
+                                                <property name="sizePolicy">
+                                                    <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                                                        <horstretch>0</horstretch>
+                                                        <verstretch>0</verstretch>
+                                                    </sizepolicy>
+                                                </property>
+                                                <property name="minimumSize">
+                                                    <size>
+                                                        <width>0</width>
+                                                        <height>25</height>
+                                                    </size>
+                                                </property>
+                                                <property name="text">
+                                                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span
+                                                        style=&quot; font-size:12pt; color:#ffffff;&quot;&gt;{lang}&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+                                                    </string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item alignment="Qt::AlignHCenter|Qt::AlignTop">
+                                            <widget class="QPushButton" name="change_lang_button">
+                                                <property name="sizePolicy">
+                                                    <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                                                        <horstretch>0</horstretch>
+                                                        <verstretch>0</verstretch>
+                                                    </sizepolicy>
+                                                </property>
+                                                <property name="minimumSize">
+                                                    <size>
+                                                        <width>0</width>
+                                                        <height>25</height>
+                                                    </size>
+                                                </property>
+                                                <property name="font">
+                                                    <font>
+                                                        <pointsize>10</pointsize>
+                                                    </font>
+                                                </property>
+                                                <property name="styleSheet">
+                                                    <string notr="true">QPushButton {
+                                                        color: #f28d01;
+                                                        }
+
+                                                        :hover{
+                                                        color: #b56900;
+                                                        }
+                                                    </string>
+                                                </property>
+                                                <property name="text">
+                                                    <string>Change</string>
+                                                </property>
+                                                <property name="flat">
+                                                    <bool>true</bool>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                    </layout>
+                                </item>
+                                <item row="2" column="0">
+                                    <layout class="QVBoxLayout" name="folder_layout">
+                                        <item alignment="Qt::AlignHCenter|Qt::AlignTop">
+                                            <widget class="QPushButton" name="open_folder_button">
+                                                <property name="sizePolicy">
+                                                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                                        <horstretch>0</horstretch>
+                                                        <verstretch>0</verstretch>
+                                                    </sizepolicy>
+                                                </property>
+                                                <property name="minimumSize">
+                                                    <size>
+                                                        <width>130</width>
+                                                        <height>50</height>
+                                                    </size>
+                                                </property>
+                                                <property name="maximumSize">
+                                                    <size>
+                                                        <width>130</width>
+                                                        <height>50</height>
+                                                    </size>
+                                                </property>
+                                                <property name="font">
+                                                    <font>
+                                                        <pointsize>10</pointsize>
+                                                    </font>
+                                                </property>
+                                                <property name="styleSheet">
+                                                    <string notr="true">QPushButton {
+                                                        border-radius: 25px;
+                                                        border: 3px solid rgb(242, 141, 1);
+                                                        border-style: outset;
+                                                        color: rgb(255, 255, 255);
+                                                        background-color: rgb(242, 141, 1);
+                                                        }
+
+                                                        :hover{
+                                                        background-color: #b56900;
+                                                        border-color: #b56900;
+                                                        }
+
+                                                        :pressed {
+                                                        border-style: inset;
+                                                        }
+                                                    </string>
+                                                </property>
+                                                <property name="text">
+                                                    <string>Open folder</string>
+                                                </property>
+                                                <property name="icon">
+                                                    <iconset resource="resources.qrc">
+                                                        <normaloff>:/res/folder_open_white.png</normaloff>
+                                                        :/res/folder_open_white.png
+                                                    </iconset>
+                                                </property>
+                                                <property name="autoDefault">
+                                                    <bool>false</bool>
+                                                </property>
+                                                <property name="default">
+                                                    <bool>false</bool>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item alignment="Qt::AlignHCenter|Qt::AlignTop">
+                                            <widget class="QLabel" name="folder_name_label">
+                                                <property name="sizePolicy">
+                                                    <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                                                        <horstretch>0</horstretch>
+                                                        <verstretch>0</verstretch>
+                                                    </sizepolicy>
+                                                </property>
+                                                <property name="minimumSize">
+                                                    <size>
+                                                        <width>0</width>
+                                                        <height>25</height>
+                                                    </size>
+                                                </property>
+                                                <property name="text">
+                                                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span
+                                                        style=&quot; font-size:12pt; color:#ffffff;&quot;&gt;{folder_name}&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+                                                    </string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item alignment="Qt::AlignHCenter|Qt::AlignTop">
+                                            <widget class="QPushButton" name="remove_folder_button">
+                                                <property name="sizePolicy">
+                                                    <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                                                        <horstretch>0</horstretch>
+                                                        <verstretch>0</verstretch>
+                                                    </sizepolicy>
+                                                </property>
+                                                <property name="minimumSize">
+                                                    <size>
+                                                        <width>0</width>
+                                                        <height>25</height>
+                                                    </size>
+                                                </property>
+                                                <property name="font">
+                                                    <font>
+                                                        <pointsize>10</pointsize>
+                                                    </font>
+                                                </property>
+                                                <property name="styleSheet">
+                                                    <string notr="true">QPushButton {
+                                                        color: #f28d01;
+                                                        }
+
+                                                        :hover{
+                                                        color: #b56900;
+                                                        }
+                                                    </string>
+                                                </property>
+                                                <property name="text">
+                                                    <string>Remove</string>
+                                                </property>
+                                                <property name="flat">
+                                                    <bool>true</bool>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                    </layout>
+                                </item>
                             </layout>
-                        </item>
-                    </layout>
+                        </widget>
+                    </widget>
                 </item>
                 <item>
                     <spacer name="bottom_spacer">

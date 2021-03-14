@@ -1,6 +1,9 @@
 <RCC>
     <qresource prefix="/">
+        <file>res/error_white.png</file>
+        <file>res/done_circle_white.png</file>
         <file>res/search_white.png</file>
+        <file>res/loading.gif</file>
         <file>res/folder_open_white.png</file>
         <file>res/logo.png</file>
         <file>res/lang_white.png</file>
