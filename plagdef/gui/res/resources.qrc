@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/">
+        <file>error_white.png</file>
+        <file>done_circle_white.png</file>
+        <file>search_white.png</file>
+        <file>loading.gif</file>
+        <file>folder_open_white.png</file>
+        <file>logo.png</file>
+        <file>lang_white.png</file>
+        <file>plagiarism_white.png</file>
+        <file>icon.ico</file>
+        <file>add_circle_white.png</file>
+        <file>ger_flag.png</file>
+        <file>uk_flag.png</file>
+    </qresource>
+</RCC>

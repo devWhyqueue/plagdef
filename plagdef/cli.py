@@ -13,7 +13,7 @@ from plagdef.model.reporting import generate_xml_reports, generate_text_report
 from plagdef.repositories import DocumentFileRepository, UnsupportedFileFormatError, DocumentPairReportFileRepository, \
     ConfigFileRepository, NoDocumentFilePairFoundError
 
-CONFIG_PATH = 'config/alg.ini'
+CONFIG_PATH = pathlib.Path('config/alg.ini')
 
 
 @click.command(context_settings=dict(help_option_names=["-h", "--help"]))
@@ -27,7 +27,7 @@ def main(docdir: click.Path, lang: str, xmldir: click.Path) -> int:
     It must be provided with a directory <DOCDIR> containing at least two documents and their language.
     """
     try:
-        config_path = pkg_resources.resource_filename(__name__, CONFIG_PATH)
+        config_path = pkg_resources.resource_filename(__name__, str(CONFIG_PATH))
         config_repo = ConfigFileRepository(pathlib.Path(config_path))
         config = config_repo.get()
         doc_factory = DocumentFactory(lang, config['min_sent_len'], config['rem_stop_words'])
