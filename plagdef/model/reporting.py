@@ -34,7 +34,8 @@ def generate_text_report(matches: list[DocumentPairMatches]) -> str:
     return intro + ''.join(f'{doc_pair_report.content}' for doc_pair_report in doc_pair_reports)
 
 
-def generate_xml_reports(matches: list[DocumentPairMatches], doc_pair_report_repo):
+def generate_xml_reports(matches: list[DocumentPairMatches]) -> list[DocumentPairReport]:
+    doc_pair_reports = []
     for doc_pair_matches in matches:
         root = E.report(doc1=doc_pair_matches.doc1.name, doc2=doc_pair_matches.doc2.name)
         for match in doc_pair_matches.list():
@@ -43,4 +44,5 @@ def generate_xml_reports(matches: list[DocumentPairMatches], doc_pair_report_rep
                 doc2_offset=str(match.sec2.offset), doc2_length=str(match.sec2.length)
             ))
         report = etree.tostring(root, xml_declaration=True, encoding='UTF-8', pretty_print=True).decode('utf8')
-        doc_pair_report_repo.add(DocumentPairReport(doc_pair_matches.doc1, doc_pair_matches.doc2, report, 'xml'))
+        doc_pair_reports.append(DocumentPairReport(doc_pair_matches.doc1, doc_pair_matches.doc2, report, 'xml'))
+    return doc_pair_reports

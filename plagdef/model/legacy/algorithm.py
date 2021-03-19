@@ -546,7 +546,6 @@ class SGSPLAG:
         self.detections, type_plag, summary_flag = self.compare(sent_matcher)
         return type_plag, summary_flag
 
-
     def extension(self, ps):
         """
         DESCRIPTION: Adding two vectors
@@ -703,19 +702,24 @@ class DocumentPairMatches:
         return not self._matches
 
 
-def find_matches(docs: list[Document], config: dict) -> list[DocumentPairMatches]:
+def find_matches(docs: list[Document], lang: str, config: dict) -> list[DocumentPairMatches]:
     matches = []
-    for doc1, doc2 in combinations(docs, 2):
-        doc_pair_matches = DocumentPairMatches()
-        sgsplag_obj = SGSPLAG(doc1.text, doc2.text, config)
-        try:
-            sgsplag_obj.process(Preprocessor(doc1, doc2), SentenceMatcher(config['th1'], config['th2']))
-        except (KeyError, AttributeError) as e:
-            raise InvalidConfigError('The given config seems to be invalid.') from e
-        for det in sgsplag_obj.detections:
-            match = Match(Section(doc1, det[0][0], det[0][1] - det[0][0]),
-                          Section(doc2, det[1][0], det[1][1] - det[1][0]))
-            doc_pair_matches.add(match)
-        if not doc_pair_matches.empty():
-            matches.append(doc_pair_matches)
-    return matches
+    try:
+        preprocessor = Preprocessor(lang, config['min_sent_len'], config['rem_stop_words'])
+        preprocessor.preprocess_new(docs)
+        for doc1, doc2 in combinations(docs, 2):
+            doc_pair_matches = DocumentPairMatches()
+            sgsplag_obj = SGSPLAG(doc1.text, doc2.text, config)
+
+            preprocessor.set_docs(doc1, doc2)
+            sgsplag_obj.process(preprocessor, SentenceMatcher(config['th1'], config['th2']))
+
+            for det in sgsplag_obj.detections:
+                match = Match(Section(doc1, det[0][0], det[0][1] - det[0][0]),
+                              Section(doc2, det[1][0], det[1][1] - det[1][0]))
+                doc_pair_matches.add(match)
+            if not doc_pair_matches.empty():
+                matches.append(doc_pair_matches)
+        return matches
+    except (KeyError, AttributeError) as e:
+        raise InvalidConfigError('The given config seems to be invalid.') from e
