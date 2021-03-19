@@ -3,7 +3,7 @@ init: ## initialize environment and install requirements
 	pipenv install --dev
 	pipenv run python -m nltk.downloader punkt
 	pipenv run python -m spacy download en_core_web_trf
-	pipenv run python -m spacy download de_dep_news_trf
+	pipenv run python -m spacy download de_core_news_sm
 
 clean-test: ## remove test and coverage artifacts
 	rm -fr .tox/

@@ -28,12 +28,18 @@ And install necessary resources:
 ```
 $ python -m nltk.downloader punkt
 $ python -m spacy download en_core_web_trf
-$ python -m spacy download de_dep_news_trf
+$ python -m spacy download de_core_news_sm
 ````
 
 # Usage
 
-Run the CLI and show help:
+Run the GUI:
+
+```
+$ plagdef-gui
+````
+
+Or if you prefer a CLI:
 
 ```
 $ plagdef -h
@@ -48,7 +54,7 @@ $ git clone git://github.com/devWhyqueue/plagdef
 $ pipenv install --dev
 $ pipenv run python -m nltk.downloader punkt
 $ pipenv run python -m spacy download en_core_web_trf
-$ pipenv run python -m spacy download de_dep_news_trf
+$ pipenv run python -m spacy download de_core_news_sm
 ````
 
 # Publish to PyPI
