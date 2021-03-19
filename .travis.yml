@@ -4,7 +4,7 @@ python:
     - 3.8
     - 3.7
 
-install: "make"
+install: "make init-ci"
 
 script:
     - make test-all

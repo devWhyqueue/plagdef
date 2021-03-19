@@ -5,6 +5,15 @@ init: ## initialize environment and install requirements
 	pipenv run python -m spacy download en_core_web_trf
 	pipenv run python -m spacy download de_core_news_sm
 
+init-ci: ## initialize environment and install requirements
+	apt-get update
+	apt-get install libc6
+	pip install pipenv
+	pipenv install --dev
+	pipenv run python -m nltk.downloader punkt
+	pipenv run python -m spacy download en_core_web_trf
+	pipenv run python -m spacy download de_core_news_sm
+
 clean-test: ## remove test and coverage artifacts
 	rm -fr .tox/
 	rm -f .coverage

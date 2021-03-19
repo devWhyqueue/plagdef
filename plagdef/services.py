@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from configparser import ParsingError
 
 from click import UsageError
