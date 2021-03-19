@@ -5,13 +5,12 @@ from pytest import mark
 
 from plagdef.model.legacy.algorithm import SGSPLAG
 from plagdef.model.legacy.preprocessing import LegacyPreprocessor
-# noinspection PyUnresolvedReferences
-from plagdef.tests.fixtures import real_docs, doc_factory, config
+from plagdef.model.preprocessing import Document
 
 
-def test_preprocess_alters_only_vocs_and_offsets_and_bows(doc_factory, config):
-    doc1, doc2 = doc_factory.create('doc1', 'This is a document.\n'), \
-                 doc_factory.create('doc2', 'This also is a document.\n')
+def test_preprocess_alters_only_vocs_and_offsets_and_bows(config):
+    doc1, doc2 = Document('doc1', 'This is a document.\n'), \
+                 Document('doc2', 'This also is a document.\n')
     obj_before = SGSPLAG(doc1.text, doc2.text, config)
     preprocessed_obj = copy.deepcopy(obj_before)
     preprocessor = LegacyPreprocessor()
@@ -24,9 +23,9 @@ def test_preprocess_alters_only_vocs_and_offsets_and_bows(doc_factory, config):
     assert obj_before.detections == preprocessed_obj.detections
 
 
-def test_tokenize_alters_only_vocs_and_offsets(doc_factory, config):
-    doc1, doc2 = doc_factory.create('doc1', 'This is a document.\n'), \
-                 doc_factory.create('doc2', 'This also is a document.\n')
+def test_tokenize_alters_only_vocs_and_offsets(config):
+    doc1, doc2 = Document('doc1', 'This is a document.\n'), \
+                 Document('doc2', 'This also is a document.\n')
     obj_before = SGSPLAG(doc1.text, doc2.text, config)
     preprocessed_obj = copy.deepcopy(obj_before)
     preprocessor = LegacyPreprocessor()
@@ -39,8 +38,8 @@ def test_tokenize_alters_only_vocs_and_offsets(doc_factory, config):
 
 
 @mark.xfail(reason="PyStemmer produces wrong lemmas.")
-def test_tokenize_voc_contains_stemmed_tokens_with_sentence_frequency(real_docs, config):
-    doc1, doc2 = real_docs
+def test_tokenize_voc_contains_stemmed_tokens_with_sentence_frequency(preprocessed_docs, config):
+    doc1, doc2 = preprocessed_docs
     obj = SGSPLAG(doc1.text, doc2.text, config)
     preprocessor = LegacyPreprocessor()
     preprocessor._tokenize(obj.src_text, obj.src_voc, obj.src_offsets)
@@ -52,8 +51,8 @@ def test_tokenize_voc_contains_stemmed_tokens_with_sentence_frequency(real_docs,
 
 
 @mark.xfail(reason="Instead of removing stop words they are not stemmed.")
-def test_tokenize_voc_contains_no_stop_words(real_docs, config):
-    doc1, doc2 = real_docs
+def test_tokenize_voc_contains_no_stop_words(preprocessed_docs, config):
+    doc1, doc2 = preprocessed_docs
     obj = SGSPLAG(doc1.text, doc2.text, config)
     preprocessor = LegacyPreprocessor()
     preprocessor._tokenize(obj.src_text, obj.src_voc, obj.src_offsets, 1)
@@ -64,16 +63,16 @@ def test_tokenize_voc_contains_no_stop_words(real_docs, config):
                     'her', 'n\'t', 'there', 'can', 'all', 'as', 'if', 'who', 'what', 'said'])
 
 
-def test_tokenize_voc_contains_no_short_tokens(real_docs, config):
-    doc1, doc2 = real_docs
+def test_tokenize_voc_contains_no_short_tokens(preprocessed_docs, config):
+    doc1, doc2 = preprocessed_docs
     obj = SGSPLAG(doc1.text, doc2.text, config)
     preprocessor = LegacyPreprocessor()
     preprocessor._tokenize(obj.src_text, obj.src_voc, obj.src_offsets)
     assert not any(len(token) < 2 for token in obj.src_voc)
 
 
-def test_tokenize_offsets(real_docs, config):
-    doc1, doc2 = real_docs
+def test_tokenize_offsets(preprocessed_docs, config):
+    doc1, doc2 = preprocessed_docs
     obj = SGSPLAG(doc1.text, doc2.text, config)
     preprocessor = LegacyPreprocessor()
     preprocessor._tokenize(obj.src_text, obj.src_voc, obj.src_offsets)
@@ -81,8 +80,8 @@ def test_tokenize_offsets(real_docs, config):
     assert obj.src_offsets == [[0, 177], [178, 53], [232, 99]]
 
 
-def test_tokenize_returns_sent_bows(real_docs, config):
-    doc1, doc2 = real_docs
+def test_tokenize_returns_sent_bows(preprocessed_docs, config):
+    doc1, doc2 = preprocessed_docs
     obj = SGSPLAG(doc1.text, doc2.text, config)
     preprocessor = LegacyPreprocessor()
     sent_bows = preprocessor._tokenize(obj.susp_text, obj.susp_voc, obj.susp_offsets)
@@ -96,9 +95,9 @@ def test_tokenize_returns_sent_bows(real_docs, config):
 
 
 @mark.xfail(reason="Wrong length after join because whitespace is not counted in.")
-def test_join_small_sents_offsets(doc_factory, config):
-    doc1, doc2 = doc_factory.create('doc1', 'Short sentence. Short sentence should be joined with this one.'), \
-                 doc_factory.create('doc2', 'This also is a document.')
+def test_join_small_sents_offsets(config):
+    doc1, doc2 = Document('doc1', 'Short sentence. Short sentence should be joined with this one.'), \
+                 Document('doc2', 'This also is a document.')
     obj = SGSPLAG(doc1.text, doc2.text, config)
     preprocessor = LegacyPreprocessor()
     sent_bows = preprocessor._tokenize(obj.susp_text, obj.susp_voc, obj.susp_offsets)
@@ -109,9 +108,9 @@ def test_join_small_sents_offsets(doc_factory, config):
     assert obj.susp_offsets == [(0, 62)]
 
 
-def test_join_small_sents_at_start(doc_factory, config):
-    doc1, doc2 = doc_factory.create('doc1', 'Short sentence. Short sentence should be joined with this one.'), \
-                 doc_factory.create('doc2', 'This also is a document.')
+def test_join_small_sents_at_start(config):
+    doc1, doc2 = Document('doc1', 'Short sentence. Short sentence should be joined with this one.'), \
+                 Document('doc2', 'This also is a document.')
     obj = SGSPLAG(doc1.text, doc2.text, config)
     preprocessor = LegacyPreprocessor()
     sent_bows = preprocessor._tokenize(obj.susp_text, obj.susp_voc, obj.susp_offsets)
@@ -122,10 +121,10 @@ def test_join_small_sents_at_start(doc_factory, config):
     assert obj.susp_voc == {'short': 1, 'sentenc': 1, 'should': 1, 'join': 1, 'with': 1, 'this': 1, 'one': 1}
 
 
-def test_join_small_sents_in_the_middle(doc_factory, config):
-    doc1, doc2 = doc_factory.create('doc1', 'This is a longer sentence. Short sentence. Short sentence should be '
-                                            'joined with this one.'), \
-                 doc_factory.create('doc2', 'This also is a document.')
+def test_join_small_sents_in_the_middle(config):
+    doc1, doc2 = Document('doc1', 'This is a longer sentence. Short sentence. Short sentence should be '
+                                  'joined with this one.'), \
+                 Document('doc2', 'This also is a document.')
     obj = SGSPLAG(doc1.text, doc2.text, config)
     preprocessor = LegacyPreprocessor()
     sent_bows = preprocessor._tokenize(obj.susp_text, obj.susp_voc, obj.susp_offsets)
@@ -139,10 +138,10 @@ def test_join_small_sents_in_the_middle(doc_factory, config):
 
 
 @mark.xfail(reason="Short sentences are only joined with next one but last sentence has no successor.")
-def test_join_small_sents_at_the_end(doc_factory, config):
-    doc1, doc2 = doc_factory.create('doc1', 'This is a longer sentence. Short sentence should be '
-                                            'joined with this one. Short sentence.'), \
-                 doc_factory.create('doc2', 'This also is a document.')
+def test_join_small_sents_at_the_end(config):
+    doc1, doc2 = Document('doc1', 'This is a longer sentence. Short sentence should be '
+                                  'joined with this one. Short sentence.'), \
+                 Document('doc2', 'This also is a document.')
     obj = SGSPLAG(doc1.text, doc2.text, config)
     preprocessor = LegacyPreprocessor()
     sent_bows = preprocessor._tokenize(obj.susp_text, obj.susp_voc, obj.susp_offsets)
@@ -151,9 +150,9 @@ def test_join_small_sents_at_the_end(doc_factory, config):
     assert len(obj.susp_offsets) == 2
 
 
-def test_sum_vect(doc_factory, config):
-    doc1, doc2 = doc_factory.create('doc1', 'This is a cool document.'), \
-                 doc_factory.create('doc2', 'This also is a document.')
+def test_sum_vect(config):
+    doc1, doc2 = Document('doc1', 'This is a cool document.'), \
+                 Document('doc2', 'This also is a document.')
     obj = SGSPLAG(doc1.text, doc2.text, config)
     preprocessor = LegacyPreprocessor()
     preprocessor.preprocess(obj)
@@ -161,8 +160,8 @@ def test_sum_vect(doc_factory, config):
     assert combined_voc == {'this': 2, 'also': 1, 'document': 2, 'cool': 1}
 
 
-def test_preprocess_tf_isf(real_docs, config):
-    doc1, doc2 = real_docs
+def test_preprocess_tf_isf(preprocessed_docs, config):
+    doc1, doc2 = preprocessed_docs
     obj = SGSPLAG(doc1.text, doc2.text, config)
     preprocessor = LegacyPreprocessor()
     preprocessor.preprocess(obj)

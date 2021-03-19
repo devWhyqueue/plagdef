@@ -16,7 +16,8 @@ class DocumentPairReportFakeRepository:
 
 
 class DocumentFakeRepository:
-    def __init__(self, documents: [Document]):
+    def __init__(self, documents: [Document], lang: str):
+        self.lang = lang
         self._documents = documents
 
     def list(self) -> [Document]:

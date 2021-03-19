@@ -2,10 +2,9 @@ from pathlib import Path
 
 import pytest
 
+from plagdef.model.preprocessing import Document
 from plagdef.model.reporting import DocumentPairReport
 from plagdef.repositories import DocumentPairReportFileRepository
-# noinspection PyUnresolvedReferences
-from plagdef.tests.fixtures import config, doc_factory
 
 
 def test_init_with_nonexistent_out_dir_fails():
@@ -21,11 +20,11 @@ def test_init_with_file_fails(tmp_path):
         DocumentPairReportFileRepository(file)
 
 
-def test_add_all_writes_report_files_to_out_path(doc_factory, tmp_path):
-    doc1, doc2 = doc_factory.create('doc1', 'This is a document.\n'), \
-                 doc_factory.create('doc2', 'This also is a document.\n')
-    doc3, doc4 = doc_factory.create('doc3', 'This is another document.\n'), \
-                 doc_factory.create('doc4', 'This also is another document.\n')
+def test_add_all_writes_report_files_to_out_path(tmp_path):
+    doc1, doc2 = Document('doc1', 'This is a document.\n'), \
+                 Document('doc2', 'This also is a document.\n')
+    doc3, doc4 = Document('doc3', 'This is another document.\n'), \
+                 Document('doc4', 'This also is another document.\n')
     repo = DocumentPairReportFileRepository(tmp_path)
     repo.add(DocumentPairReport(doc1, doc2, 'Some content\n', 'fmt'))
     repo.add(DocumentPairReport(doc3, doc4, 'Some other content\n', 'fmt'))

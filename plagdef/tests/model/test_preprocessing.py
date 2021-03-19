@@ -4,30 +4,70 @@ from collections import Counter
 import pytest
 
 from plagdef.model.legacy.algorithm import SGSPLAG
-from plagdef.model.preprocessing import DocumentFactory, UnsupportedLanguageError, Document, Preprocessor
-# noinspection PyUnresolvedReferences
-from plagdef.tests.fixtures import real_docs, doc_factory, config
+from plagdef.model.preprocessing import UnsupportedLanguageError, Document, Preprocessor
 
 
-def test_doc_factory_init_lang_models():
-    en = DocumentFactory('eng', 3, False)
-    de = DocumentFactory('ger', 3, False)
+def test_preprocessor_init_lang_models():
+    en = Preprocessor('eng', 3, False)
+    de = Preprocessor('ger', 3, False)
     assert en._nlp_model.lang == 'en'
     assert de._nlp_model.lang == 'de'
 
 
-def test_doc_factory_init_with_wrong_lang():
+def test_preprocessor_init_with_wrong_lang():
     with pytest.raises(UnsupportedLanguageError):
-        DocumentFactory('fre', 3, False)
+        Preprocessor('fre', 3, False)
 
 
-def test_preprocessor_alters_only_vocs_and_offsets_and_bows(doc_factory, config):
-    doc1, doc2 = doc_factory.create('doc1', 'This is a document. Short sentence.'), \
-                 doc_factory.create('doc2', 'This also is a document. This is longer and this has two sentences.')
+def test_preprocessor_init_ger_has_custom_sent_segmentizer():
+    de = Preprocessor('ger', 3, False)
+    assert 'ger_sent_seg' in de._nlp_model.pipe_names
+
+
+def test_ger_sent_seg(nlp_ger):
+    doc = nlp_ger('Das ist ein schöner deutscher Text. Besteht aus zwei Sätzen.')
+    sents = list(doc.sents)
+    sent1, sent2 = list(sents[0]), list(sents[1])
+    assert len(sents) == 2
+    assert sent1[0].text == 'Das' and sent2[0].text == 'Besteht'
+
+
+def test_ger_sent_seg_with_same_sent_starts(nlp_ger):
+    doc = nlp_ger('Das ist ein schöner deutscher Text. Das ist auch einer.')
+    sents = list(doc.sents)
+    print(sents)
+    sent1, sent2 = list(sents[0]), list(sents[1])
+    assert len(sents) == 2
+    assert sent1[0].text == 'Das' and sent2[0].text == 'Das'
+    assert sent1[0].idx != sent2[0].idx
+
+
+def test_ger_sent_seg_with_next_sent_start_in_previous_sent(nlp_ger):
+    doc = nlp_ger('Eine Klasse besteht aus Methoden und Attributen. Methoden realisieren Verhalten.')
+    sents = list(doc.sents)
+    print(sents)
+    sent1, sent2 = list(sents[0]), list(sents[1])
+    assert len(sents) == 2
+    assert sent1[0].text == 'Eine' and sent2[0].text == 'Methoden'
+    assert sent1[0].i == 0 and sent2[0].i > 2
+
+
+def test_ger_sent_seg_with_paragraphs(nlp_ger):
+    doc = nlp_ger('Ein schöner deutscher Text\n\nKurzer Satz.\nUnd noch ein etwas längerer.')
+    sents = list(doc.sents)
+    sent1, sent2, sent3 = list(sents[0]), list(sents[1]), list(sents[2])
+    assert len(sents) == 3
+    assert sent1[0].text == 'Ein' and sent2[0].text == 'Kurzer' and sent3[0].text == 'Und'
+
+
+def test_preprocess_alters_only_vocs_and_offsets_and_bows(preprocessor_eng, config):
+    doc1, doc2 = Document('doc1', 'This is a document. Short sentence.'), \
+                 Document('doc2', 'This also is a document. This is longer and this has two sentences.')
     obj_before = SGSPLAG(doc1.text, doc2.text, config)
     preprocessed_obj = copy.deepcopy(obj_before)
-    preprocessor = Preprocessor(doc1, doc2)
-    preprocessor.preprocess(preprocessed_obj)
+    preprocessor_eng.preprocess_new([doc1, doc2])
+    preprocessor_eng.set_docs(doc1, doc2)
+    preprocessor_eng.preprocess(preprocessed_obj)
     assert (obj_before.src_voc, obj_before.susp_voc) != (preprocessed_obj.src_voc, preprocessed_obj.susp_voc)
     assert (obj_before.src_offsets, obj_before.susp_offsets) != \
            (preprocessed_obj.src_offsets, preprocessed_obj.susp_offsets)
@@ -36,8 +76,8 @@ def test_preprocessor_alters_only_vocs_and_offsets_and_bows(doc_factory, config)
     assert obj_before.detections == preprocessed_obj.detections
 
 
-def test_doc_preprocess_voc_contains_stemmed_tokens_with_sentence_frequency(real_docs):
-    doc = real_docs[0]
+def test_preprocessed_voc_contains_stemmed_tokens_with_sentence_frequency(preprocessed_docs):
+    doc = preprocessed_docs[0]
     assert doc.vocab == Counter(
         {'be': 3, 'infringement': 2, 'the': 2, 'copyright': 2, 'a': 2, 'plagiarism': 1, 'not': 1, 'same': 1, 'as': 1,
          'to': 1, 'concept': 1, 'apply': 1, 'they': 1, 'may': 1, 'while': 1, 'different': 1, 'act': 1, 'particular': 1,
@@ -45,33 +85,44 @@ def test_doc_preprocess_voc_contains_stemmed_tokens_with_sentence_frequency(real
          'without': 1, 'restrict': 1, 'when': 1, 'right': 1, 'by': 1})
 
 
-def test_doc_preprocess_voc_contains_no_stop_words():
-    doc_factory = DocumentFactory('eng', 3, True)
-    doc = doc_factory.create('doc1', 'This is a sentence with five stop words.')
-    assert len(doc.vocab.keys()) == 3
+def test_preprocessed_voc_contains_no_stop_words():
+    preprocessor = Preprocessor('eng', 3, True)
+    doc1 = Document('doc1', 'This is a sentence with five stop words.')
+    doc2 = Document('doc2', 'Another document for good measure.')
+    preprocessor.preprocess_new([doc1, doc2])
+    preprocessor.preprocess_doc_pair(doc1, doc2)
+    assert len(doc1.vocab.keys()) == 3
 
 
-def test_doc_preprocess_voc_contains_short_tokens(real_docs, config):
-    doc = real_docs[0]
+def test_preprocessed_voc_contains_short_tokens(preprocessed_docs):
+    doc = preprocessed_docs[0]
     assert any(len(token) < 2 for token in doc.vocab)
 
 
-def test_doc_preprocess_sent_start_end_chars(real_docs):
-    doc = real_docs[1]
+def test_preprocessed_voc_contains_only_lowercase_tokens(preprocessed_docs):
+    doc = preprocessed_docs[0]
+    assert any(token.islower() for token in doc.vocab)
+
+
+def test_preprocessed_sent_start_end_chars(preprocessed_docs):
+    doc = preprocessed_docs[1]
     assert [(sent.start_char, sent.end_char) for sent in doc.sents] == [(0, 177), (178, 231), (232, 331)]
 
 
-def test_doc_preprocess_sent_start_end_chars_after_join(doc_factory):
-    doc = doc_factory.create('doc1', 'Short sentence. Short sentence should be joined with this one.')
+def test_preprocessed_sent_start_end_chars_after_join(preprocessor_eng):
+    doc1 = Document('doc1', 'Short sentence. Short sentence should be joined with this one.')
+    doc2 = Document('doc2', 'Another document for good measure.')
+    preprocessor_eng.preprocess_new([doc1, doc2])
+    preprocessor_eng.preprocess_doc_pair(doc1, doc2)
     # First sentence: (0, 15)
     # Second sentence: (16, 46)
     # Combined: (0, 62) because of whitespace gap between sents
-    assert len(doc.sents) == 1
-    assert (doc.sents[0].start_char, doc.sents[0].end_char) == (0, 62)
+    assert len(doc1.sents) == 1
+    assert (doc1.sents[0].start_char, doc1.sents[0].end_char) == (0, 62)
 
 
-def test_doc_preprocess_sent_bows(real_docs):
-    doc = real_docs[0]
+def test_preprocessed_sent_bows(preprocessed_docs):
+    doc = preprocessed_docs[0]
     assert [sent.bow for sent in doc.sents] == [
         Counter({'plagiarism': 1, 'be': 1, 'not': 1, 'the': 1, 'same': 1, 'as': 1, 'copyright': 1, 'infringement': 1}),
         Counter({'while': 1, 'both': 1, 'term': 1, 'may': 1, 'apply': 1, 'to': 1, 'a': 1, 'particular': 1, 'act': 1,
@@ -81,54 +132,71 @@ def test_doc_preprocess_sent_bows(real_docs):
                  'consent': 1})]
 
 
-def test_doc_preprocess_not_any_of_sent_bows_empty():
-    doc_factory = DocumentFactory('ger', 3, False)
-    doc = doc_factory.create('doc1', 'Das ist ein schöner Satz.\n\nNoch ein schöner Satz.')
-    assert len([sent.bow for sent in doc.sents]) == 2
-    assert any([len(sent.bow) for sent in doc.sents])
+def test_preprocessed_not_any_of_sent_bows_empty(preprocessor_ger):
+    doc1 = Document('doc1', 'Das ist ein schöner Satz.\n\nNoch ein schöner Satz.')
+    doc2 = Document('doc2', 'Another document for good measure.')
+    preprocessor_ger.preprocess_new([doc1, doc2])
+    preprocessor_ger.preprocess_doc_pair(doc1, doc2)
+    assert len([sent.bow for sent in doc1.sents]) == 2
+    assert any([len(sent.bow) for sent in doc1.sents])
 
 
-def test_doc_join_small_sents_at_start(doc_factory):
-    doc = doc_factory.create('doc1', 'Short sentence. Short sentence should be joined with this one.')
-    assert len(doc.sents) == 1
-    assert [sent.bow for sent in doc.sents] == \
+def test_preprocessed_bows_contains_only_lowercase_tokens(preprocessed_docs):
+    doc = preprocessed_docs[0]
+    for sent in doc.sents:
+        bow = sent.bow
+        assert any([token.islower() for token in bow])
+
+
+def test_join_small_sents_at_start(preprocessor_eng):
+    doc1 = Document('doc1', 'Short sentence. Short sentence should be joined with this one.')
+    doc2 = Document('doc2', 'Another document for good measure.')
+    preprocessor_eng.preprocess_new([doc1, doc2])
+    preprocessor_eng.preprocess_doc_pair(doc1, doc2)
+    assert len(doc1.sents) == 1
+    assert [sent.bow for sent in doc1.sents] == \
            [Counter({'short': 2, 'sentence': 2, 'should': 1, 'be': 1, 'join': 1, 'with': 1, 'this': 1, 'one': 1})]
-    assert doc.vocab == Counter(
+    assert doc1.vocab == Counter(
         {'sentence': 1, 'short': 1, 'this': 1, 'should': 1, 'one': 1, 'be': 1, 'with': 1, 'join': 1})
 
 
-def test_doc_join_small_sents_in_the_middle(doc_factory):
-    doc = doc_factory.create('doc1', 'This is a longer sentence. Short sentence. Short sentence should be '
-                                     'joined with this one.')
-    assert len(doc.sents) == 2
-    assert [sent.bow for sent in doc.sents] == \
+def test_join_small_sents_in_the_middle(preprocessor_eng):
+    doc1 = Document('doc1', 'This is a longer sentence. Short sentence. Short sentence should be '
+                            'joined with this one.')
+    doc2 = Document('doc2', 'Another document for good measure.')
+    preprocessor_eng.preprocess_new([doc1, doc2])
+    preprocessor_eng.preprocess_doc_pair(doc1, doc2)
+    assert len(doc1.sents) == 2
+    assert [sent.bow for sent in doc1.sents] == \
            [Counter({'this': 1, 'be': 1, 'a': 1, 'long': 1, 'sentence': 1}),
             Counter({'short': 2, 'sentence': 2, 'should': 1, 'be': 1, 'join': 1, 'with': 1, 'this': 1, 'one': 1})]
-    assert doc.vocab == Counter(
+    assert doc1.vocab == Counter(
         {'be': 2, 'sentence': 2, 'this': 2, 'a': 1, 'long': 1, 'short': 1, 'one': 1, 'join': 1, 'with': 1, 'should': 1})
 
 
-def test_doc_join_small_sents_at_the_end(doc_factory):
-    doc = doc_factory.create('doc1', 'This is a longer sentence. Short sentence should be '
-                                     'joined with this one. Short sentence.')
-    assert len(doc.sents) == 2
-    assert [sent.bow for sent in doc.sents] == \
+def test_join_small_sents_at_the_end(preprocessor_eng):
+    doc1 = Document('doc1', 'This is a longer sentence. Short sentence should be '
+                            'joined with this one. Short sentence.')
+    doc2 = Document('doc2', 'Another document for good measure.')
+    preprocessor_eng.preprocess_new([doc1, doc2])
+    preprocessor_eng.preprocess_doc_pair(doc1, doc2)
+    assert len(doc1.sents) == 2
+    assert [sent.bow for sent in doc1.sents] == \
            [Counter({'this': 1, 'be': 1, 'a': 1, 'long': 1, 'sentence': 1}),
             Counter({'short': 2, 'sentence': 2, 'should': 1, 'be': 1, 'join': 1, 'with': 1, 'this': 1, 'one': 1})]
-    assert doc.vocab == Counter(
+    assert doc1.vocab == Counter(
         {'be': 2, 'sentence': 2, 'this': 2, 'a': 1, 'long': 1, 'short': 1, 'one': 1, 'join': 1, 'with': 1, 'should': 1})
 
 
-def test_doc_preprocess_tf_isf(real_docs, config):
-    doc1, doc2 = real_docs
-    Document.update_sent_bows_with_tf_isf(doc1, doc2)
+def test_tf_isf_sent_bows(preprocessed_docs):
+    doc1, doc2 = preprocessed_docs
     # Example for copyright in third sent:
     # tf-isf = tf x ln(N/sf)
     # tf('copyright') in sent3 = 3
     # N (num of all sents) = 6
     # sf (num of sents containing 'copyright') = 3
     # tf-isf = 3 x ln(6/3) = 2.0794...
-    assert [sent.bow for sent in doc1.sents] == \
+    assert [sent.bow_tf_isf for sent in doc1.sents] == \
            [Counter({'not': 1.0986122886681098, 'same': 1.0986122886681098, 'as': 1.0986122886681098,
                      'copyright': 0.6931471805599453, 'infringement': 0.6931471805599453,
                      'plagiarism': 0.4054651081081644, 'be': 0.1823215567939546, 'the': 0.1823215567939546}),

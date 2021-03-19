@@ -1,7 +1,4 @@
 from plagdef.model.reporting import generate_text_report, generate_xml_reports
-from plagdef.tests.fakes import DocumentPairReportFakeRepository
-# noinspection PyUnresolvedReferences
-from plagdef.tests.fixtures import config, doc_factory, matches
 
 
 def test_generate_text_report_with_no_matches_returns_msg():
@@ -26,24 +23,21 @@ def test_generate_text_report_contains_matches(matches):
 
 
 def test_generate_xml_reports_with_no_matches_produces_no_report():
-    repo = DocumentPairReportFakeRepository()
-    generate_xml_reports([], repo)
-    assert len(repo.list()) == 0
+    reports = generate_xml_reports([])
+    assert len(reports) == 0
 
 
 def test_generate_xml_reports(matches):
-    repo = DocumentPairReportFakeRepository()
-    generate_xml_reports(matches, repo)
-    r1, r2 = repo.list()
-    assert len(repo.list()) == 2
-    assert r1.format, r2.format == 'xml'
-    assert r1.content == \
+    reports = generate_xml_reports(matches)
+    assert len(reports) == 2
+    assert reports[0].format, reports[1].format == 'xml'
+    assert reports[0].content == \
            '<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n' \
            '<report doc1="doc1" doc2="doc2">\n' \
            '  <match doc1_offset="0" doc1_length="5" doc2_offset="0" doc2_length="5"/>\n' \
            '  <match doc1_offset="5" doc1_length="10" doc2_offset="5" doc2_length="10"/>\n' \
            '</report>\n'
-    assert r2.content == \
+    assert reports[1].content == \
            '<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n' \
            '<report doc1="doc3" doc2="doc4">\n' \
            '  <match doc1_offset="2" doc1_length="6" doc2_offset="2" doc2_length="8"/>\n' \
