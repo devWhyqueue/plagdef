@@ -1,10 +1,8 @@
 import sys
 
 import click
-from PySide6.QtWidgets import QApplication
 
 from plagdef import bootstrap
-from plagdef.gui.controllers import MainWindowController
 from plagdef.model.reporting import generate_text_report
 
 # Core functions of PlagDef
@@ -42,6 +40,8 @@ def gui():
     PlagDef supports plagiarism detection for student assignments.
     The GUI for this tool is based on the Qt 6 framework and works on all platforms.
     """
+    from PySide6.QtWidgets import QApplication
+    from plagdef.gui.controllers import MainWindowController
     # noinspection PyUnresolvedReferences
     import plagdef.gui.resources
     app = QApplication()
