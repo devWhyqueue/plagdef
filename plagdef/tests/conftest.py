@@ -29,7 +29,7 @@ def preprocessor_ger(config):
 
 @fixture(scope='session')
 def nlp_ger():
-    nlp_model = spacy.load('de_dep_news_trf')
+    nlp_model = spacy.load('de_core_news_sm')
     nlp_model.add_pipe("ger_sent_seg", before="parser")
     return nlp_model
 
