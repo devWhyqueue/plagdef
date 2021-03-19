@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import pkg_resources
 from PySide6.QtCore import QFile, QIODevice, Qt
 from PySide6.QtGui import QCursor, QMovie
 from PySide6.QtUiTools import QUiLoader
@@ -10,10 +11,19 @@ from PySide6.QtWidgets import QButtonGroup, QMainWindow, QFileDialog, QDialog
 
 from plagdef.gui.model import ResultsTableModel
 
+UI_FILES = {
+    'main_window': pkg_resources.resource_filename(__name__, 'ui/main_window.ui'),
+    'home_widget': pkg_resources.resource_filename(__name__, 'ui/home_widget.ui'),
+    'loading_widget': pkg_resources.resource_filename(__name__, 'ui/loading_widget.ui'),
+    'error_widget': pkg_resources.resource_filename(__name__, 'ui/error_widget.ui'),
+    'no_results_widget': pkg_resources.resource_filename(__name__, 'ui/no_results_widget.ui'),
+    'results_widget': pkg_resources.resource_filename(__name__, 'ui/results_widget.ui'),
+}
+
 
 class MainWindow:
     def __init__(self, views: list[View]):
-        self._window = _load_ui_file(Path('gui/ui/main_window.ui'))
+        self._window = _load_ui_file(Path(UI_FILES['main_window']))
         self._views = views
         self._configure()
 
@@ -44,7 +54,7 @@ class View:
 class HomeView(View):
     def __init__(self):
         self.lang = None
-        self.widget = _load_ui_file(Path('gui/ui/home_widget.ui'))
+        self.widget = _load_ui_file(Path(UI_FILES['home_widget']))
         self._configure()
 
     def _configure(self):
@@ -126,7 +136,7 @@ class FileDialog(QFileDialog):
 class LoadingView(View):
     def __init__(self):
         self._movie = QMovie(':/loading.gif')
-        self.widget = _load_ui_file(Path('gui/ui/loading_widget.ui'))
+        self.widget = _load_ui_file(Path(UI_FILES['loading_widget']))
         self._configure()
 
     def _configure(self):
@@ -141,7 +151,7 @@ class LoadingView(View):
 
 class NoResultsView(View):
     def __init__(self):
-        self.widget = _load_ui_file(Path('gui/ui/no_results_widget.ui'))
+        self.widget = _load_ui_file(Path(UI_FILES['no_results_widget']))
         self._configure()
 
     def _configure(self):
@@ -153,7 +163,7 @@ class NoResultsView(View):
 
 class ErrorView(View):
     def __init__(self):
-        self.widget = _load_ui_file(Path('gui/ui/error_widget.ui'))
+        self.widget = _load_ui_file(Path(UI_FILES['error_widget']))
         self._configure()
 
     def _configure(self):
@@ -163,6 +173,7 @@ class ErrorView(View):
         self.widget.error_msg_label.setText(
             f'<html><head/><body><p align="center"><span style=" font-size:12pt; color:#ffffff;"> '
             f'{data}</span></p></body></html>')
+        self.widget.error_msg_label.setWordWrap(True)
 
     def register_for_signals(self, again=None):
         self.widget.again_button_err.clicked.connect(lambda: again())
@@ -170,7 +181,7 @@ class ErrorView(View):
 
 class ResultView(View):
     def __init__(self):
-        self.widget = _load_ui_file(Path('gui/ui/results_widget.ui'))
+        self.widget = _load_ui_file(Path(UI_FILES['results_widget']))
         self._configure()
 
     def _configure(self):

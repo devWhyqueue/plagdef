@@ -29,20 +29,20 @@ class MainWindowController:
 
     @classmethod
     def _on_success(cls, matches: list[DocumentPairMatches]):
-        cls._pool.close()
         if matches:
             cls.switch_to(ResultView, matches)
         else:
             cls.switch_to(NoResultsView)
+        cls._pool.close()
 
     @classmethod
     def _on_error(cls, error: Exception):
-        cls._pool.close()
         if isinstance(error, UsageError):
             cls.switch_to(ErrorView, str(error))
         else:
             cls.switch_to(ErrorView, 'An error occurred. Please refer to the command line for more details.')
             raise error
+        cls._pool.close()
 
 
 class HomeController:
