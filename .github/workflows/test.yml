@@ -1,0 +1,26 @@
+name: Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [3.7, 3.8, 3.9]
+
+    steps:
+        -   uses: actions/checkout@v2
+        -   name: Setup Python
+            uses: actions/setup-python@v2
+            with:
+                python-version: ${{ matrix.python }}
+        -   name: Install dependencies
+            run: make
+        -   name: Run tests
+            run: make test-all
