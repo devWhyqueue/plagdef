@@ -40,13 +40,9 @@ def gui():
     PlagDef supports plagiarism detection for student assignments.
     The GUI for this tool is based on the Qt 6 framework and works on all platforms.
     """
-    from PySide6.QtWidgets import QApplication
-    from plagdef.gui.controllers import MainWindowController
-    # noinspection PyUnresolvedReferences
-    import plagdef.gui.resources
-    app = QApplication()
-    MainWindowController.init(find_matches)
-    MainWindowController.window.show()
+    from plagdef.gui.main import MyQtApp
+    app = MyQtApp(find_matches)
+    app.window.show()
     sys.exit(app.exec_())
 
 

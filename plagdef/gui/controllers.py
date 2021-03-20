@@ -1,48 +1,6 @@
-import multiprocessing
-import pathlib
-
-from click import UsageError
-
-from plagdef.gui.views import MainWindow, HomeView, LoadingView, NoResultsView, ErrorView, ResultView, \
+import plagdef.gui.main as main
+from plagdef.gui.views import HomeView, LoadingView, NoResultsView, ErrorView, ResultView, \
     FileDialog
-from plagdef.model.legacy.algorithm import DocumentPairMatches
-
-
-class MainWindowController:
-    @classmethod
-    def init(cls, find_matches):
-        views = [HomeController().view, LoadingController().view, ErrorController().view,
-                 NoResultsController().view, ResultController().view]
-        cls.window = MainWindow(views)
-        cls._find_matches = find_matches
-
-    @classmethod
-    def switch_to(cls, view_cls: type, data=None):
-        cls.window.switch_to(view_cls, data)
-
-    @classmethod
-    def find_matches(cls, doc_dir: str, lang: str):
-        cls.switch_to(LoadingView)
-        cls._pool = multiprocessing.Pool()
-        cls._pool.apply_async(cls._find_matches, (pathlib.Path(doc_dir), lang), callback=cls._on_success,
-                              error_callback=cls._on_error)
-
-    @classmethod
-    def _on_success(cls, matches: list[DocumentPairMatches]):
-        if matches:
-            cls.switch_to(ResultView, matches)
-        else:
-            cls.switch_to(NoResultsView)
-        cls._pool.close()
-
-    @classmethod
-    def _on_error(cls, error: Exception):
-        if isinstance(error, UsageError):
-            cls.switch_to(ErrorView, str(error))
-        else:
-            cls.switch_to(ErrorView, 'An error occurred. Please refer to the command line for more details.')
-            raise error
-        cls._pool.close()
 
 
 class HomeController:
@@ -74,7 +32,8 @@ class HomeController:
         self.view.language_selection_completed(False)
 
     def _on_detect(self):
-        MainWindowController.find_matches(self.file_dialog.selected_dir, self.view.lang)
+        main.app.find_matches(self.file_dialog.selected_dir, self.view.lang)
+        main.app.window.switch_to(LoadingView)
 
 
 class LoadingController:
@@ -91,7 +50,7 @@ class NoResultsController:
         self.view.register_for_signals(self._on_again)
 
     def _on_again(self):
-        MainWindowController.switch_to(HomeView)
+        main.app.window.switch_to(HomeView)
 
 
 class ErrorController:
@@ -103,7 +62,7 @@ class ErrorController:
         self.view.register_for_signals(self._on_again)
 
     def _on_again(self):
-        MainWindowController.switch_to(HomeView)
+        main.app.window.switch_to(HomeView)
 
 
 class ResultController:
@@ -115,4 +74,4 @@ class ResultController:
         self.view.register_for_signals(self._on_again)
 
     def _on_again(self):
-        MainWindowController.switch_to(HomeView)
+        main.app.window.switch_to(HomeView)
