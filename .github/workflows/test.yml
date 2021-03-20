@@ -42,7 +42,7 @@ jobs:
                 uses: actions/download-artifact@master
                 with:
                     name: coverage
-                    path: /home/runner/work/plagdef/plagdef/coverage.xml
+                    path: ~
             -   name: SonarCloud Scan
                 uses: sonarsource/sonarcloud-github-action@master
                 env:
