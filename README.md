@@ -3,7 +3,7 @@
 [![PyPI version](https://badge.fury.io/py/plagdef.svg)](https://badge.fury.io/py/plagdef)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/plagdef)
 ![GitHub](https://img.shields.io/github/license/devWhyqueue/plagdef)
-![Test](https://github.com/devWhyqueue/plagdef/actions/workflows/test.yml/badge.svg)
+[![Test](https://github.com/devWhyqueue/plagdef/actions/workflows/test.yml/badge.svg)](https://github.com/devWhyqueue/plagdef/actions/workflows/test.yml)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=devWhyqueue_plagdef&metric=coverage)](https://sonarcloud.io/dashboard?id=devWhyqueue_plagdef)
 
 PlagDef supports plagiarism detection for student assignments.
