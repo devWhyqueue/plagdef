@@ -42,7 +42,10 @@ jobs:
                 uses: actions/download-artifact@master
                 with:
                     name: coverage
-                    path: coverage.xml
+                    path: ~/coverage.xml
+            -   name: Display structure of downloaded files
+                run: ls -R
+                working-directory: ~
             -   name: SonarCloud Scan
                 uses: sonarsource/sonarcloud-github-action@master
                 env:
