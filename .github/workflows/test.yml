@@ -13,7 +13,8 @@ jobs:
             matrix:
                 python: [ 3.7, 3.8, 3.9 ]
         steps:
-            -   uses: actions/checkout@v2
+            -   name: Checkout repo
+                uses: actions/checkout@v2
             -   name: Setup Python
                 uses: actions/setup-python@v2
                 with:
@@ -22,7 +23,8 @@ jobs:
                 run: make
             -   name: Run tests
                 run: make test-all-ci
-            -   uses: actions/upload-artifact@master
+            -   name: Save coverage (only Python 3.9)
+                uses: actions/upload-artifact@master
                 if: ${{ matrix.python == 3.9 }}
                 with:
                     name: coverage
@@ -32,14 +34,17 @@ jobs:
         needs: build
         runs-on: ubuntu-latest
         steps:
-            -   uses: actions/download-artifact@master
+            -   name: Checkout repo
+                uses: actions/checkout@v2
+                with:
+                    fetch-depth: 0
+            -   name: Get coverage
+                uses: actions/download-artifact@master
                 with:
                     name: coverage
                     path: coverage.xml
-            -   uses: actions/checkout@v2
-                with:
-                    fetch-depth: 0
             -   name: SonarCloud Scan
                 uses: sonarsource/sonarcloud-github-action@master
                 env:
+                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
