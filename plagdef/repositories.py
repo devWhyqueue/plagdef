@@ -19,7 +19,7 @@ class DocumentFileRepository:
             raise NoDocumentFilePairFoundError(f'The directory {dir_path} must contain at least two documents.')
         doc_files = [Path(join(dir_path, f)) for f in listdir(dir_path) if isfile(join(dir_path, f))]
         try:
-            self._documents = [Document(f.stem, f.read_text(encoding='utf-8')) for f in doc_files]
+            self._documents = [Document(f.stem, f.read_text()) for f in doc_files]
         except UnicodeDecodeError as e:
             raise UnsupportedFileFormatError(f'The directory {dir_path} contains files in an unsupported format.') \
                 from e
