@@ -56,6 +56,7 @@ def test_init_creates_documents(tmp_path):
     assert Document('doc2', 'This also is a document.\n') in docs
 
 
+@pytest.mark.skipif('sys.platform != "win32"')
 def test_init_with_doc_dir_containing_ansi_file_creates_documents(tmp_path):
     with (tmp_path / 'doc1.txt').open('w', encoding='ANSI') as f:
         f.write('This is a document.\n')
