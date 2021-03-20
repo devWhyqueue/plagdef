@@ -12,21 +12,21 @@ jobs:
         strategy:
             matrix:
                 python: [ 3.7, 3.8, 3.9 ]
-                steps:
-                    -   uses: actions/checkout@v2
-                    -   name: Setup Python
-                        uses: actions/setup-python@v2
-                        with:
-                            python-version: ${{ matrix.python }}
-                    -   name: Install dependencies
-                        run: make
-                    -   name: Run tests
-                        run: make test-all-ci
-                    -   uses: actions/upload-artifact@master
-                        if: ${{ matrix.python == 3.9 }}
-                        with:
-                            name: coverage
-                            path: coverage.xml
+        steps:
+            -   uses: actions/checkout@v2
+            -   name: Setup Python
+                uses: actions/setup-python@v2
+                with:
+                    python-version: ${{ matrix.python }}
+            -   name: Install dependencies
+                run: make
+            -   name: Run tests
+                run: make test-all-ci
+            -   uses: actions/upload-artifact@master
+                if: ${{ matrix.python == 3.9 }}
+                with:
+                    name: coverage
+                    path: coverage.xml
 
     sonarcloud:
         runs-on: ubuntu-latest
