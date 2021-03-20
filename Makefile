@@ -14,17 +14,17 @@ clean-test: ## remove test and coverage artifacts
 lint: ## check style with flake8
 	pipenv run flake8 plagdef tests
 
-test: ## run tests quickly with the default Python
-	pipenv run pytest
+test-ci: ## run tests, GUI tests excluded
+	pipenv run pytest --ignore=plagdef/tests/gui/test_model.py
 
-test-all: ## run tests on every Python version with tox
+test-all-ci: ## run tests on every Python version with tox
 	pipenv run tox
 
-coverage: ## check code coverage quickly with the default Python
+coverage-ci: ## check code coverage quickly with the default Python
 	pipenv run coverage erase
-	pipenv run coverage run --source plagdef --omit="*/test*" -m pytest --ignore=plagdef/tests/gui/
+	pipenv run coverage run --source plagdef --omit="*/test*,*/gui/model.py" -m pytest --ignore=plagdef/tests/gui/test_model.py
 	pipenv run coverage report -m
 	pipenv run coverage xml
 
 run: ## starts the CLI
-	pipenv run cli.py
+	pipenv run app.py
