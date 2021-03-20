@@ -42,7 +42,6 @@ jobs:
                 uses: actions/download-artifact@master
                 with:
                     name: coverage
-                    path: ~
             -   name: SonarCloud Scan
                 uses: sonarsource/sonarcloud-github-action@master
                 env:
