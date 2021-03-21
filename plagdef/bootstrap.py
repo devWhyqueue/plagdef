@@ -24,9 +24,9 @@ def find_matches(doc_repo=None, config_repo=None):
         return partial(services.find_matches, (doc_repo, config_repo))
 
 
-def _needs_doc_dir_and_lang(doc_dir: str, lang: str, config_repo):
+def _needs_doc_dir_and_lang(doc_dir: str, lang: str, config_repo, recursive=False):
     try:
-        doc_repo = DocumentFileRepository(pathlib.Path(doc_dir), lang)
+        doc_repo = DocumentFileRepository(pathlib.Path(doc_dir), lang, recursive)
         return services.find_matches(doc_repo, config_repo)
     except (NotADirectoryError, UnsupportedFileFormatError, NoDocumentFilePairFoundError) as e:
         raise UsageError(str(e)) from e

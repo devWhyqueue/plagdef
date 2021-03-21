@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, ANY
 
 from click import UsageError
 from click.testing import CliRunner
@@ -13,6 +13,7 @@ def test_cli_if_no_matches_found(tmp_path):
     app.find_matches = MagicMock(return_value=[])
     runner = CliRunner()
     result = runner.invoke(cli, ['-l', 'eng', str(tmp_path)])
+    app.find_matches.assert_called_with(ANY, ANY, recursive=False)
     assert result.exit_code == 0
     assert result.output == 'Found no suspicious document pair.\n\n'
 
@@ -31,6 +32,14 @@ def test_cli_if_multiple_matches_found(matches, tmp_path):
     result = runner.invoke(cli, ['-l', 'eng', str(tmp_path)])
     assert result.exit_code == 0
     assert result.output.startswith('Found 2 suspicious document pairs.\n')
+
+
+def test_cli_with_recursive_option(tmp_path):
+    app.find_matches = MagicMock()
+    runner = CliRunner()
+    result = runner.invoke(cli, ['-l', 'eng', '-R', str(tmp_path)])
+    app.find_matches.assert_called_with(ANY, ANY, recursive=True)
+    assert result.exit_code == 0
 
 
 def test_text_report_with_matches_is_printed(matches, tmp_path):

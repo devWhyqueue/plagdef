@@ -35,7 +35,6 @@ def test_ger_sent_seg(nlp_ger):
 def test_ger_sent_seg_with_same_sent_starts(nlp_ger):
     doc = nlp_ger('Das ist ein schöner deutscher Text. Das ist auch einer.')
     sents = list(doc.sents)
-    print(sents)
     sent1, sent2 = list(sents[0]), list(sents[1])
     assert len(sents) == 2
     assert sent1[0].text == 'Das' and sent2[0].text == 'Das'
@@ -45,7 +44,6 @@ def test_ger_sent_seg_with_same_sent_starts(nlp_ger):
 def test_ger_sent_seg_with_next_sent_start_in_previous_sent(nlp_ger):
     doc = nlp_ger('Eine Klasse besteht aus Methoden und Attributen. Methoden realisieren Verhalten.')
     sents = list(doc.sents)
-    print(sents)
     sent1, sent2 = list(sents[0]), list(sents[1])
     assert len(sents) == 2
     assert sent1[0].text == 'Eine' and sent2[0].text == 'Methoden'

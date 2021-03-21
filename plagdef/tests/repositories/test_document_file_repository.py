@@ -49,6 +49,9 @@ def test_init_creates_documents(tmp_path):
         f.write('This is a document.\n')
     with (tmp_path / 'doc2.txt').open('w', encoding='utf-8') as f:
         f.write('This also is a document.\n')
+    Path(f'{tmp_path}/a/dir/that/should/not/be/included').mkdir(parents=True)
+    with Path((f'{tmp_path}/a/dir/that/should/not/be/included/doc3.txt')).open('w', encoding='utf-8') as f:
+        f.write('The third document.\n')
     repo = DocumentFileRepository(tmp_path, 'eng')
     docs = repo.list()
     assert len(docs) == 2
@@ -79,3 +82,20 @@ def test_init_with_doc_dir_containing_iso_8559_1_file_creates_documents(tmp_path
     assert len(docs) == 2
     assert Document('doc1', 'This is a document.\n') in docs
     assert Document('doc2', 'This also is a document.\n') in docs
+
+
+def test_init_recursive_creates_documents(tmp_path):
+    with (tmp_path / 'doc1.txt').open('w', encoding='utf-8') as f:
+        f.write('This is a document.\n')
+    Path(f'{tmp_path}/a/subdir').mkdir(parents=True)
+    with Path((f'{tmp_path}/a/subdir/doc2.txt')).open('w', encoding='utf-8') as f:
+        f.write('This also is a document.\n')
+    Path(f'{tmp_path}/another/sub/even/deeper').mkdir(parents=True)
+    with Path((f'{tmp_path}/another/sub/even/deeper/doc3.txt')).open('w', encoding='utf-8') as f:
+        f.write('The third document.\n')
+    repo = DocumentFileRepository(tmp_path, 'eng', recursive=True)
+    docs = repo.list()
+    assert len(docs) == 3
+    assert Document('doc1', 'This is a document.\n') in docs
+    assert Document('doc2', 'This also is a document.\n') in docs
+    assert Document('doc3', 'The third document.\n') in docs

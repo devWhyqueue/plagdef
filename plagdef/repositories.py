@@ -3,21 +3,22 @@ from __future__ import annotations
 from ast import literal_eval
 from configparser import ConfigParser
 from itertools import islice
-from os import listdir
-from os.path import join, isfile
 from pathlib import Path
 
 from plagdef.model.legacy.algorithm import Document
 
 
 class DocumentFileRepository:
-    def __init__(self, dir_path: Path, lang: str):
+    def __init__(self, dir_path: Path, lang: str, recursive=False):
         self.lang = lang
         if not dir_path.is_dir():
             raise NotADirectoryError(f'The given path {dir_path} does not point to an existing directory!')
         if not any(dir_path.iterdir()) or not next(islice(dir_path.iterdir(), 1, None), None):
             raise NoDocumentFilePairFoundError(f'The directory {dir_path} must contain at least two documents.')
-        doc_files = [Path(join(dir_path, f)) for f in listdir(dir_path) if isfile(join(dir_path, f))]
+        if recursive:
+            doc_files = [file_path for file_path in dir_path.rglob('*') if file_path.is_file()]
+        else:
+            doc_files = [file_path for file_path in dir_path.iterdir() if file_path.is_file()]
         try:
             self._documents = [Document(f.stem, f.read_text()) for f in doc_files]
         except UnicodeDecodeError as e:

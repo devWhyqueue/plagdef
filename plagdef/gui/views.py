@@ -54,6 +54,7 @@ class View:
 class HomeView(View):
     def __init__(self):
         self.lang = None
+        self.recursive = False
         self.widget = _load_ui_file(Path(UI_FILES['home_widget']))
         self._configure()
 
@@ -64,6 +65,7 @@ class HomeView(View):
         self.widget.open_folder_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.widget.detect_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.widget.folder_name_label.setVisible(False)
+        self.widget.recursive_check_box.setVisible(False)
         self.widget.remove_folder_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.widget.remove_folder_button.setVisible(False)
         self.widget.sel_lang_label.setVisible(False)
@@ -78,47 +80,54 @@ class HomeView(View):
         self.widget.change_lang_button.clicked.connect(lambda: reset_lang_sel())
         self.widget.detect_button.clicked.connect(lambda: detect())
 
-    def show_folder_name(self, folder_name: str):
+    def folder_selected(self, folder_name: str):
         self.widget.folder_name_label.setText(
             f'<html><head/><body><p align="center"><span style="font-size:12pt; color:#ffffff;"> '
             f'{folder_name}</span></p></body></html>')
         self.widget.open_folder_button.setVisible(False)
         self.widget.folder_name_label.setVisible(True)
-        self.show_open_folder_button(False)
+        self.widget.recursive_check_box.setVisible(True)
+        self.widget.remove_folder_button.setVisible(True)
+        [radio.setEnabled(True) for radio in self.widget.lang_button_group.buttons()]
 
-    def enable_language_selection(self, enabled: bool):
-        [radio.setEnabled(enabled) for radio in self.widget.lang_button_group.buttons()]
+    def reset_folder_selection(self):
+        self.recursive = False
+        self.widget.recursive_check_box.setChecked(False)
+        self.widget.open_folder_button.setVisible(True)
+        self.widget.folder_name_label.setVisible(False)
+        self.widget.recursive_check_box.setVisible(False)
+        self.widget.remove_folder_button.setVisible(False)
 
-    def show_open_folder_button(self, visible: bool):
-        self.widget.folder_name_label.setVisible(not visible)
-        self.widget.remove_folder_button.setVisible(not visible)
-        self.widget.open_folder_button.setVisible(visible)
-
-    def language_selection_completed(self, completed: bool):
-        self.widget.remove_folder_button.setVisible(not completed)
-        [radio.setVisible(not completed) for radio in self.widget.lang_button_group.buttons()]
-        self.widget.sel_lang_label.setVisible(completed)
-        self.widget.change_lang_button.setVisible(completed)
-        self.widget.detect_button.setEnabled(completed)
-        if completed:
-            lang_long = self.widget.lang_button_group.checkedButton().text()
-            self.lang = lang_long[:3].lower()
-            self.widget.sel_lang_label.setText(
-                f'<html><head/><body><p align="center"><span style="font-size:12pt; color:#ffffff;"> '
-                f'{lang_long}</span></p></body></html>')
+    def language_selected(self):
+        self.recursive = self.widget.recursive_check_box.isChecked()
+        lang_long = self.widget.lang_button_group.checkedButton().text()
+        self.lang = lang_long[:3].lower()
+        self.widget.sel_lang_label.setText(
+            f'<html><head/><body><p align="center"><span style="font-size:12pt; color:#ffffff;"> '
+            f'{lang_long}</span></p></body></html>')
+        self.widget.recursive_check_box.setEnabled(False)
+        self.widget.remove_folder_button.setVisible(False)
+        [radio.setVisible(False) for radio in self.widget.lang_button_group.buttons()]
+        self.widget.sel_lang_label.setVisible(True)
+        self.widget.change_lang_button.setVisible(True)
+        self.widget.detect_button.setEnabled(True)
 
     def reset_language_selection(self):
         self.lang = None
         self.widget.lang_button_group.setExclusive(False)
         self.widget.lang_button_group.checkedButton().setChecked(False)
         self.widget.lang_button_group.setExclusive(True)
+        self.widget.detect_button.setEnabled(False)
+        self.widget.sel_lang_label.setVisible(False)
+        self.widget.change_lang_button.setVisible(False)
+        [radio.setVisible(True) for radio in self.widget.lang_button_group.buttons()]
+        self.widget.remove_folder_button.setVisible(True)
+        self.widget.recursive_check_box.setEnabled(True)
 
     def on_destroy(self):
         self.reset_language_selection()
-        self.language_selection_completed(False)
-        self.enable_language_selection(False)
-        self.show_open_folder_button(True)
-        self.widget.detect_button.setEnabled(False)
+        [radio.setEnabled(False) for radio in self.widget.lang_button_group.buttons()]
+        self.reset_folder_selection()
 
 
 class FileDialog(QFileDialog):

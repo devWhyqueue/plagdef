@@ -29,8 +29,8 @@ class MyQtApp(QApplication):
         global app
         app = self
 
-    def find_matches(self, doc_dir: str, lang: str):
-        worker = Worker(self._find_matches, doc_dir, lang)
+    def find_matches(self, doc_dir: str, lang: str, recursive=False):
+        worker = Worker(self._find_matches, doc_dir, lang, recursive=recursive)
         worker.signals.result.connect(self._on_success)
         worker.signals.error.connect(self._on_error)
         pool = QThreadPool.globalInstance()

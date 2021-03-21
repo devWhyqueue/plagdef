@@ -17,22 +17,19 @@ class HomeController:
     def _on_open_folder(self):
         if self.file_dialog.open():
             folder_name = self.file_dialog.selected_dir[self.file_dialog.selected_dir.rfind("/"):]
-            self.view.show_folder_name(folder_name)
-            self.view.enable_language_selection(True)
+            self.view.folder_selected(folder_name)
 
     def _on_remove_folder(self):
-        self.view.show_open_folder_button(True)
-        self.view.enable_language_selection(False)
+        self.view.reset_folder_selection()
 
     def _on_select_lang(self):
-        self.view.language_selection_completed(True)
+        self.view.language_selected()
 
     def _on_reset_lang(self):
         self.view.reset_language_selection()
-        self.view.language_selection_completed(False)
 
     def _on_detect(self):
-        main.app.find_matches(self.file_dialog.selected_dir, self.view.lang)
+        main.app.find_matches(self.file_dialog.selected_dir, self.view.lang, recursive=self.view.recursive)
         main.app.window.switch_to(LoadingView)
 
 
