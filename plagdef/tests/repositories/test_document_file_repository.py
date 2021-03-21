@@ -59,29 +59,42 @@ def test_init_creates_documents(tmp_path):
     assert Document('doc2', 'This also is a document.\n') in docs
 
 
-@pytest.mark.skipif('sys.platform != "win32"')
-def test_init_with_doc_dir_containing_ansi_file_creates_documents(tmp_path):
-    with (tmp_path / 'doc1.txt').open('w', encoding='ANSI') as f:
-        f.write('This is a document.\n')
+def test_init_with_file_containing_special_characters(tmp_path):
+    with (tmp_path / 'doc1.txt').open('w', encoding='utf-8') as f:
+        f.write('These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n')
     with (tmp_path / 'doc2.txt').open('w', encoding='utf-8') as f:
         f.write('This also is a document.\n')
     repo = DocumentFileRepository(tmp_path, 'eng')
     docs = repo.list()
     assert len(docs) == 2
-    assert Document('doc1', 'This is a document.\n') in docs
-    assert Document('doc2', 'This also is a document.\n') in docs
+    assert docs[0].text == 'These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n'
+
+
+@pytest.mark.skipif('sys.platform != "win32"')
+def test_init_with_doc_dir_containing_ansi_file_creates_document(tmp_path):
+    with (tmp_path / 'doc1.txt').open('w', encoding='ANSI') as f:
+        f.write('These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n')
+    with (tmp_path / 'doc2.txt').open('w', encoding='utf-8') as f:
+        f.write('This also is a document.\n')
+    repo = DocumentFileRepository(tmp_path, 'eng')
+    docs = repo.list()
+    assert len(docs) == 2
+    assert docs[0].text == 'These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n'
 
 
 def test_init_with_doc_dir_containing_iso_8559_1_file_creates_documents(tmp_path):
     with (tmp_path / 'doc1.txt').open('w', encoding='ISO-8859-1') as f:
-        f.write('This is a document.\n')
+        f.write('These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n')
     with (tmp_path / 'doc2.txt').open('w', encoding='utf-8') as f:
-        f.write('This also is a document.\n')
+        f.write(
+            'These symbols are hard: ػ Ҙ ؋ ֛ Ր ـ ϳ ћ Я ڀ ѹ Ҟ ҡ ӊ ֥ ׆ ц ٚ ՞ ך Ѓ ս ؆ ن н б й ս ҆ җ ٯ ϳ أ Ғ ғ Ӓ Ը א ӄ ؃')
     repo = DocumentFileRepository(tmp_path, 'eng')
     docs = repo.list()
     assert len(docs) == 2
-    assert Document('doc1', 'This is a document.\n') in docs
-    assert Document('doc2', 'This also is a document.\n') in docs
+    assert docs[0].text == 'These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n'
+    assert docs[1].text \
+           == 'These symbols are hard: ػ Ҙ ؋ ֛ Ր ـ ϳ ћ Я ڀ ѹ Ҟ ҡ ӊ ֥ ׆ ц ٚ ՞ ך Ѓ ս ؆ ن н б й ս ҆ җ ٯ ϳ أ ' \
+              'Ғ ғ Ӓ Ը א ӄ ؃'
 
 
 def test_init_recursive_creates_documents(tmp_path):

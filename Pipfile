@@ -4,6 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+chardet = '~=4.0'
 click = "~=7.0"
 lxml = "~=4.6"
 more-itertools = "~=8.7"

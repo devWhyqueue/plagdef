@@ -5,12 +5,15 @@ from configparser import ConfigParser
 from itertools import islice
 from pathlib import Path
 
+import chardet
+
 from plagdef.model.legacy.algorithm import Document
 
 
 class DocumentFileRepository:
     def __init__(self, dir_path: Path, lang: str, recursive=False):
         self.lang = lang
+        self._documents = []
         if not dir_path.is_dir():
             raise NotADirectoryError(f'The given path {dir_path} does not point to an existing directory!')
         if not any(dir_path.iterdir()) or not next(islice(dir_path.iterdir(), 1, None), None):
@@ -20,7 +23,10 @@ class DocumentFileRepository:
         else:
             doc_files = [file_path for file_path in dir_path.iterdir() if file_path.is_file()]
         try:
-            self._documents = [Document(f.stem, f.read_text()) for f in doc_files]
+            for file in doc_files:
+                raw_data = file.read_bytes()
+                enc = chardet.detect(raw_data)['encoding']
+                self._documents.append(Document(file.stem, file.read_text(encoding=enc)))
         except UnicodeDecodeError as e:
             raise UnsupportedFileFormatError(f'The directory {dir_path} contains files in an unsupported format.') \
                 from e
