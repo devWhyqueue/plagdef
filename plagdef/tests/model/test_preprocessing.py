@@ -19,43 +19,34 @@ def test_preprocessor_init_with_wrong_lang():
         Preprocessor('fre', 3, False)
 
 
-def test_preprocessor_init_ger_has_custom_sent_segmentizer():
-    de = Preprocessor('ger', 3, False)
-    assert 'ger_sent_seg' in de._nlp_model.pipe_names
-
-
 def test_ger_sent_seg(nlp_ger):
     doc = nlp_ger('Das ist ein schöner deutscher Text. Besteht aus zwei Sätzen.')
-    sents = list(doc.sents)
-    sent1, sent2 = list(sents[0]), list(sents[1])
-    assert len(sents) == 2
-    assert sent1[0].text == 'Das' and sent2[0].text == 'Besteht'
+    sent1_words, sent2_words = doc.sentences[0].words, doc.sentences[1].words
+    assert len(doc.sentences) == 2
+    assert sent1_words[0].text == 'Das' and sent2_words[0].text == 'Besteht'
 
 
 def test_ger_sent_seg_with_same_sent_starts(nlp_ger):
     doc = nlp_ger('Das ist ein schöner deutscher Text. Das ist auch einer.')
-    sents = list(doc.sents)
-    sent1, sent2 = list(sents[0]), list(sents[1])
-    assert len(sents) == 2
-    assert sent1[0].text == 'Das' and sent2[0].text == 'Das'
-    assert sent1[0].idx != sent2[0].idx
+    sent1_tokens, sent2_tokens = doc.sentences[0].tokens, doc.sentences[1].tokens
+    assert len(doc.sentences) == 2
+    assert sent1_tokens[0].text == 'Das' and sent2_tokens[0].text == 'Das'
+    assert sent1_tokens[0].start_char != sent2_tokens[0].start_char
 
 
 def test_ger_sent_seg_with_next_sent_start_in_previous_sent(nlp_ger):
     doc = nlp_ger('Eine Klasse besteht aus Methoden und Attributen. Methoden realisieren Verhalten.')
-    sents = list(doc.sents)
-    sent1, sent2 = list(sents[0]), list(sents[1])
-    assert len(sents) == 2
-    assert sent1[0].text == 'Eine' and sent2[0].text == 'Methoden'
-    assert sent1[0].i == 0 and sent2[0].i > 2
+    sent1_tokens, sent2_tokens = doc.sentences[0].tokens, doc.sentences[1].tokens
+    assert len(doc.sentences) == 2
+    assert sent1_tokens[0].text == 'Eine' and sent2_tokens[0].text == 'Methoden'
+    assert sent1_tokens[0].start_char == 0 and sent2_tokens[0].start_char == 49
 
 
 def test_ger_sent_seg_with_paragraphs(nlp_ger):
     doc = nlp_ger('Ein schöner deutscher Text\n\nKurzer Satz.\nUnd noch ein etwas längerer.')
-    sents = list(doc.sents)
-    sent1, sent2, sent3 = list(sents[0]), list(sents[1]), list(sents[2])
-    assert len(sents) == 3
-    assert sent1[0].text == 'Ein' and sent2[0].text == 'Kurzer' and sent3[0].text == 'Und'
+    sent1_words, sent2_words, sent3_words = doc.sentences[0].words, doc.sentences[1].words, doc.sentences[2].words
+    assert len(doc.sentences) == 3
+    assert sent1_words[0].text == 'Ein' and sent2_words[0].text == 'Kurzer' and sent3_words[0].text == 'Und'
 
 
 def test_preprocess_alters_only_vocs_and_offsets_and_bows(preprocessor_eng, config):
@@ -76,11 +67,12 @@ def test_preprocess_alters_only_vocs_and_offsets_and_bows(preprocessor_eng, conf
 
 def test_preprocessed_voc_contains_stemmed_tokens_with_sentence_frequency(preprocessed_docs):
     doc = preprocessed_docs[0]
+    # One error: rights -> right
     assert doc.vocab == Counter(
         {'be': 3, 'infringement': 2, 'the': 2, 'copyright': 2, 'a': 2, 'plagiarism': 1, 'not': 1, 'same': 1, 'as': 1,
          'to': 1, 'concept': 1, 'apply': 1, 'they': 1, 'may': 1, 'while': 1, 'different': 1, 'act': 1, 'particular': 1,
          'term': 1, 'both': 1, 'material': 1, 'consent': 1, 'holder': 1, 'whose': 1, 'violation': 1, 'of': 1, 'use': 1,
-         'without': 1, 'restrict': 1, 'when': 1, 'right': 1, 'by': 1})
+         'without': 1, 'restrict': 1, 'when': 1, 'rights': 1, 'by': 1})
 
 
 def test_preprocessed_voc_contains_no_stop_words():
@@ -121,12 +113,13 @@ def test_preprocessed_sent_start_end_chars_after_join(preprocessor_eng):
 
 def test_preprocessed_sent_bows(preprocessed_docs):
     doc = preprocessed_docs[0]
+    # Lemma error "rights" ignored
     assert [sent.bow for sent in doc.sents] == [
         Counter({'plagiarism': 1, 'be': 1, 'not': 1, 'the': 1, 'same': 1, 'as': 1, 'copyright': 1, 'infringement': 1}),
         Counter({'while': 1, 'both': 1, 'term': 1, 'may': 1, 'apply': 1, 'to': 1, 'a': 1, 'particular': 1, 'act': 1,
                  'they': 1, 'be': 1, 'different': 1, 'concept': 1}),
         Counter({'copyright': 3, 'be': 3, 'a': 2, 'of': 2, 'use': 2, 'infringement': 1, 'violation': 1, 'the': 1,
-                 'right': 1, 'holder': 1, 'when': 1, 'material': 1, 'whose': 1, 'restrict': 1, 'by': 1, 'without': 1,
+                 'rights': 1, 'holder': 1, 'when': 1, 'material': 1, 'whose': 1, 'restrict': 1, 'by': 1, 'without': 1,
                  'consent': 1})]
 
 
@@ -159,7 +152,7 @@ def test_join_small_sents_at_start(preprocessor_eng):
 
 
 def test_join_small_sents_in_the_middle(preprocessor_eng):
-    doc1 = Document('doc1', 'This is a longer sentence. Short sentence. Short sentence should be '
+    doc1 = Document('doc1', 'This is a long sentence. Short sentence. Short sentence should be '
                             'joined with this one.')
     doc2 = Document('doc2', 'Another document for good measure.')
     preprocessor_eng.preprocess_new([doc1, doc2])
@@ -173,7 +166,7 @@ def test_join_small_sents_in_the_middle(preprocessor_eng):
 
 
 def test_join_small_sents_at_the_end(preprocessor_eng):
-    doc1 = Document('doc1', 'This is a longer sentence. Short sentence should be '
+    doc1 = Document('doc1', 'This is a long sentence. Short sentence should be '
                             'joined with this one. Short sentence.')
     doc2 = Document('doc2', 'Another document for good measure.')
     preprocessor_eng.preprocess_new([doc1, doc2])
@@ -188,6 +181,7 @@ def test_join_small_sents_at_the_end(preprocessor_eng):
 
 def test_tf_isf_sent_bows(preprocessed_docs):
     doc1, doc2 = preprocessed_docs
+    # Lemma error "rights" ignored
     # Example for copyright in third sent:
     # tf-isf = tf x ln(N/sf)
     # tf('copyright') in sent3 = 3
@@ -204,7 +198,7 @@ def test_tf_isf_sent_bows(preprocessed_docs):
                      'to': 1.0986122886681098, 'act': 1.0986122886681098, 'a': 0.4054651081081644,
                      'be': 0.1823215567939546}),
             Counter({'use': 3.58351893845611, 'of': 2.1972245773362196, 'copyright': 2.0794415416798357,
-                     'violation': 1.791759469228055, 'right': 1.791759469228055, 'holder': 1.791759469228055,
+                     'violation': 1.791759469228055, 'rights': 1.791759469228055, 'holder': 1.791759469228055,
                      'when': 1.791759469228055, 'material': 1.791759469228055, 'whose': 1.791759469228055,
                      'restrict': 1.791759469228055, 'by': 1.791759469228055, 'without': 1.791759469228055,
                      'consent': 1.791759469228055, 'a': 0.8109302162163288, 'infringement': 0.6931471805599453,

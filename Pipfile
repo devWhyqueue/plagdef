@@ -11,8 +11,7 @@ more-itertools = "~=8.7"
 nltk = "~=3.5"
 numpy = "~=1.20"
 pyside6 = "~=6.0"
-somajo = "~=2.1"
-spacy = "~=3.0"
+stanza = "~=1.2"
 
 [dev-packages]
 build = "~=0.3"

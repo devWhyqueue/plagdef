@@ -1,25 +1,32 @@
 from __future__ import annotations
 
-import io
 import math
 from collections import Counter
 from dataclasses import dataclass
 
-import spacy
+import stanza
 from more_itertools import pairwise
-from somajo import SoMaJo
-from spacy import Language
+
+from plagdef.model import stopwords
 
 
 class Preprocessor:
     def __init__(self, lang: str, min_sent_len: int, rem_stop_words: bool):
+        self._lang = lang
         self._min_sent_len = min_sent_len
         self._rem_stop_words = rem_stop_words
         if lang == 'eng':
-            self._nlp_model = spacy.load('en_core_web_trf')
+            try:
+                self._nlp_model = stanza.Pipeline('en', processors='tokenize,mwt,pos,lemma', logging_level='WARN')
+            except:  # Unpickling error raises Exception, cannot narrow
+                stanza.download('en', processors='tokenize,mwt,pos,lemma', logging_level='INFO')
+                self._nlp_model = stanza.Pipeline('en', processors='tokenize,mwt,pos,lemma', logging_level='WARN')
         elif lang == 'ger':
-            self._nlp_model = spacy.load('de_core_news_sm')
-            self._nlp_model.add_pipe("ger_sent_seg", before="parser")
+            try:
+                self._nlp_model = stanza.Pipeline('de', processors='tokenize,mwt,pos,lemma', logging_level='WARN')
+            except:  # Unpickling error raises Exception, cannot narrow
+                stanza.download('de', processors='tokenize,mwt,pos,lemma', logging_level='INFO')
+                self._nlp_model = stanza.Pipeline('de', processors='tokenize,mwt,pos,lemma', logging_level='WARN')
         else:
             raise UnsupportedLanguageError(f'The language "{lang}" is currently not supported.')
 
@@ -40,20 +47,23 @@ class Preprocessor:
 
     # TODO: New single preprocess
     def preprocess_new(self, docs: list[Document]):
-        parsed_docs = self._nlp_model.pipe([doc.text for doc in docs])
-        for idx, parsed_doc in enumerate(parsed_docs):
-            for sent in parsed_doc.sents:
+        parsed_docs = self._nlp_model([stanza.Document([], text=doc.text) for doc in docs]) if docs else []
+        stop_words = stopwords.ENGLISH if self._lang == 'eng' else stopwords.GERMAN
+        for doc_idx, parsed_doc in enumerate(parsed_docs):
+            for sent in parsed_doc.sentences:
                 if self._rem_stop_words:
-                    sent_lemmas = [token.lemma_.lower() for token in sent if token.text.isalnum() and not token.is_stop]
+                    sent_lemmas = [word.lemma for word in sent.words
+                                   if not word.upos == 'PUNCT' and word.text.lower() not in stop_words]
                 else:
-                    sent_lemmas = [token.lemma_.lower() for token in sent if token.text.isalnum()]
+                    sent_lemmas = [word.lemma for word in sent.words if not word.upos == 'PUNCT']
                 if len(sent_lemmas):
                     lemma_count = Counter(sent_lemmas)
-                    docs[idx].sents.append(Sentence(docs[idx], sent.start_char, sent.end_char, lemma_count, {}))
+                    docs[doc_idx].sents.append(
+                        Sentence(docs[doc_idx], sent.tokens[0].start_char, sent.tokens[-1].end_char, lemma_count, {}))
                     for lemma in lemma_count.keys():
-                        docs[idx].vocab[lemma] += 1
+                        docs[doc_idx].vocab[lemma] += 1
 
-            self._join_small_sentences(docs[idx])
+            self._join_small_sentences(docs[doc_idx])
 
     # TODO: New pair preprocess function
     def preprocess_doc_pair(self, doc1: Document, doc2: Document):
@@ -107,49 +117,3 @@ class Sentence:
 
 class UnsupportedLanguageError(Exception):
     pass
-
-
-@Language.component("ger_sent_seg")
-def ger_sent_seg(spacy_doc):
-    _unmark_all_spacy_tokens(spacy_doc)
-    somajo_sent_starts = _find_somajo_sent_starts(spacy_doc.text)
-    _find_and_mark_spacy_tokens(spacy_doc, somajo_sent_starts)
-    return spacy_doc
-
-
-def _unmark_all_spacy_tokens(spacy_doc):
-    for token in spacy_doc[:-1]:
-        spacy_doc[token.i].is_sent_start = False
-
-
-def _find_somajo_sent_starts(doc_text: str) -> list[int]:
-    tokenizer = SoMaJo("de_CMC")
-    somajo_sents = tokenizer.tokenize_text_file(io.StringIO(doc_text), paragraph_separator="empty_lines")
-    somajo_start_idx = 0
-    somajo_sent_starts = []
-    for sent in somajo_sents:
-        for token in sent:
-            token_text = token.original_spelling if token.original_spelling else token.text
-            token_text_idx = doc_text[somajo_start_idx:].find(token_text) + somajo_start_idx
-            if token.first_in_sentence:
-                somajo_sent_starts.append(token_text_idx)
-            somajo_start_idx = token_text_idx + len(token_text)
-    return somajo_sent_starts
-
-
-def _find_and_mark_spacy_tokens(spacy_doc, somajo_sent_starts):
-    spacy_last_token_i = 0
-    for somajo_start_idx in somajo_sent_starts:
-        spacy_last_token_i = _mark_spacy_token_by_char(spacy_doc, spacy_last_token_i, somajo_start_idx) + 1
-
-
-def _mark_spacy_token_by_char(spacy_doc, spacy_start_token_i, char_idx) -> int:
-    for spacy_token in spacy_doc[spacy_start_token_i:]:
-        if char_idx > spacy_token.idx:
-            continue
-        if char_idx == spacy_token.idx:
-            spacy_doc[spacy_token.i].is_sent_start = True
-            return spacy_token.i
-        if char_idx < spacy_token.idx:
-            spacy_doc[spacy_token.i - 1].is_sent_start = True
-            return spacy_token.i - 1

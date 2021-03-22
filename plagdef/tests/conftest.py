@@ -1,9 +1,15 @@
-import spacy
+import stanza
 from pytest import fixture
 
 from plagdef.model.legacy.algorithm import DocumentPairMatches, Match, Section
 from plagdef.model.preprocessing import Preprocessor, Document
 from plagdef.model.seeding import SentenceMatcher
+
+
+@fixture(scope="session", autouse=True)
+def download_nlp_models():
+    stanza.download('en', processors='tokenize,mwt,pos,lemma')
+    stanza.download('de', processors='tokenize,mwt,pos,lemma')
 
 
 @fixture(scope='session')
@@ -29,9 +35,7 @@ def preprocessor_ger(config):
 
 @fixture(scope='session')
 def nlp_ger():
-    nlp_model = spacy.load('de_core_news_sm')
-    nlp_model.add_pipe("ger_sent_seg", before="parser")
-    return nlp_model
+    return stanza.Pipeline('de', processors='tokenize,mwt,pos,lemma')
 
 
 @fixture(scope='session')
