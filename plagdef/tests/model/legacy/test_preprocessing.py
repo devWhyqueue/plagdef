@@ -42,8 +42,9 @@ def test_tokenize_voc_contains_stemmed_tokens_with_sentence_frequency(preprocess
     doc1, doc2 = preprocessed_docs
     obj = SGSPLAG(doc1.text, doc2.text, config)
     preprocessor = LegacyPreprocessor()
-    preprocessor._tokenize(obj.src_text, obj.src_voc, obj.src_offsets)
-    assert obj.src_voc == Counter(
+    preprocessor._tokenize(obj.susp_text, obj.susp_voc, obj.susp_offsets)
+    # Errors: plagiar, infring, appli, differ, violat, materi
+    assert obj.susp_voc == Counter(
         {'be': 3, 'infringement': 2, 'the': 2, 'copyright': 2, 'a': 2, 'plagiarism': 1, 'not': 1, 'same': 1, 'as': 1,
          'to': 1, 'concept': 1, 'apply': 1, 'they': 1, 'may': 1, 'while': 1, 'different': 1, 'act': 1, 'particular': 1,
          'term': 1, 'both': 1, 'material': 1, 'consent': 1, 'holder': 1, 'whose': 1, 'violation': 1, 'of': 1, 'use': 1,
