@@ -97,6 +97,7 @@ class HomeView(View):
         self.widget.folder_name_label.setVisible(False)
         self.widget.recursive_check_box.setVisible(False)
         self.widget.remove_folder_button.setVisible(False)
+        [radio.setEnabled(False) for radio in self.widget.lang_button_group.buttons()]
 
     def language_selected(self):
         self.recursive = self.widget.recursive_check_box.isChecked()
