@@ -8,8 +8,8 @@ from plagdef.model.seeding import SentenceMatcher
 
 @fixture(scope="session", autouse=True)
 def download_nlp_models():
-    stanza.download('en', processors='tokenize,mwt,pos,lemma')
-    stanza.download('de', processors='tokenize,mwt,pos,lemma')
+    stanza.download('en', processors='tokenize,mwt,pos,lemma', logging_level='WARN')
+    stanza.download('de', processors='tokenize,mwt,pos,lemma', logging_level='WARN')
 
 
 @fixture(scope='session')

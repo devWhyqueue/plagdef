@@ -65,14 +65,34 @@ def test_preprocess_alters_only_vocs_and_offsets_and_bows(preprocessor_eng, conf
     assert obj_before.detections == preprocessed_obj.detections
 
 
-def test_preprocessed_voc_contains_stemmed_tokens_with_sentence_frequency(preprocessed_docs):
+def test_preprocessed_voc_contains_lemmas_with_sentence_frequency(preprocessed_docs):
     doc = preprocessed_docs[0]
-    # One error: rights -> right
+    # One error (ignored): rights -> right
     assert doc.vocab == Counter(
         {'be': 3, 'infringement': 2, 'the': 2, 'copyright': 2, 'a': 2, 'plagiarism': 1, 'not': 1, 'same': 1, 'as': 1,
          'to': 1, 'concept': 1, 'apply': 1, 'they': 1, 'may': 1, 'while': 1, 'different': 1, 'act': 1, 'particular': 1,
          'term': 1, 'both': 1, 'material': 1, 'consent': 1, 'holder': 1, 'whose': 1, 'violation': 1, 'of': 1, 'use': 1,
          'without': 1, 'restrict': 1, 'when': 1, 'rights': 1, 'by': 1})
+
+
+def test_tokenize_voc_contains_german_lemmas(preprocessor_ger):
+    doc = Document('doc',
+                   'Als Wortstamm oder kurz Stamm bezeichnet man in der Grammatik '
+                   'einen Bestandteil eines Wortes, der als Ausgangsbasis für '
+                   'weitere Wortbildung dienen kann. Es handelt sich demnach um '
+                   'ein potenziell unvollständiges Gebilde, das als Gegenstück zu '
+                   'einem Affix auftreten kann.')
+    preprocessor_ger.preprocess_new([doc])
+    # Errors (ignored):
+    # Term 'sich' is mapped to 'er|sie|es' but not 'es'
+    # Either map all (reflexive) pronouns to 'er|es|sie' or none
+    assert list(doc.vocab.keys()) \
+           == ['als', 'Wortstamm', 'oder', 'kurz', 'Stamm', 'bezeichnen', 'man',
+               'in', 'der', 'Grammatik', 'ein', 'Bestandteil', 'Wort',
+               'Ausgangsbasis', 'für', 'weit', 'Wortbildung', 'dienen', 'können',
+               'es', 'handeln', 'er|es|sie', 'demnach', 'um', 'potenziell',
+               'unvollständig', 'Gebilde', 'Gegenstück', 'zu', 'Affix',
+               'auftreten']
 
 
 def test_preprocessed_voc_contains_no_stop_words():

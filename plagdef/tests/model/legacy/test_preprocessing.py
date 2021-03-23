@@ -1,5 +1,4 @@
 import copy
-from collections import Counter
 
 from pytest import mark
 
@@ -37,31 +36,55 @@ def test_tokenize_alters_only_vocs_and_offsets(config):
     assert obj_before.detections == preprocessed_obj.detections
 
 
-@mark.xfail(reason="PyStemmer produces wrong lemmas.")
+@mark.xfail(reason="PyStemmer produces wrong stems.")
 def test_tokenize_voc_contains_stemmed_tokens_with_sentence_frequency(preprocessed_docs, config):
     doc1, doc2 = preprocessed_docs
     obj = SGSPLAG(doc1.text, doc2.text, config)
     preprocessor = LegacyPreprocessor()
     preprocessor._tokenize(obj.susp_text, obj.susp_voc, obj.susp_offsets)
-    # Errors: plagiar, infring, appli, differ, violat, materi
-    assert obj.susp_voc == Counter(
-        {'be': 3, 'infringement': 2, 'the': 2, 'copyright': 2, 'a': 2, 'plagiarism': 1, 'not': 1, 'same': 1, 'as': 1,
-         'to': 1, 'concept': 1, 'apply': 1, 'they': 1, 'may': 1, 'while': 1, 'different': 1, 'act': 1, 'particular': 1,
-         'term': 1, 'both': 1, 'material': 1, 'consent': 1, 'holder': 1, 'whose': 1, 'violation': 1, 'of': 1, 'use': 1,
-         'without': 1, 'restrict': 1, 'when': 1, 'right': 1, 'by': 1})
+    # Errors: plagiar (plagiari), materi (material), holder (hold)
+    assert obj.susp_voc == {'plagiari': 1, 'not': 1, 'the': 2, 'same': 1, 'copyright': 2, 'infring': 2, 'while': 1,
+                            'both': 1, 'term': 1, 'may': 1, 'appli': 1, 'particular': 1, 'act': 1, 'they': 1, 'are': 1,
+                            'differ': 1, 'concept': 1, 'violat': 1, 'right': 1, 'hold': 1, 'when': 1, 'material': 1,
+                            'whose': 1, 'use': 1, 'restrict': 1, 'without': 1, 'consent': 1}
+
+
+@mark.xfail(reason="PyStemmer produces wrong German stems.")
+def test_tokenize_voc_contains_stemmed_german_tokens(config):
+    doc1 = Document('doc',
+                    'Als Wortstamm oder kurz Stamm bezeichnet man in der '
+                    'Grammatik einen Bestandteil eines Wortes, der als '
+                    'Ausgangsbasis für weitere Wortbildung dienen kann. '
+                    'Es handelt sich demnach um ein potenziell '
+                    'unvollständiges Gebilde, das als Gegenstück zu '
+                    'einem Affix auftreten kann.')
+    doc2 = Document('doc2', 'Ein zweites Dokument der Vollständigkeit halber.')
+    obj = SGSPLAG(doc1.text, doc2.text, config)
+    preprocessor = LegacyPreprocessor()
+    preprocessor._tokenize(obj.susp_text, obj.susp_voc, obj.susp_offsets)
+    # Errors:
+    # al (als), bezeichnet (bezeichne), einen (ein), ausgangsbasi (ausgangsbasis),
+    # dienen (dien), handelt (handel), potenziel (potenz), einem (ein),
+    # auftreten (auftr)
+    assert list(obj.susp_voc.keys()) \
+           == ['als', 'wortstamm', 'oder', 'kurz', 'stamm', 'bezeichne', 'man',
+               'der', 'grammatik', 'ein', 'bestandteil', 'wort', 'ausgangsbasis',
+               'für', 'weiter', 'wortbildung', 'dien', 'kann', 'handel', 'sich',
+               'demnach', 'potenz', 'unvollständig', 'gebild', 'das',
+               'gegenstück', 'affix', 'auftr']
 
 
 @mark.xfail(reason="Instead of removing stop words they are not stemmed.")
-def test_tokenize_voc_contains_no_stop_words(preprocessed_docs, config):
-    doc1, doc2 = preprocessed_docs
+def test_preprocessed_voc_contains_no_stop_words(config):
+    doc1 = Document('doc1', 'This sentence has five stop words '
+                            'which are not removed.')
+    doc2 = Document('doc2', 'Another document for good measure.')
     obj = SGSPLAG(doc1.text, doc2.text, config)
     preprocessor = LegacyPreprocessor()
-    preprocessor._tokenize(obj.src_text, obj.src_voc, obj.src_offsets, 1)
-    assert not any(sw in obj.src_voc for sw in
-                   ['the', 'of', 'and', 'a', 'in', 'to', 'is', 'was', 'it', 'for', 'with', 'he', 'be', 'on', 'i',
-                    'that', 'by', 'at', 'you', '\'s', 'are', 'not', 'his', 'this', 'from', 'but', 'had', 'which',
-                    'she', 'they', 'or', 'an', 'were', 'we', 'their', 'been', 'has', 'have', 'will', 'would',
-                    'her', 'n\'t', 'there', 'can', 'all', 'as', 'if', 'who', 'what', 'said'])
+    preprocessor._tokenize(obj.susp_text, obj.susp_voc, obj.susp_offsets, 1)
+    assert len(obj.susp_voc.keys()) == 5  # actual: 10
+    assert not any(token in obj.susp_voc for
+                   token in ['this', 'has', 'which', 'are', 'not'])  # actual: True
 
 
 def test_tokenize_voc_contains_no_short_tokens(preprocessed_docs, config):
@@ -95,18 +118,22 @@ def test_tokenize_returns_sent_bows(preprocessed_docs, config):
                           'materi': 1, 'whose': 1, 'use': 2, 'restrict': 1, 'without': 1, 'consent': 1}]
 
 
-@mark.xfail(reason="Wrong length after join because whitespace is not counted in.")
+@mark.xfail(reason="Wrong length after join because whitespace "
+                   "is not counted in.")
 def test_join_small_sents_offsets(config):
-    doc1, doc2 = Document('doc1', 'Short sentence. Short sentence should be joined with this one.'), \
-                 Document('doc2', 'This also is a document.')
+    doc1 = Document('doc1', 'Short sentence. Short sentence '
+                            'should be joined with this one.')
+    doc2 = Document('doc2', 'Another document for good measure')
     obj = SGSPLAG(doc1.text, doc2.text, config)
     preprocessor = LegacyPreprocessor()
-    sent_bows = preprocessor._tokenize(obj.susp_text, obj.susp_voc, obj.susp_offsets)
-    preprocessor._join_small_sents(sent_bows, obj.susp_offsets, obj.min_sent_len, obj.susp_voc)
+    sent_bows = preprocessor._tokenize(obj.susp_text, obj.susp_voc,
+                                       obj.susp_offsets)
+    preprocessor._join_small_sents(sent_bows, obj.susp_offsets,
+                                   obj.min_sent_len, obj.susp_voc)
     # First sentence: (0, 15)
     # Second sentence: (16, 46)
-    # Combined: (0, 62) because of whitespace gap between sents
-    assert obj.susp_offsets == [(0, 62)]
+    # Combined: (0, 62) because of whitespace gap between sentences
+    assert obj.susp_offsets == [(0, 62)]  # actual: [(0, 61)]
 
 
 def test_join_small_sents_at_start(config):
@@ -138,17 +165,20 @@ def test_join_small_sents_in_the_middle(config):
                             'one': 1}
 
 
-@mark.xfail(reason="Short sentences are only joined with next one but last sentence has no successor.")
+@mark.xfail(reason="Short sentences are only joined with next one "
+                   "but last sentence has no successor.")
 def test_join_small_sents_at_the_end(config):
-    doc1, doc2 = Document('doc1', 'This is a longer sentence. Short sentence should be '
-                                  'joined with this one. Short sentence.'), \
-                 Document('doc2', 'This also is a document.')
+    doc1 = Document('doc1', 'This is a longer sentence. Short sentence '
+                            'should be joined with this one. '
+                            'Short sentence.')
+    doc2 = Document('doc2', 'Another document for good measure.')
     obj = SGSPLAG(doc1.text, doc2.text, config)
     preprocessor = LegacyPreprocessor()
-    sent_bows = preprocessor._tokenize(obj.susp_text, obj.susp_voc, obj.susp_offsets)
-    preprocessor._join_small_sents(sent_bows, obj.susp_offsets, obj.min_sent_len, obj.susp_voc)
-    # Wrong lemmas and offsets ignored
-    assert len(obj.susp_offsets) == 2
+    sent_bows = preprocessor._tokenize(obj.susp_text, obj.susp_voc,
+                                       obj.susp_offsets)
+    preprocessor._join_small_sents(sent_bows, obj.susp_offsets,
+                                   obj.min_sent_len, obj.susp_voc)
+    assert len(obj.susp_offsets) == 2  # actual: 3
 
 
 def test_sum_vect(config):
