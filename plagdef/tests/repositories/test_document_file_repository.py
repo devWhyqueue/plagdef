@@ -67,7 +67,7 @@ def test_init_with_file_containing_special_characters(tmp_path):
     repo = DocumentFileRepository(tmp_path, 'eng')
     docs = repo.list()
     assert len(docs) == 2
-    assert docs[0].text == 'These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n'
+    assert 'These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n' in [doc.text for doc in docs]
 
 
 @pytest.mark.skipif('sys.platform != "win32"')
@@ -79,7 +79,7 @@ def test_init_with_doc_dir_containing_ansi_file_creates_document(tmp_path):
     repo = DocumentFileRepository(tmp_path, 'eng')
     docs = repo.list()
     assert len(docs) == 2
-    assert docs[0].text == 'These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n'
+    assert 'These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n' in [doc.text for doc in docs]
 
 
 def test_init_with_doc_dir_containing_iso_8559_1_file_creates_documents(tmp_path):
@@ -91,10 +91,9 @@ def test_init_with_doc_dir_containing_iso_8559_1_file_creates_documents(tmp_path
     repo = DocumentFileRepository(tmp_path, 'eng')
     docs = repo.list()
     assert len(docs) == 2
-    assert docs[0].text == 'These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n'
-    assert docs[1].text \
-           == 'These symbols are hard: ػ Ҙ ؋ ֛ Ր ـ ϳ ћ Я ڀ ѹ Ҟ ҡ ӊ ֥ ׆ ц ٚ ՞ ך Ѓ ս ؆ ن н б й ս ҆ җ ٯ ϳ أ ' \
-              'Ғ ғ Ӓ Ը א ӄ ؃'
+    assert 'These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n' in [doc.text for doc in docs]
+    assert 'These symbols are hard: ػ Ҙ ؋ ֛ Ր ـ ϳ ћ Я ڀ ѹ Ҟ ҡ ӊ ֥ ׆ ц ٚ ՞ ך Ѓ ս ؆ ن н б й ս ҆ җ ٯ ϳ أ Ғ ғ Ӓ Ը א ӄ ؃' \
+           in [doc.text for doc in docs]
 
 
 def test_init_recursive_creates_documents(tmp_path):
