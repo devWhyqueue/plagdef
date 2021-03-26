@@ -3,7 +3,7 @@ from pytest import fixture
 
 from plagdef.model.legacy.algorithm import DocumentPairMatches, Match, Section
 from plagdef.model.preprocessing import Preprocessor, Document
-from plagdef.model.seeding import SentenceMatcher
+from plagdef.model.seeding import Seeder
 
 
 @fixture(scope="session", autouse=True)
@@ -40,7 +40,7 @@ def nlp_ger():
 
 @fixture(scope='session')
 def sent_matcher(config):
-    return SentenceMatcher(config['th1'], config['th2'])
+    return Seeder(config['th1'], config['th2'])
 
 
 @fixture

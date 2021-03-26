@@ -7,6 +7,12 @@ from plagdef.model.legacy.algorithm import SGSPLAG
 from plagdef.model.preprocessing import UnsupportedLanguageError, Document, Preprocessor
 
 
+def test_documents_are_equal():
+    doc1 = Document('doc', 'Arbitrary text.')
+    doc2 = Document('doc', 'Some text.')
+    assert doc1 == doc2
+
+
 def test_preprocessor_init_lang_models():
     en = Preprocessor('eng', 3, False)
     de = Preprocessor('ger', 3, False)

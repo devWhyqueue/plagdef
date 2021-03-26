@@ -1,8 +1,9 @@
-import copy
 import math
 
 import nltk
 from Stemmer import Stemmer
+
+from plagdef.model.legacy.util import sum_vect
 
 
 class LegacyPreprocessor:
@@ -116,28 +117,13 @@ class LegacyPreprocessor:
                 for k in list_dic[i].keys():
                     if k in list_dic[i + 1]:
                         voc[k] -= 1
-                list_dic[i + 1] = self._sum_vect(list_dic[i + 1], list_dic[i])
+                list_dic[i + 1] = sum_vect(list_dic[i + 1], list_dic[i])
                 del list_dic[i]
                 offsets[i + 1] = (offsets[i][0], offsets[i + 1][1] + offsets[i][1])
                 del offsets[i]
                 range_i -= 1
             else:
                 i = i + 1
-
-    def _sum_vect(self, dic1, dic2):
-        """
-        DESCRIPTION: Adding two vectors in form of dictionaries (sparse vectors or inverted list)
-        INPUTS: dic1 <dictionary> - Vector 1
-                dic2 <dictionary> - Vector 2
-        OUTPUT: res <dictionary> - Sum of the two vectors
-        """
-        res = copy.deepcopy(dic1)
-        for i in dic2.keys():
-            if i in res:
-                res[i] += dic2[i]
-            else:
-                res[i] = dic2[i]
-        return res
 
     def _tf_isf(self, list_dic1, voc1, list_dic2, voc2):
         """
@@ -149,7 +135,7 @@ class LegacyPreprocessor:
                voc2 <dictionary> - Vocabulary at document 2 with the idf of each one
         OUTPUT: No returned value. Modify the inputs list_dic1 and list_dic2
         """
-        df = self._sum_vect(voc1, voc2)
+        df = sum_vect(voc1, voc2)
         td = len(list_dic1) + len(list_dic2)
         for i in range(len(list_dic1)):
             for j in list_dic1[i].keys():

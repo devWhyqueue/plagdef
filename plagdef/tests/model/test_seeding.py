@@ -2,7 +2,7 @@ from collections import Counter
 
 from plagdef.model.legacy.algorithm import SGSPLAG
 from plagdef.model.preprocessing import Sentence
-from plagdef.model.seeding import SentenceMatch
+from plagdef.model.seeding import Seed
 
 
 def test_seeding_returns_seeds(sent_matcher, config):
@@ -18,31 +18,31 @@ def test_seeding_returns_seeds(sent_matcher, config):
 
 
 def test_match_returns_nothing_if_not_similar(sent_matcher):
-    sen1 = Sentence(None, -1, -1, Counter({'this': 1, 'be': 1, 'a': 1, 'document': 1}),
+    sen1 = Sentence(None, -1, -1, -1, Counter({'this': 1, 'be': 1, 'a': 1, 'document': 1}),
                     {'this': 0.69, 'be': 0.0, 'a': 0.69, 'document': 0.69})
-    sen2 = Sentence(None, -1, -1, Counter({'these': 1, 'however': 1, 'be': 1, 'different': 1, 'word': 1}),
+    sen2 = Sentence(None, -1, -1, -1, Counter({'these': 1, 'however': 1, 'be': 1, 'different': 1, 'word': 1}),
                     {'these': 0.69, 'be': 0.0, 'different': 0.69,
                      'word': 0.69, 'however': 0.69})
-    match = sent_matcher.match(sen1, sen2)
+    match = sent_matcher._match(sen1, sen2)
     assert not match
 
 
 def test_match_returns_match_if_similar(sent_matcher):
     # We need a second sentence with some different words because otherwise every term would have zero specificity
     # doc1/doc2: 'The words are all the same. Even these are.'
-    doc1_sent1 = doc2_sent1 = Sentence(None, -1, -1, Counter({'the': 2, 'word': 1, 'be': 1, 'all': 1, 'same': 1}),
+    doc1_sent1 = doc2_sent1 = Sentence(None, -1, -1, -1, Counter({'the': 2, 'word': 1, 'be': 1, 'all': 1, 'same': 1}),
                                        {'the': 1.38, 'word': 0.69, 'be': 0.0, 'all': 0.69, 'same': 0.69})
-    match = sent_matcher.match(doc1_sent1, doc2_sent1)
-    assert match == SentenceMatch(doc1_sent1, doc2_sent1, 1, 1)
+    match = sent_matcher._match(doc1_sent1, doc2_sent1)
+    assert match == Seed(doc1_sent1, doc2_sent1, 1, 1)
 
 
 def test_cosine_measure(sent_matcher):
     # We need a second sentence with some different words because otherwise every term would have zero specificity
     # doc1: 'This is a nice document. It really is.'
     # doc2: 'This also is a great document. Even better one might say.'
-    sen1 = Sentence(None, -1, -1, Counter({'this': 1, 'be': 1, 'a': 1, 'document': 1}),
+    sen1 = Sentence(None, -1, -1, -1, Counter({'this': 1, 'be': 1, 'a': 1, 'document': 1}),
                     {'this': 0.69, 'be': 0.28, 'a': 0.69, 'nice': 1.38, 'document': 0.69})
-    sen2 = Sentence(None, -1, -1, Counter({'this': 1, 'also': 1, 'be': 1, 'a': 1, 'great': 2, 'document': 1}),
+    sen2 = Sentence(None, -1, -1, -1, Counter({'this': 1, 'also': 1, 'be': 1, 'a': 1, 'great': 2, 'document': 1}),
                     {'this': 0.69, 'also': 1.38, 'be': 0.28, 'a': 0.69, 'great': 1.38, 'document': 0.69})
     sim = sent_matcher._cos_sim(sen1, sen2)
     # cos-sim = sum_i=1_n{a_i * b_i} / sqrt{sum_i=1_n{(a_i)^2}} * sqrt{sum_i=1_n{(b_i)^2}}
@@ -62,9 +62,9 @@ def test_dice_coeff(sent_matcher):
     # We need a second sentence with some different words because otherwise every term would have zero specificity
     # doc1: 'This is a nice document. It really is.'
     # doc2: 'This also is a great document. Even better one might say.'
-    sen1 = Sentence(None, -1, -1, Counter({'this': 1, 'be': 1, 'a': 1, 'document': 1}),
+    sen1 = Sentence(None, -1, -1, -1, Counter({'this': 1, 'be': 1, 'a': 1, 'document': 1}),
                     {'this': 0.69, 'be': 0.28, 'a': 0.69, 'nice': 1.38, 'document': 0.69})
-    sen2 = Sentence(None, -1, -1, Counter({'this': 1, 'also': 1, 'be': 1, 'a': 1, 'great': 2, 'document': 1}),
+    sen2 = Sentence(None, -1, -1, -1, Counter({'this': 1, 'also': 1, 'be': 1, 'a': 1, 'great': 2, 'document': 1}),
                     {'this': 0.69, 'also': 1.38, 'be': 0.28, 'a': 0.69, 'great': 1.38, 'document': 0.69})
     sim = sent_matcher._dice_sim(sen1, sen2)
     # dice-coeff = 2 * n_t / (n_x + n_y), n_t being the number of equal lemmas in both sents (independent from their

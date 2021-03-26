@@ -181,16 +181,6 @@ def test_join_small_sents_at_the_end(config):
     assert len(obj.susp_offsets) == 2  # actual: 3
 
 
-def test_sum_vect(config):
-    doc1, doc2 = Document('doc1', 'This is a cool document.'), \
-                 Document('doc2', 'This also is a document.')
-    obj = SGSPLAG(doc1.text, doc2.text, config)
-    preprocessor = LegacyPreprocessor()
-    preprocessor.preprocess(obj)
-    combined_voc = preprocessor._sum_vect(obj.src_voc, obj.susp_voc)
-    assert combined_voc == {'this': 2, 'also': 1, 'document': 2, 'cool': 1}
-
-
 def test_preprocess_tf_isf(preprocessed_docs, config):
     doc1, doc2 = preprocessed_docs
     obj = SGSPLAG(doc1.text, doc2.text, config)

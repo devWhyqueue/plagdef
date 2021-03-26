@@ -50,7 +50,7 @@ class Preprocessor:
         parsed_docs = self._nlp_model([stanza.Document([], text=doc.text) for doc in docs]) if docs else []
         stop_words = stopwords.ENGLISH if self._lang == 'eng' else stopwords.GERMAN
         for doc_idx, parsed_doc in enumerate(parsed_docs):
-            for sent in parsed_doc.sentences:
+            for sent_idx, sent in enumerate(parsed_doc.sentences):
                 if self._rem_stop_words:
                     sent_lemmas = [word.lemma for word in sent.words
                                    if not word.upos == 'PUNCT' and word.text.lower() not in stop_words]
@@ -59,7 +59,8 @@ class Preprocessor:
                 if len(sent_lemmas):
                     lemma_count = Counter(sent_lemmas)
                     docs[doc_idx].sents.append(
-                        Sentence(docs[doc_idx], sent.tokens[0].start_char, sent.tokens[-1].end_char, lemma_count, {}))
+                        Sentence(docs[doc_idx], sent_idx, sent.tokens[0].start_char,
+                                 sent.tokens[-1].end_char, lemma_count, {}))
                     for lemma in lemma_count.keys():
                         docs[doc_idx].vocab[lemma] += 1
 
@@ -100,19 +101,33 @@ class Document:
         self.sents: list[Sentence] = []
 
     def __eq__(self, other):
-        return isinstance(other, Document) and self.name == other.name
+        if type(other) is type(self):
+            return self.name == other.name
+        return False
 
     def __hash__(self):
         return hash(self.name)
+
+    def __repr__(self):
+        return f"Document('{self.name}')"
 
 
 @dataclass
 class Sentence:
     doc: Document
+    idx: int
     start_char: int
     end_char: int
     bow: Counter
     bow_tf_isf: dict
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.doc == other.doc and self.idx == other.idx
+        return False
+
+    def __hash__(self):
+        return hash((self.doc, self.idx))
 
 
 class UnsupportedLanguageError(Exception):

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import copy
 import math
 import string
 from dataclasses import dataclass
@@ -8,36 +7,9 @@ from itertools import combinations
 
 import nltk
 
+from plagdef.model.legacy.extension import LegacySeedExtender
 from plagdef.model.preprocessing import Document, Preprocessor
-from plagdef.model.seeding import SentenceMatcher
-
-
-def sum_vect(dic1, dic2):
-    """
-    DESCRIPTION: Adding two vectors in form of dictionaries (sparse vectors or inverted list)
-    INPUTS: dic1 <dictionary> - Vector 1
-            dic2 <dictionary> - Vector 2
-    OUTPUT: res <dictionary> - Sum of the two vectors
-    """
-    res = copy.deepcopy(dic1)
-    for i in dic2.keys():
-        if i in res:
-            res[i] += dic2[i]
-        else:
-            res[i] = dic2[i]
-    return res
-
-
-def eucl_norm(d1):
-    """
-    DESCRIPTION: Compute the Euclidean norm of a sparse vector
-    INPUT: d1 <dictionary> - sparse vector representation
-    OUTPUT: Norm of the sparse vector d1
-    """
-    norm = 0.0
-    for val in d1.values():
-        norm += float(val * val)
-    return math.sqrt(norm)
+from plagdef.model.seeding import Seeder
 
 
 def cosine_measure(d1, d2):
@@ -49,7 +21,7 @@ def cosine_measure(d1, d2):
     OUTPUT: Cosine measure
     """
     dot_prod = 0.0
-    det = eucl_norm(d1) * eucl_norm(d2)
+    det = _eucl_norm(d1) * _eucl_norm(d2)
     if det == 0:
         return 0
     for word in d1.keys():
@@ -58,157 +30,16 @@ def cosine_measure(d1, d2):
     return dot_prod / det
 
 
-def adjacent_sents(a, b, th):
+def _eucl_norm(d1):
     """
-    DESCRIPTION: Define if two sentences are adjacent measured in sentences
-    INPUT: a <int> - Sentence a index,
-           b <int> - Sentence b index
-           th <int> - maximum gap between indexes
-    OUTPUT: True if the two sentences are adjacents, False otherwise
+    DESCRIPTION: Compute the Euclidean norm of a sparse vector
+    INPUT: d1 <dictionary> - sparse vector representation
+    OUTPUT: Norm of the sparse vector d1
     """
-    if abs(a - b) - 1 <= th:
-        return True
-    else:
-        return False
-
-
-def frag_founder(ps, src_gap, susp_gap, src_size, susp_size, side):
-    """
-    DESCRIPTION: Form clusters by grouping "adjacent" sentences in a given side (source o suspicious)
-    INPUT: ps <list of tuples (int, int)> - Seeds
-           src_offsets <list of tuples (int, int)> - Contain the char offset and length of each source document sentence
-           susp_offsets <list of tuples (int, int)> - Contain the char offset and length of each suspicious document
-           sentence
-           src_gap <int> - Max gap between sentences to be consider adjacent in the source document
-           susp_gap <int> - Max gap between sentences to be consider adjacent in the suspicious document
-           src_size <int> - Minimum amount of sentences in a plagiarism case in the side of source document
-           susp_size <int> - Minimum amount of sentences in a plagiarism case in the side of suspicious document
-           side <0 or 1> 0: Suspicious document side, 1: Source document side
-    OUTPUT: res <list of list of tuples (int, int)> - Contains the clusters
-    """
-    if side == 0:
-        max_gap = susp_gap
-        min_size = susp_size
-    else:
-        max_gap = src_gap
-        min_size = src_size
-    res = []
-    ps.sort(key=lambda tup: tup[side])
-    sub_set = []
-    for pair in ps:
-        if len(sub_set) == 0:
-            sub_set.append(pair)
-        else:
-            if adjacent_sents(pair[side], sub_set[-1][side], max_gap):
-                sub_set.append(pair)
-            else:
-                if len(sub_set) >= min_size:
-                    res.append(sub_set)
-                sub_set = [pair]
-    if len(sub_set) >= min_size:
-        res.append(sub_set)
-    return res
-
-
-def clustering(ps, src_offsets, susp_offsets, src_gap, susp_gap, src_size, susp_size, side, times):
-    """
-    DESCRIPTION: Generates the clusters of seeds
-    INPUT: ps <list of tuples (int, int)> - Seeds
-           src_offsets <list of tuples (int, int)> - Contain the char offset and length of each source document sentence
-           susp_offsets <list of tuples (int, int)> - Contain the char offset and length of each suspicious document
-           sentence
-           src_gap <int> - Max gap between sentences to be consider adjacent in the source document
-           susp_gap <int> - Max gap between sentences to be consider adjacent in the suspicious document
-           src_size <int> - Minimum amount of sentences in a plagiarism case in the side of source document
-           susp_size <int> - Minimum amount of sentences in a plagiarism case in the side of suspicious document
-           side <0 or 1> 0: Suspicious document side, 1: Source document side
-           times <int> - Counts how many times clustering() have been called
-    OUTPUT: res <list of list of tuples (int, int)> - Contains the clusters
-    """
-    ps_sets = frag_founder(ps, src_gap, susp_gap, src_size, susp_size, side)
-    res = []
-    if len(ps_sets) <= 1 and times > 0:
-        return ps_sets
-    else:
-        times += 1
-        for i in ps_sets:
-            partial_res = clustering(i, src_offsets, susp_offsets, src_gap, susp_gap, src_size, susp_size,
-                                     (side + 1) % 2, times)
-            res.extend(partial_res)
-    return res
-
-
-def validation(plags, psr, src_offsets, susp_offsets, src_bow, susp_bow, src_gap, src_gap_least, susp_gap,
-               susp_gap_least, src_size, susp_size, th3):
-    """
-    DESCRIPTION: Compute the similarity of the resulting plagiarism cases from extension. In case of being below
-    certain threshold extension is applied again with max_gap - 1
-    INPUT: plags <list of list of two tuples [(int, int), (int, int)]> - Have the plagiarism cases represented by min
-    and max sentence index in suspicious and source document respectively
-           psr <list of list of tuples (int, int)> - Contains the clusters
-           src_offsets <list of tuples (int, int)> - Contain the char offset and length of each source document sentence
-           susp_offsets <list of tuples (int, int)> - Contain the char offset and length of each suspicious document
-           sentence
-           src_bow <list of dictionaries> - Bag of words representing each sentence vector of source document
-           susp_bow <list of dictionaries> - Bag of words representing each sentence vector of suspicious document
-           src_gap <int> - Max gap between sentences to be consider adjacent in the source document
-           src_gap_least <int> - Smallest value the max gap between sentences considerd adjacent can gets in the
-           source document
-           susp_gap <int> - Max gap between sentences to be consider adjacent in the suspicious document
-           susp_gap_least <int> - Smallest value the max gap between sentences considerd adjacent can gets in the
-           suspicious document
-           src_size <int> - Minimum amount of sentences in a plagiarism case in the side of source document
-           susp_size <int> - Minimum amount of sentences in a plagiarism case in the side of suspicious document
-           th3 <float> - Threshold for the minimum cosine similarity between source and suspicios fragments in a
-           plagiarism case
-    OUTPUT: res_plags <list of list of two tuples [(int, int), (int, int)]> - Contains the plagiarism cases that
-    passed the validation process
-            res_psr <list of list of tuples (int, int)> - Contains the clusters that passed the validation process
-            res_sim_frag <list of floats> - Stores the cosine similarity between source and suspicios fragments in
-            the plagiarism cases
-    """
-    res_plags = []
-    res_psr = []
-    res_sim_frag = []
-    i = 0
-    range_i = len(plags)
-    while i < range_i:
-        susp_d = {}
-        for j in range(plags[i][0][0], plags[i][0][1] + 1):
-            susp_d = sum_vect(susp_d, susp_bow[j])
-        src_d = {}
-        for j in range(plags[i][1][0], plags[i][1][1] + 1):
-            src_d = sum_vect(src_d, src_bow[j])
-        sim_frag = cosine_measure(src_d, susp_d)
-        if sim_frag <= th3:
-            # Did not pass with src_gap
-            if src_gap > src_gap_least and susp_gap > susp_gap_least:  # Do until substraction +1
-                new_psr = clustering(psr[i], src_offsets, susp_offsets, src_gap - 1, susp_gap - 1, src_size, susp_size,
-                                     0, 0)
-                new_plags = []
-                for ps_set in new_psr:
-                    new_plags.append([(min([x[0] for x in ps_set]), max([x[0] for x in ps_set])),
-                                      (min([x[1] for x in ps_set]), max([x[1] for x in ps_set]))])
-                if len(new_plags) == 0:
-                    return []
-                temp_res = validation(new_plags, new_psr, src_offsets, susp_offsets, src_bow, susp_bow, src_gap - 1,
-                                      src_gap_least, susp_gap - 1, susp_gap_least, src_size, susp_size, th3)
-                if len(temp_res) == 0:
-                    plags_rec, psr_rec, res_sim_frag_rec = [], [], []
-                else:
-                    plags_rec, psr_rec, res_sim_frag_rec = temp_res[0], temp_res[1], temp_res[2]
-                if len(plags_rec) != 0:
-                    res_plags.extend(plags_rec)
-                    res_psr.extend(psr_rec)
-                    res_sim_frag.extend(res_sim_frag_rec)
-            i += 1
-        else:
-            # Passed with src_gap
-            res_plags.append(plags[i])
-            res_psr.append(psr[i])
-            res_sim_frag.append(sim_frag)
-            i += 1
-    return res_plags, res_psr, res_sim_frag
+    norm = 0.0
+    for val in d1.values():
+        norm += float(val * val)
+    return math.sqrt(norm)
 
 
 def remove_overlap3(plags, psr, src_bow, susp_bow):
@@ -535,7 +366,7 @@ class SGSPLAG:
         self.susp_bow = {}
         self.detections = None
 
-    def process(self, preprocessor, sent_matcher):
+    def process(self, preprocessor, sent_matcher, seed_extender):
         """
         DESCRIPTION: Process the plagiarism pipeline
         INPUT: self <SGSPLAG object>
@@ -543,34 +374,8 @@ class SGSPLAG:
                 summary_flag <int> - Summary plagarism flag
         """
         preprocessor.preprocess(self)
-        self.detections, type_plag, summary_flag = self.compare(sent_matcher)
+        self.detections, type_plag, summary_flag = self.compare(sent_matcher, seed_extender)
         return type_plag, summary_flag
-
-    def extension(self, ps):
-        """
-        DESCRIPTION: Adding two vectors
-        INPUT: self <SGSPLAG object>
-               ps <list of tuple (int, int, float, float)> - Seeds
-        OUTPUT: plags <list of list of two tuples [(int, int), (int, int)]> - Contains the plagiarism cases after
-        validation
-                psr <list of list of tuples (int, int)> - Contains the clusters after validation
-                sim_frag <list of floats> - Stores the cosine similarity between source and suspicios fragments in
-                the plagiarism cases after validation
-        """
-        psr = clustering(ps, self.src_offsets, self.susp_offsets, self.src_gap, self.susp_gap, self.src_size,
-                         self.susp_size, 0, 0)
-        plags = []
-        for psr_i in psr:
-            plags.append([(min([x[0] for x in psr_i]), max([x[0] for x in psr_i])),
-                          (min([x[1] for x in psr_i]), max([x[1] for x in psr_i]))])
-        temp_res = validation(plags, psr, self.src_offsets, self.susp_offsets, self.src_bow, self.susp_bow,
-                              self.src_gap, self.src_gap_least, self.susp_gap, self.susp_gap_least, self.src_size,
-                              self.susp_size, self.th3)
-        if len(temp_res) == 0:
-            plags, psr, sim_frag = [], [], []
-        else:
-            plags, psr, sim_frag = temp_res[0], temp_res[1], temp_res[2]
-        return plags, psr, sim_frag
 
     def filtering(self, plags, psr):
         """
@@ -586,7 +391,7 @@ class SGSPLAG:
 
         return plags
 
-    def compare(self, sent_matcher):
+    def compare(self, sent_matcher, seed_extender):
         """
         DESCRIPTION: Test a suspicious document for near-duplicate plagiarism with regards to a source document and
         return a feature list depending on the type_plag and summary_flag flags.
@@ -598,7 +403,7 @@ class SGSPLAG:
         """
         detections = []
         ps = sent_matcher.seeding(self)
-        plags, psr, sim_frag = self.extension(ps)
+        plags, psr, sim_frag = seed_extender.extend(self, ps)
         plags = self.filtering(plags, psr)
         if self.verbatim != 0:
             plags_verbatim, psr_verbatim, type_plag, long_frag = verbatim_det_lcs_all(plags, psr, self.susp_text,
@@ -612,7 +417,7 @@ class SGSPLAG:
         if self.summary != 0:
             self.src_gap = self.src_gap_summary
             self.susp_gap = self.susp_gap_summary
-            plags2, psr2, sim_frag = self.extension(ps)
+            plags2, psr2, sim_frag = seed_extender.extend(self, ps)
             plags2 = self.filtering(plags2, psr2)
         summary_flag = 0
         if type_plag == 0:
@@ -712,7 +517,7 @@ def find_matches(docs: list[Document], lang: str, config: dict) -> list[Document
             sgsplag_obj = SGSPLAG(doc1.text, doc2.text, config)
 
             preprocessor.set_docs(doc1, doc2)
-            sgsplag_obj.process(preprocessor, SentenceMatcher(config['th1'], config['th2']))
+            sgsplag_obj.process(preprocessor, Seeder(config['th1'], config['th2']), LegacySeedExtender())
 
             for det in sgsplag_obj.detections:
                 match = Match(Section(doc1, det[0][0], det[0][1] - det[0][0]),
