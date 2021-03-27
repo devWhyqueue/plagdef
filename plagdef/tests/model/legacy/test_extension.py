@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from plagdef.model.legacy.extension import LegacySeedExtender
 
 
@@ -110,6 +112,51 @@ def test_clustering_seed_order_makes_no_difference():
     extender = LegacySeedExtender()
     clusters = extender._clustering(seeds, None, None, 4, 4, 1, 1, 0, 0)
     assert clusters == [[seeds[1], seeds[0]]]
+
+
+def test_validation_with_only_similar_clusters():
+    clusters = [[_create_seed(0, 2), _create_seed(2, 4)],
+                [_create_seed(10, 5), _create_seed(11, 7), _create_seed(14, 11)]]
+    detections = [[(0, 2), (2, 4)], [(10, 14), (5, 11)]]
+    extender = LegacySeedExtender()
+    # Calculation of cluster similarity untested
+    with patch('plagdef.model.legacy.extension.range') as rng, \
+        patch('plagdef.model.legacy.extension.cosine_measure') as cos_measure:
+        rng.return_value = []
+        cos_measure.return_value = 1
+        filtered_detections = extender._validation(detections, clusters, None, None, None, None, 4, 0, 4, 0, 0, 0, 0.34)
+    assert filtered_detections[0] == detections
+    assert filtered_detections[1] == clusters
+    assert filtered_detections[2] == [1, 1]
+
+
+def test_validation_with_cluster_with_similarity_below_th():
+    clusters = [[_create_seed(0, 2)]]
+    detections = [[(0, 0), (2, 2)]]
+    extender = LegacySeedExtender()
+    # Calculation of cluster similarity untested
+    with patch('plagdef.model.legacy.extension.range') as rng, \
+        patch('plagdef.model.legacy.extension.cosine_measure') as cos_measure:
+        rng.return_value = []
+        cos_measure.return_value = 0
+        filtered_detections = extender._validation(detections, clusters, None, None, None, None, 4, 0, 4, 0, 0, 0, 0.34)
+    assert filtered_detections[0] == filtered_detections[1] == filtered_detections[2] == []
+
+
+def test_validation_with_cluster_which_is_reduced():
+    clusters = [[_create_seed(0, 5), _create_seed(1, 7), _create_seed(6, 11)]]
+    detections = [[(0, 6), (5, 11)]]
+    extender = LegacySeedExtender()
+    # Calculation of cluster similarity untested
+    with patch('plagdef.model.legacy.extension.range') as rng, \
+        patch('plagdef.model.legacy.extension.cosine_measure') as cos_measure:
+        rng.return_value = []
+        # First clustering too broad, second results in two clusters which are both similar enough
+        cos_measure.side_effect = [0, 1, 1]
+        filtered_detections = extender._validation(detections, clusters, None, None, None, None, 4, 0, 4, 0, 0, 0, 0.34)
+    assert filtered_detections[0] == [[(0, 1), (5, 7)], [(6, 6), (11, 11)]]
+    assert filtered_detections[1] == [[_create_seed(0, 5), _create_seed(1, 7)], [_create_seed(6, 11)]]
+    assert filtered_detections[2] == [1, 1]
 
 
 def _create_seed(sent1_idx: int, sent2_idx: int):

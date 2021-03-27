@@ -39,7 +39,7 @@ def nlp_ger():
 
 
 @fixture(scope='session')
-def sent_matcher(config):
+def seeder(config):
     return Seeder(config['th1'], config['th2'])
 
 

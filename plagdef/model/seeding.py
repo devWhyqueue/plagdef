@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 
-from numpy import dot
-from numpy.linalg import norm
-
+from plagdef.model import util
 from plagdef.model.preprocessing import Sentence, Document
 
 
@@ -43,25 +41,7 @@ class Seeder:
         return sent_matches
 
     def _match(self, sent1: Sentence, sent2: Sentence):
-        cos_sim = self._cos_sim(sent1, sent2)
-        dice_sim = self._dice_sim(sent1, sent2)
+        cos_sim = util.cos_sim(sent1.bow_tf_isf, sent2.bow_tf_isf)
+        dice_sim = util.dice_sim(sent1.bow_tf_isf, sent2.bow_tf_isf)
         if cos_sim > self._min_cos_sim and dice_sim > self._min_dice_sim:
             return Seed(sent1, sent2, cos_sim, dice_sim)
-
-    def _cos_sim(self, sent1: Sentence, sent2: Sentence):
-        """
-        Compute the cosine similarity cos-sim = sum_i=1_n{a_i * b_i} / sqrt{sum_i=1_n{(a_i)^2}} * sqrt{sum_i=1_n{(
-        b_i)^2}}
-        """
-        aligned_vecs = [(sent1.bow_tf_isf[lemma], sent2.bow_tf_isf[lemma]) for lemma in sent1.bow_tf_isf if
-                        lemma in sent2.bow_tf_isf]
-        a, b = [v[0] for v in aligned_vecs], [v[1] for v in aligned_vecs]
-        return dot(a, b) / (norm(list(sent1.bow_tf_isf.values())) * norm(list(sent2.bow_tf_isf.values())))
-
-    def _dice_sim(self, sent1: Sentence, sent2: Sentence):
-        """
-        Compute the dice similarity dice-coeff = 2 * n_com / (n_x + n_y), n_t being the number of distinct common
-        lemmas in both sents, n_1 the number of lemmas in sent1 and n_2 the number of lemmas in sent2
-        """
-        n_com = len(set(sent1.bow_tf_isf.keys()).intersection(sent2.bow_tf_isf.keys()))
-        return 2 * n_com / float(len(sent1.bow_tf_isf) + len(sent2.bow_tf_isf))

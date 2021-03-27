@@ -18,9 +18,9 @@ class LegacySeedExtender:
                                legacy_obj.susp_gap, legacy_obj.src_size,
                                legacy_obj.susp_size, 0, 0)
         plags = []
-        for psr_i in psr:
-            plags.append([(min([x[0] for x in psr_i]), max([x[0] for x in psr_i])),
-                          (min([x[1] for x in psr_i]), max([x[1] for x in psr_i]))])
+        for psr_i in psr:  # For every cluster
+            plags.append([(min([x[0] for x in psr_i]), max([x[0] for x in psr_i])),  # Case: First to last seed in doc1
+                          (min([x[1] for x in psr_i]), max([x[1] for x in psr_i]))])  # Case: First to last seed in doc2
         temp_res = self._validation(plags, psr, legacy_obj.src_offsets, legacy_obj.susp_offsets, legacy_obj.src_bow,
                                     legacy_obj.susp_bow,
                                     legacy_obj.src_gap, legacy_obj.src_gap_least, legacy_obj.susp_gap,
@@ -152,16 +152,16 @@ class LegacySeedExtender:
         res_sim_frag = []
         i = 0
         range_i = len(plags)
-        while i < range_i:
+        while i < range_i:  # For each case [(sent_start_idx, sent_end_idx), (sent_start_idx, sent_end_idx)]
             susp_d = {}
-            for j in range(plags[i][0][0], plags[i][0][1] + 1):
-                susp_d = sum_vect(susp_d, susp_bow[j])
+            for j in range(plags[i][0][0], plags[i][0][1] + 1):  # For each sentence in doc1
+                susp_d = sum_vect(susp_d, susp_bow[j])  # Sum up all sentence vectors
             src_d = {}
-            for j in range(plags[i][1][0], plags[i][1][1] + 1):
-                src_d = sum_vect(src_d, src_bow[j])
-            sim_frag = cosine_measure(src_d, susp_d)
-            if sim_frag <= th3:
-                # Did not pass with src_gap
+            for j in range(plags[i][1][0], plags[i][1][1] + 1):  # For each sentence in doc2
+                src_d = sum_vect(src_d, src_bow[j])  # Sum up all sentence vectors
+            sim_frag = cosine_measure(src_d, susp_d)  # Calculate similarity between fragments
+            if sim_frag <= th3:  # If not similar enough
+                # Try to extend again but with smaller adjacent_sent_gap
                 if src_gap > src_gap_least and susp_gap > susp_gap_least:  # Do until substraction +1
                     new_psr = self._clustering(psr[i], src_offsets, susp_offsets, src_gap - 1, susp_gap - 1, src_size,
                                                susp_size,
@@ -179,15 +179,15 @@ class LegacySeedExtender:
                         plags_rec, psr_rec, res_sim_frag_rec = [], [], []
                     else:
                         plags_rec, psr_rec, res_sim_frag_rec = temp_res[0], temp_res[1], temp_res[2]
-                    if len(plags_rec) != 0:
-                        res_plags.extend(plags_rec)
+                    if len(plags_rec) != 0:  # Found some new cases after reduction of adjacent_sent_gap
+                        res_plags.extend(plags_rec)  # Add them to result
                         res_psr.extend(psr_rec)
                         res_sim_frag.extend(res_sim_frag_rec)
                 i += 1
-            else:
+            else:  # If sentences in case are similar enough
                 # Passed with src_gap
-                res_plags.append(plags[i])
-                res_psr.append(psr[i])
-                res_sim_frag.append(sim_frag)
+                res_plags.append(plags[i])  # Add plag case
+                res_psr.append(psr[i])  # Add cluster
+                res_sim_frag.append(sim_frag)  # Add similarity
                 i += 1
         return res_plags, res_psr, res_sim_frag
