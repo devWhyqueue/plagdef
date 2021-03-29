@@ -34,8 +34,8 @@ class Seeder:
         sent_matches = []
         for doc1_sent_num in range(len(legacy_obj.susp_bow)):
             for doc2_sent_num in range(len(legacy_obj.src_bow)):
-                match = self._match(Sentence(None, -1, -1, -1, None, legacy_obj.susp_bow[doc1_sent_num]),
-                                    Sentence(None, -1, -1, -1, None, legacy_obj.src_bow[doc2_sent_num]))
+                match = self._match(Sentence(None, -1, -1, None, legacy_obj.susp_bow[doc1_sent_num]),
+                                    Sentence(None, -1, -1, None, legacy_obj.src_bow[doc2_sent_num]))
                 if match:
                     sent_matches.append((doc1_sent_num, doc2_sent_num, match.cos_sim, match.dice_sim))
         return sent_matches

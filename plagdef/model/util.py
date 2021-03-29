@@ -30,7 +30,6 @@ def cluster_tf_isf_bow(doc: Document, start_idx: int, end_idx: int) -> dict:
     for sent_idx in range(start_idx, end_idx + 1):
         for lemma, tf_isf_val in doc.sents[sent_idx].bow_tf_isf.items():
             sent_vec_sum[lemma] += tf_isf_val
-
     return sent_vec_sum
 
 

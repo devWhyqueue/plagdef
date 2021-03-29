@@ -13,6 +13,6 @@ class LegacySentenceMatcher:
             for r in range(len(legacy_obj.src_bow)):
                 v1 = cosine_measure(legacy_obj.susp_bow[c], legacy_obj.src_bow[r])
                 v2 = dice_coeff(legacy_obj.susp_bow[c], legacy_obj.src_bow[r])
-                if v1 > legacy_obj.th1 and v2 > legacy_obj.th2:
+                if v1 > legacy_obj.min_cos_sim and v2 > legacy_obj.min_dice_sim:
                     ps.append((c, r, v1, v2))
         return ps

@@ -16,9 +16,9 @@ def download_nlp_models():
 def config():
     return {
         'lang': 'eng',
-        'th1': 0.3, 'th2': 0.33, 'th3': 0.34,
-        'src_gap': 4, 'src_gap_least': 0, 'susp_gap': 4, 'susp_gap_least': 0,
-        'verbatim_minlen': 256, 'src_size': 1, 'susp_size': 1, 'min_sent_len': 3, 'min_plaglen': 15,
+        'min_cos_sim': 0.3, 'min_dice_sim': 0.33, 'min_cluster_cos_sim': 0.34,
+        'adjacent_sents_gap': 4, 'min_adjacent_sents_gap': 0,
+        'verbatim_minlen': 256, 'min_sent_number': 1, 'min_sent_len': 3, 'min_plaglen': 15,
         'rem_stop_words': False, 'verbatim': 1, 'summary': 1, 'src_gap_summary': 24, 'susp_gap_summary': 24
     }
 
@@ -40,7 +40,7 @@ def nlp_ger():
 
 @fixture(scope='session')
 def seeder(config):
-    return Seeder(config['th1'], config['th2'])
+    return Seeder(config['min_cos_sim'], config['min_dice_sim'])
 
 
 @fixture

@@ -59,7 +59,7 @@ class Preprocessor:
                 if len(sent_lemmas):
                     lemma_count = Counter(sent_lemmas)
                     docs[doc_idx].sents.append(
-                        Sentence(docs[doc_idx], sent_idx, sent.tokens[0].start_char,
+                        Sentence(docs[doc_idx], sent.tokens[0].start_char,
                                  sent.tokens[-1].end_char, lemma_count, {}))
                     for lemma in lemma_count.keys():
                         docs[doc_idx].vocab[lemma] += 1
@@ -115,15 +115,18 @@ class Document:
 @dataclass
 class Sentence:
     doc: Document
-    idx: int
     start_char: int
     end_char: int
     bow: Counter
     bow_tf_isf: dict
 
+    @property
+    def idx(self):
+        return sorted(self.doc.sents, key=lambda sent: sent.start_char).index(self)
+
     def __eq__(self, other):
         if type(other) is type(self):
-            return self.doc == other.doc and self.idx == other.idx
+            return self.doc == other.doc and self.start_char == other.start_char
         return False
 
     def __hash__(self):

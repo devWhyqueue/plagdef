@@ -14,18 +14,19 @@ class LegacySeedExtender:
                 sim_frag <list of floats> - Stores the cosine similarity between source and suspicios fragments in
                 the plagiarism cases after validation
         """
-        psr = self._clustering(ps, legacy_obj.src_offsets, legacy_obj.susp_offsets, legacy_obj.src_gap,
-                               legacy_obj.susp_gap, legacy_obj.src_size,
-                               legacy_obj.susp_size, 0, 0)
+        psr = self._clustering(ps, legacy_obj.src_offsets, legacy_obj.susp_offsets, legacy_obj.adjacent_sents_gap,
+                               legacy_obj.adjacent_sents_gap, legacy_obj.min_sent_number,
+                               legacy_obj.min_sent_number, 0, 0)
         plags = []
         for psr_i in psr:  # For every cluster
             plags.append([(min([x[0] for x in psr_i]), max([x[0] for x in psr_i])),  # Case: First to last seed in doc1
                           (min([x[1] for x in psr_i]), max([x[1] for x in psr_i]))])  # Case: First to last seed in doc2
         temp_res = self._validation(plags, psr, legacy_obj.src_offsets, legacy_obj.susp_offsets, legacy_obj.src_bow,
                                     legacy_obj.susp_bow,
-                                    legacy_obj.src_gap, legacy_obj.src_gap_least, legacy_obj.susp_gap,
-                                    legacy_obj.susp_gap_least, legacy_obj.src_size,
-                                    legacy_obj.susp_size, legacy_obj.th3)
+                                    legacy_obj.adjacent_sents_gap, legacy_obj.min_adjacent_sents_gap,
+                                    legacy_obj.adjacent_sents_gap,
+                                    legacy_obj.min_adjacent_sents_gap, legacy_obj.min_sent_number,
+                                    legacy_obj.min_sent_number, legacy_obj.min_cluster_cos_sim)
         if len(temp_res) == 0:
             plags, psr, sim_frag = [], [], []
         else:

@@ -18,9 +18,9 @@ def test_seeding_returns_seeds(seeder, config):
 
 
 def test_match_returns_nothing_if_not_similar(seeder):
-    sen1 = Sentence(None, -1, -1, -1, Counter({'this': 1, 'be': 1, 'a': 1, 'document': 1}),
+    sen1 = Sentence(None, -1, -1, Counter({'this': 1, 'be': 1, 'a': 1, 'document': 1}),
                     {'this': 0.69, 'be': 0.0, 'a': 0.69, 'document': 0.69})
-    sen2 = Sentence(None, -1, -1, -1, Counter({'these': 1, 'however': 1, 'be': 1, 'different': 1, 'word': 1}),
+    sen2 = Sentence(None, -1, -1, Counter({'these': 1, 'however': 1, 'be': 1, 'different': 1, 'word': 1}),
                     {'these': 0.69, 'be': 0.0, 'different': 0.69,
                      'word': 0.69, 'however': 0.69})
     match = seeder._match(sen1, sen2)
@@ -30,7 +30,7 @@ def test_match_returns_nothing_if_not_similar(seeder):
 def test_match_returns_match_if_similar(seeder):
     # We need a second sentence with some different words because otherwise every term would have zero specificity
     # doc1/doc2: 'The words are all the same. Even these are.'
-    doc1_sent1 = doc2_sent1 = Sentence(None, -1, -1, -1, Counter({'the': 2, 'word': 1, 'be': 1, 'all': 1, 'same': 1}),
+    doc1_sent1 = doc2_sent1 = Sentence(None, -1, -1, Counter({'the': 2, 'word': 1, 'be': 1, 'all': 1, 'same': 1}),
                                        {'the': 1.38, 'word': 0.69, 'be': 0.0, 'all': 0.69, 'same': 0.69})
     match = seeder._match(doc1_sent1, doc2_sent1)
     assert match == Seed(doc1_sent1, doc2_sent1, 1, 1)

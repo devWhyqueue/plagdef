@@ -2,19 +2,41 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from plagdef.model.preprocessing import Document
 from plagdef.model.seeding import Seed
 from plagdef.model.util import cos_sim, adjacent, cluster_tf_isf_bow
 
 
 class SeedExtender:
-    def __init__(self, adjacent_sents_gap: int, min_adjacent_sents_gap: int,
+    def __init__(self, doc1: Document, doc2: Document, adjacent_sents_gap: int, min_adjacent_sents_gap: int,
                  min_sent_number: int, min_cluster_cos_sim: float):
+        # TODO: Just for compatibility
+        self._doc1 = doc1
+        self._doc2 = doc2
         self._adjacent_sents_gap = adjacent_sents_gap
         self._min_adjacent_sents_gap = min_adjacent_sents_gap
         self._min_sent_number = min_sent_number
         self._min_cluster_cos_sim = min_cluster_cos_sim
 
-    def extend(self, seeds: set[Seed], adjacent_sents_gap: int = None) -> set[Detection]:
+    # TODO: Just for compatibility
+    def extend(self, leg_obj, seeds):
+        seeds_new = set()
+        for seed in seeds:
+            sent1 = list(filter(lambda s: s.idx == seed[0], self._doc1.sents))[0]
+            sent2 = list(filter(lambda s: s.idx == seed[1], self._doc2.sents))[0]
+            seeds_new.add(Seed(sent1, sent2, seed[2], seed[3]))
+        detections = self.extend_new(seeds_new)
+        leg_det = [[(det.cluster.first_sent_idx(True), det.cluster.last_sent_idx(True)),
+                    (det.cluster.first_sent_idx(False), det.cluster.last_sent_idx(False))] for det in detections]
+        leg_clusters = []
+        for det in detections:
+            leg_clusters.append([(det.cluster.first_sent_idx(True), det.cluster.first_sent_idx(False),
+                                  seed.cos_sim, seed.dice_sim)
+                                 for seed in det.cluster.seeds])
+        frag_sims = [det.cos_sim for det in detections]
+        return leg_det, leg_clusters, frag_sims
+
+    def extend_new(self, seeds: set[Seed], adjacent_sents_gap: int = None) -> set[Detection]:
         if adjacent_sents_gap is None:
             adjacent_sents_gap = self._adjacent_sents_gap
         clusters = self._cluster(seeds, adjacent_sents_gap)
@@ -54,7 +76,7 @@ class SeedExtender:
             if cluster_cos_sim > self._min_cluster_cos_sim:
                 detections.add(Detection(cluster, cluster_cos_sim))
             elif adjacent_sents_gap > self._min_adjacent_sents_gap:
-                cluster_detections = self.extend(set(cluster.seeds), adjacent_sents_gap - 1)
+                cluster_detections = self.extend_new(set(cluster.seeds), adjacent_sents_gap - 1)
                 detections.update(cluster_detections)
         return detections
 

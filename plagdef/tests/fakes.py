@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from collections import Counter
+from dataclasses import dataclass
+
 from plagdef.model.legacy.algorithm import Document
 from plagdef.model.reporting import DocumentPairReport
 
@@ -30,3 +33,21 @@ class ConfigFakeRepository:
 
     def get(self) -> dict:
         return self._config
+
+
+@dataclass
+class FakeSentence:
+    doc: Document
+    idx: int
+    start_char: int
+    end_char: int
+    bow: Counter
+    bow_tf_isf: dict
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.doc == other.doc and self.start_char == other.start_char
+        return False
+
+    def __hash__(self):
+        return hash((self.doc, self.idx))

@@ -7,7 +7,7 @@ from itertools import combinations
 
 import nltk
 
-from plagdef.model.legacy.extension import LegacySeedExtender
+from plagdef.model.extension import SeedExtender
 from plagdef.model.preprocessing import Document, Preprocessor
 from plagdef.model.seeding import Seeder
 
@@ -415,8 +415,8 @@ class SGSPLAG:
 
         ####META-CLASSIFIER####
         if self.summary != 0:
-            self.src_gap = self.src_gap_summary
-            self.susp_gap = self.susp_gap_summary
+            self.adjacent_sents_gap = self.src_gap_summary
+            self.adjacent_sents_gap = self.susp_gap_summary
             plags2, psr2, sim_frag = seed_extender.extend(self, ps)
             plags2 = self.filtering(plags2, psr2)
         summary_flag = 0
@@ -517,7 +517,9 @@ def find_matches(docs: list[Document], lang: str, config: dict) -> list[Document
             sgsplag_obj = SGSPLAG(doc1.text, doc2.text, config)
 
             preprocessor.set_docs(doc1, doc2)
-            sgsplag_obj.process(preprocessor, Seeder(config['th1'], config['th2']), LegacySeedExtender())
+            sgsplag_obj.process(preprocessor, Seeder(config['min_cos_sim'], config['min_dice_sim']),
+                                SeedExtender(doc1, doc2, config['adjacent_sents_gap'], config['min_adjacent_sents_gap'],
+                                             config['min_sent_number'], config['min_cluster_cos_sim']))
 
             for det in sgsplag_obj.detections:
                 match = Match(Section(doc1, det[0][0], det[0][1] - det[0][0]),
