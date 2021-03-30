@@ -5,7 +5,7 @@ from configparser import ConfigParser
 from itertools import islice
 from pathlib import Path
 
-import chardet
+from charset_normalizer import CharsetNormalizerMatches as CnM
 
 from plagdef.model.legacy.algorithm import Document
 
@@ -22,14 +22,11 @@ class DocumentFileRepository:
             doc_files = [file_path for file_path in dir_path.rglob('*') if file_path.is_file()]
         else:
             doc_files = [file_path for file_path in dir_path.iterdir() if file_path.is_file()]
-        try:
-            for file in doc_files:
-                raw_data = file.read_bytes()
-                enc = chardet.detect(raw_data)['encoding']
-                self._documents.append(Document(file.stem, file.read_text(encoding=enc)))
-        except UnicodeDecodeError as e:
-            raise UnsupportedFileFormatError(f'The directory {dir_path} contains files in an unsupported format.') \
-                from e
+        for file in doc_files:
+            normalized_text = CnM.from_path(str(file)).best().first()
+            if normalized_text is None:
+                raise UnsupportedFileFormatError(f'The file {file.name} has an supported encoding and cannot be read.')
+            self._documents.append(Document(file.stem, str(normalized_text)))
 
     def list(self) -> [Document]:
         return self._documents
