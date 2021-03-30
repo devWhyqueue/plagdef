@@ -40,7 +40,7 @@ class MyQtApp(QApplication):
         if matches:
             self.window.switch_to(ResultView, matches)
         else:
-            self.switch_to(NoResultsView)
+            self.window.switch_to(NoResultsView)
 
     def _on_error(self, error: (type, Exception)):
         if error[0] == UsageError:
