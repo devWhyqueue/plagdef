@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import math
 from collections import Counter
-from dataclasses import dataclass
 
 import stanza
 from more_itertools import pairwise
 
 from plagdef.model import stopwords
+from plagdef.model.models import Document, Sentence
 
 
 class Preprocessor:
@@ -39,10 +39,10 @@ class Preprocessor:
     def preprocess(self, legacy_obj):
         self.preprocess_doc_pair(self._doc1, self._doc2)
         legacy_obj.susp_voc = self._doc1.vocab
-        legacy_obj.susp_bow = [sent.bow_tf_isf for sent in self._doc1.sents]
+        legacy_obj.susp_bow = [sent.tf_isf_bow for sent in self._doc1.sents]
         legacy_obj.susp_offsets = [(sent.start_char, sent.end_char - sent.start_char) for sent in self._doc1.sents]
         legacy_obj.src_voc = self._doc2.vocab
-        legacy_obj.src_bow = [sent.bow_tf_isf for sent in self._doc2.sents]
+        legacy_obj.src_bow = [sent.tf_isf_bow for sent in self._doc2.sents]
         legacy_obj.src_offsets = [(sent.start_char, sent.end_char - sent.start_char) for sent in self._doc2.sents]
 
     # TODO: New single preprocess
@@ -58,7 +58,7 @@ class Preprocessor:
                     sent_lemmas = [word.lemma for word in sent.words if not word.upos == 'PUNCT']
                 if len(sent_lemmas):
                     lemma_count = Counter(sent_lemmas)
-                    docs[doc_idx].sents.append(
+                    docs[doc_idx].sents.add(
                         Sentence(docs[doc_idx], sent.tokens[0].start_char,
                                  sent.tokens[-1].end_char, lemma_count, {}))
                     for lemma in lemma_count.keys():
@@ -76,10 +76,10 @@ class Preprocessor:
         N = len(doc1.sents) + len(doc2.sents)
         for sent in doc1.sents:
             for lemma in sent.bow:
-                sent.bow_tf_isf[lemma] = sent.bow[lemma] * math.log(N / float(sf[lemma]))
+                sent.tf_isf_bow[lemma] = sent.bow[lemma] * math.log(N / float(sf[lemma]))
         for sent in doc2.sents:
             for lemma in sent.bow:
-                sent.bow_tf_isf[lemma] = sent.bow[lemma] * math.log(N / float(sf[lemma]))
+                sent.tf_isf_bow[lemma] = sent.bow[lemma] * math.log(N / float(sf[lemma]))
 
     def _join_small_sentences(self, doc: Document):
         for sent1, sent2 in pairwise(doc.sents):
@@ -88,49 +88,9 @@ class Preprocessor:
                 for lemma in sent1.bow.keys():
                     if lemma in sent2.bow:
                         doc.vocab[lemma] -= 1
-                sent2.bow.update(sent1.bow)
-                sent2.start_char = sent1.start_char
-                doc.sents.remove(sent1)
-
-
-class Document:
-    def __init__(self, name: str, text: str):
-        self.name = name
-        self.text = text
-        self.vocab = Counter()  # <lemma, sent_freq>
-        self.sents: list[Sentence] = []
-
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return self.name == other.name
-        return False
-
-    def __hash__(self):
-        return hash(self.name)
-
-    def __repr__(self):
-        return f"Document('{self.name}')"
-
-
-@dataclass
-class Sentence:
-    doc: Document
-    start_char: int
-    end_char: int
-    bow: Counter
-    bow_tf_isf: dict
-
-    @property
-    def idx(self):
-        return sorted(self.doc.sents, key=lambda sent: sent.start_char).index(self)
-
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return self.doc == other.doc and self.start_char == other.start_char
-        return False
-
-    def __hash__(self):
-        return hash((self.doc, self.idx))
+                joined_sent = Sentence(doc, sent1.start_char, sent2.end_char, sent1.bow + sent2.bow, {})
+                doc.sents.remove(sent1), doc.sents.remove(sent2)
+                doc.sents.add(joined_sent)
 
 
 class UnsupportedLanguageError(Exception):

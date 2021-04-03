@@ -1,9 +1,5 @@
-from collections import defaultdict
-
 from numpy import dot
 from numpy.linalg import norm
-
-from plagdef.model.preprocessing import Document, Sentence
 
 
 def cos_sim(bow1: dict, bow2: dict):
@@ -23,15 +19,3 @@ def dice_sim(bow1: dict, bow2: dict):
     """
     n_com = len(set(bow1.keys()).intersection(bow2.keys()))
     return 2 * n_com / float(len(bow1) + len(bow2))
-
-
-def cluster_tf_isf_bow(doc: Document, start_idx: int, end_idx: int) -> dict:
-    sent_vec_sum = defaultdict(lambda: 0.0)
-    for sent_idx in range(start_idx, end_idx + 1):
-        for lemma, tf_isf_val in doc.sents[sent_idx].bow_tf_isf.items():
-            sent_vec_sum[lemma] += tf_isf_val
-    return sent_vec_sum
-
-
-def adjacent(sent1: Sentence, sent2: Sentence, adjacent_sents_gap: int) -> bool:
-    return abs(sent1.idx - sent2.idx) - 1 <= adjacent_sents_gap

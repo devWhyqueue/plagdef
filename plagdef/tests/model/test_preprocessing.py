@@ -7,12 +7,6 @@ from plagdef.model.legacy.algorithm import SGSPLAG
 from plagdef.model.preprocessing import UnsupportedLanguageError, Document, Preprocessor
 
 
-def test_documents_are_equal():
-    doc1 = Document('doc', 'Arbitrary text.')
-    doc2 = Document('doc', 'Some text.')
-    assert doc1 == doc2
-
-
 def test_preprocessor_init_lang_models():
     en = Preprocessor('eng', 3, False)
     de = Preprocessor('ger', 3, False)
@@ -214,7 +208,7 @@ def test_tf_isf_sent_bows(preprocessed_docs):
     # N (num of all sents) = 6
     # sf (num of sents containing 'copyright') = 3
     # tf-isf = 3 x ln(6/3) = 2.0794...
-    assert [sent.bow_tf_isf for sent in doc1.sents] == \
+    assert [sent.tf_isf_bow for sent in doc1.sents] == \
            [Counter({'not': 1.0986122886681098, 'same': 1.0986122886681098, 'as': 1.0986122886681098,
                      'copyright': 0.6931471805599453, 'infringement': 0.6931471805599453,
                      'plagiarism': 0.4054651081081644, 'be': 0.1823215567939546, 'the': 0.1823215567939546}),

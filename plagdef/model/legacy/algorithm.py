@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 import string
 from dataclasses import dataclass
 from itertools import combinations
@@ -8,176 +7,9 @@ from itertools import combinations
 import nltk
 
 from plagdef.model.extension import SeedExtender
+from plagdef.model.legacy.filtering import LegacyClusterFilter
 from plagdef.model.preprocessing import Document, Preprocessor
 from plagdef.model.seeding import Seeder
-
-
-def cosine_measure(d1, d2):
-    """
-    DESCRIPTION: Compute the cosine measure (cosine of the angle between two vectors) in sparse (dictionary)
-    representation
-    INPUT: d1 <dictionary> - Sparse vector 1
-           d2 <dictionary> - Sparse vector 2
-    OUTPUT: Cosine measure
-    """
-    dot_prod = 0.0
-    det = _eucl_norm(d1) * _eucl_norm(d2)
-    if det == 0:
-        return 0
-    for word in d1.keys():
-        if word in d2:
-            dot_prod += d1[word] * d2[word]
-    return dot_prod / det
-
-
-def _eucl_norm(d1):
-    """
-    DESCRIPTION: Compute the Euclidean norm of a sparse vector
-    INPUT: d1 <dictionary> - sparse vector representation
-    OUTPUT: Norm of the sparse vector d1
-    """
-    norm = 0.0
-    for val in d1.values():
-        norm += float(val * val)
-    return math.sqrt(norm)
-
-
-def remove_overlap3(plags, psr, src_bow, susp_bow):
-    """
-    DESCRIPTION: From a set of overlapping plagiarism cases, looking only on the suspicious side, selects the best
-    case. See article (1) at the beggining of this file, for the formal description.
-    INPUT: plags <list of list of two tuples [(int, int), (int, int)]> - Have the plagiarism cases represented by min
-    and max sentence index in suspicious and source document respectively
-           psr <list of list of tuples (int, int)> - Contains the clusters
-           src_bow <list of dictionaries> - Bag of words representing each sentence vector of source document
-           susp_bow <list of dictionaries> - Bag of words representing each sentence vector of suspicious document
-    OUTPUT: res_plags <list of list of two tuples [(int, int), (int, int)]> - Contains the plagiarism cases without
-    overlapping
-            res_psr <list of list of tuples (int, int)> - Contains the clusters without overlapping
-    """
-    if len(plags) != 0:
-        plags, psr = map(list, zip(*sorted(zip(plags, psr), key=lambda tup: tup[0][0][0])))
-    res_plags = []
-    res_psr = []
-    flag = 0
-    i = 0
-    while i < len(plags):
-        cont_ol = 0
-        if flag == 0:
-            for k in range(i + 1, len(plags)):
-                if plags[k][0][0] - plags[i][0][1] <= 0:
-                    cont_ol += 1
-        else:
-            for k in range(i + 1, len(plags)):
-                if plags[k][0][0] - res_plags[-1][0][1] <= 0:
-                    cont_ol += 1
-        if cont_ol == 0:
-            if flag == 0:
-                res_plags.append(plags[i])
-                res_psr.append(psr[i])
-            else:
-                flag = 0
-            i += 1
-        else:
-            ind_max = i
-            higher_sim = 0.0
-            for j in range(1, cont_ol + 1):
-                if flag == 0:
-                    sents_i = range(plags[i][0][0], plags[i][0][1] + 1)
-                    range_i = range(plags[i][1][0], plags[i][1][1] + 1)
-                else:
-                    sents_i = range(res_plags[-1][0][0], res_plags[-1][0][1] + 1)
-                    range_i = range(res_plags[-1][1][0], res_plags[-1][1][1] + 1)
-                sents_j = range(plags[i + j][0][0], plags[i + j][0][1] + 1)
-                sim_i_ol = 0.0
-                sim_j_ol = 0.0
-                sim_i_nol = 0.0
-                sim_j_nol = 0.0
-                cont_ol_sents = 0
-                cont_i_nol_sents = 0
-                cont_j_nol_sents = 0
-                for sent in sents_i:
-                    sim_max = 0.0
-                    for k in range_i:
-                        sim = cosine_measure(susp_bow[sent], src_bow[k])
-                        if sim > sim_max:
-                            sim_max = sim
-                    if sent in sents_j:
-                        sim_i_ol += sim_max
-                        cont_ol_sents += 1
-                    else:
-                        sim_i_nol += sim_max
-                        cont_i_nol_sents += 1
-                range_j = range(plags[i + j][1][0], plags[i + j][1][1] + 1)
-                for sent in sents_j:
-                    sim_max = 0.0
-                    for k in range_j:
-                        sim = cosine_measure(susp_bow[sent], src_bow[k])
-                        if sim > sim_max:
-                            sim_max = sim
-                    if sent in sents_i:
-                        sim_j_ol += sim_max
-                    else:
-                        sim_j_nol += sim_max
-                        cont_j_nol_sents += 1
-                sim_i = sim_i_ol / cont_ol_sents
-                if cont_i_nol_sents != 0:
-                    sim_i = sim_i + (1 - sim_i) * sim_i_nol / float(cont_i_nol_sents)
-                sim_j = sim_j_ol / cont_ol_sents
-                if cont_j_nol_sents != 0:
-                    sim_j = sim_j + (1 - sim_j) * sim_j_nol / float(cont_j_nol_sents)
-                if sim_i > 0.99 and sim_j > 0.99:
-                    if len(sents_j) > len(sents_i):
-                        if sim_j > higher_sim:
-                            ind_max = i + j
-                            higher_sim = sim_j
-                    else:
-                        if sim_i > higher_sim:
-                            ind_max = i
-                            higher_sim = sim_i
-                elif sim_j > sim_i:
-                    if sim_j > higher_sim:
-                        ind_max = i + j
-                        higher_sim = sim_j
-                    elif sim_i > higher_sim:
-                        ind_max = i
-                        higher_sim = sim_i
-            if flag == 0:
-                res_plags.append(plags[ind_max])
-                res_psr.append(psr[ind_max])
-            elif ind_max != i:
-                del res_plags[-1]
-                del res_psr[-1]
-                res_plags.append(plags[ind_max])
-                res_psr.append(psr[ind_max])
-            i = i + cont_ol
-            flag = 1
-    return res_plags, res_psr
-
-
-def remove_small_plags(plags, psr, src_offsets, susp_offsets, th):
-    """
-    DESCRIPTION: Remove the plagiarism cases that have less tha th characters either in the source or suspicios
-    fragments
-    INPUT: plags <list of list of two tuples [(int, int), (int, int)]> - Have the plagiarism cases represented by min
-    and max sentence index in suspicious and source document respectively
-           psr <list of list of tuples (int, int)> - Contains the clusters
-           src_offsets <list of tuples (int, int)> - Contain the char offset and length of each source document sentence
-           susp_offsets <list of tuples (int, int)> - Contain the char offset and length of each suspicious document
-           sentence
-    OUTPUT: res_plags <list of list of two tuples [(int, int), (int, int)]> - Contains the plagiarism cases without
-    short cases
-            res_psr <list of list of tuples (int, int)> - Contains the clusters without short cases
-    """
-    res_plags = []
-    res_psr = []
-    for i in range(len(plags)):
-        arg1 = (susp_offsets[plags[i][0][0]][0], susp_offsets[plags[i][0][1]][0] + susp_offsets[plags[i][0][1]][1])
-        arg2 = (src_offsets[plags[i][1][0]][0], src_offsets[plags[i][1][1]][0] + src_offsets[plags[i][1][1]][1])
-        if arg1[1] - arg1[0] >= th and arg2[1] - arg2[0] >= th:
-            res_plags.append(plags[i])
-            res_psr.append(psr[i])
-    return res_plags, res_psr
 
 
 def word_span_tokenizer(text):
@@ -366,7 +198,7 @@ class SGSPLAG:
         self.susp_bow = {}
         self.detections = None
 
-    def process(self, preprocessor, sent_matcher, seed_extender):
+    def process(self, preprocessor, sent_matcher, seed_extender, detection_filter):
         """
         DESCRIPTION: Process the plagiarism pipeline
         INPUT: self <SGSPLAG object>
@@ -374,24 +206,10 @@ class SGSPLAG:
                 summary_flag <int> - Summary plagarism flag
         """
         preprocessor.preprocess(self)
-        self.detections, type_plag, summary_flag = self.compare(sent_matcher, seed_extender)
+        self.detections, type_plag, summary_flag = self.compare(sent_matcher, seed_extender, detection_filter)
         return type_plag, summary_flag
 
-    def filtering(self, plags, psr):
-        """
-        DESCRIPTION: Filter the plagiarism cases by removing overlapping and short cases
-        INPUT: plags <list of list of two tuples [(int, int), (int, int)]> - Contains the plagiarism cases after
-        validation
-               psr <list of list of tuples (int, int)> - Contains the clusters after validation
-        OUTPUT: plags <list of list of two tuples [(int, int), (int, int)]> - Contains the plagiarism cases. Also
-        modify psr.
-        """
-        plags, psr = remove_overlap3(plags, psr, self.src_bow, self.susp_bow)
-        plags, psr = remove_small_plags(plags, psr, self.src_offsets, self.susp_offsets, self.min_plaglen)
-
-        return plags
-
-    def compare(self, sent_matcher, seed_extender):
+    def compare(self, sent_matcher, seed_extender, detection_filter):
         """
         DESCRIPTION: Test a suspicious document for near-duplicate plagiarism with regards to a source document and
         return a feature list depending on the type_plag and summary_flag flags.
@@ -404,7 +222,7 @@ class SGSPLAG:
         detections = []
         ps = sent_matcher.seeding(self)
         plags, psr, sim_frag = seed_extender.extend(self, ps)
-        plags = self.filtering(plags, psr)
+        plags = detection_filter.filtering(self, plags, psr)
         if self.verbatim != 0:
             plags_verbatim, psr_verbatim, type_plag, long_frag = verbatim_det_lcs_all(plags, psr, self.susp_text,
                                                                                       self.src_text, self.susp_offsets,
@@ -418,7 +236,7 @@ class SGSPLAG:
             self.adjacent_sents_gap = self.src_gap_summary
             self.adjacent_sents_gap = self.susp_gap_summary
             plags2, psr2, sim_frag = seed_extender.extend(self, ps)
-            plags2 = self.filtering(plags2, psr2)
+            plags2 = LegacyClusterFilter().filtering(self, plags2, psr2)
         summary_flag = 0
         if type_plag == 0:
             sum_src = 0
@@ -519,7 +337,8 @@ def find_matches(docs: list[Document], lang: str, config: dict) -> list[Document
             preprocessor.set_docs(doc1, doc2)
             sgsplag_obj.process(preprocessor, Seeder(config['min_cos_sim'], config['min_dice_sim']),
                                 SeedExtender(doc1, doc2, config['adjacent_sents_gap'], config['min_adjacent_sents_gap'],
-                                             config['min_sent_number'], config['min_cluster_cos_sim']))
+                                             config['min_sent_number'], config['min_cluster_cos_sim']),
+                                LegacyClusterFilter())
 
             for det in sgsplag_obj.detections:
                 match = Match(Section(doc1, det[0][0], det[0][1] - det[0][0]),

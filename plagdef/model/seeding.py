@@ -1,18 +1,6 @@
-from dataclasses import dataclass
-
 from plagdef.model import util
+from plagdef.model.models import Seed
 from plagdef.model.preprocessing import Sentence, Document
-
-
-@dataclass(frozen=True)
-class Seed:
-    sent1: Sentence
-    sent2: Sentence
-    cos_sim: float
-    dice_sim: float
-
-    def __repr__(self):
-        return f'Seed({self.sent1.idx}, {self.sent2.idx}, {self.cos_sim}, {self.dice_sim})'
 
 
 class Seeder:
@@ -41,7 +29,7 @@ class Seeder:
         return sent_matches
 
     def _match(self, sent1: Sentence, sent2: Sentence):
-        cos_sim = util.cos_sim(sent1.bow_tf_isf, sent2.bow_tf_isf)
-        dice_sim = util.dice_sim(sent1.bow_tf_isf, sent2.bow_tf_isf)
+        cos_sim = util.cos_sim(sent1.tf_isf_bow, sent2.tf_isf_bow)
+        dice_sim = util.dice_sim(sent1.tf_isf_bow, sent2.tf_isf_bow)
         if cos_sim > self._min_cos_sim and dice_sim > self._min_dice_sim:
             return Seed(sent1, sent2, cos_sim, dice_sim)

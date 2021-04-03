@@ -1,10 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-
-from plagdef.model.preprocessing import Document
-from plagdef.model.seeding import Seed
-from plagdef.model.util import cos_sim, adjacent, cluster_tf_isf_bow
+from plagdef.model.models import Seed, Cluster, Document
 
 
 class SeedExtender:
@@ -25,18 +21,18 @@ class SeedExtender:
             sent1 = list(filter(lambda s: s.idx == seed[0], self._doc1.sents))[0]
             sent2 = list(filter(lambda s: s.idx == seed[1], self._doc2.sents))[0]
             seeds_new.add(Seed(sent1, sent2, seed[2], seed[3]))
-        detections = self.extend_new(seeds_new)
-        leg_det = [[(det.cluster.first_sent_idx(True), det.cluster.last_sent_idx(True)),
-                    (det.cluster.first_sent_idx(False), det.cluster.last_sent_idx(False))] for det in detections]
+        clusters = self.extend_new(seeds_new)
+        leg_det = [[(cluster.sents_doc1[0].idx, cluster.sents_doc1[-1].idx),
+                    (cluster.sents_doc2[0].idx, cluster.sents_doc2[-1].idx)] for cluster in clusters]
         leg_clusters = []
-        for det in detections:
-            leg_clusters.append([(det.cluster.first_sent_idx(True), det.cluster.first_sent_idx(False),
+        for cluster in clusters:
+            leg_clusters.append([(cluster.sents_doc1[0].idx, cluster.sents_doc2[0].idx,
                                   seed.cos_sim, seed.dice_sim)
-                                 for seed in det.cluster.seeds])
-        frag_sims = [det.cos_sim for det in detections]
+                                 for seed in cluster.seeds])
+        frag_sims = [cluster.cos_sim for cluster in clusters]
         return leg_det, leg_clusters, frag_sims
 
-    def extend_new(self, seeds: set[Seed], adjacent_sents_gap: int = None) -> set[Detection]:
+    def extend_new(self, seeds: set[Seed], adjacent_sents_gap: int = None) -> set[Cluster]:
         if adjacent_sents_gap is None:
             adjacent_sents_gap = self._adjacent_sents_gap
         clusters = self._cluster(seeds, adjacent_sents_gap)
@@ -50,7 +46,7 @@ class SeedExtender:
         return clusters
 
     def _join_seeds(self, seeds: frozenset[Seed], adjacent_sents_gap: int, first: bool) -> set[Cluster]:
-        sorted_seeds = sorted(seeds, key=lambda s: s.sent1.idx if first else s.sent2.idx)
+        sorted_seeds = sorted(seeds, key=lambda s: s.sent1.start_char if first else s.sent2.start_char)
         clusters = set()
         seed_iter: enumerate = enumerate(sorted_seeds)
         for seed_idx, seed in seed_iter:
@@ -58,57 +54,19 @@ class SeedExtender:
             for adj_seed in sorted_seeds[seed_idx + 1:]:  # For following seeds
                 sent1 = cluster_seeds[-1].sent1 if first else cluster_seeds[-1].sent2
                 sent2 = adj_seed.sent1 if first else adj_seed.sent2
-                if adjacent(sent1, sent2, adjacent_sents_gap):  # If sent is adjacent, add seed
+                if sent1.adjacent_to(sent2, adjacent_sents_gap):  # If sent is adjacent, add seed
                     cluster_seeds.append(next(seed_iter)[1])
                 else:
-                    break  # Seeds are sorted by sent idx
-            clusters.add(Cluster(frozenset(cluster_seeds)))
+                    break  # Seeds are sorted by sent start_char
+            clusters.add(Cluster(set(cluster_seeds)))
         return clusters
 
-    def _filter(self, clusters: set[Cluster], adjacent_sents_gap: int) -> set[Detection]:
-        detections = set()
+    def _filter(self, clusters: set[Cluster], adjacent_sents_gap: int) -> set[Cluster]:
+        filtered_clusters = set()
         for cluster in clusters:
-            cluster_tf_isf_bow_doc1 = cluster_tf_isf_bow(cluster.doc1, cluster.first_sent_idx(first=True),
-                                                         cluster.last_sent_idx(first=True))
-            cluster_tf_isf_bow_doc2 = cluster_tf_isf_bow(cluster.doc2, cluster.first_sent_idx(first=False),
-                                                         cluster.last_sent_idx(first=False))
-            cluster_cos_sim = cos_sim(cluster_tf_isf_bow_doc1, cluster_tf_isf_bow_doc2)
-            if cluster_cos_sim > self._min_cluster_cos_sim:
-                detections.add(Detection(cluster, cluster_cos_sim))
+            if cluster.cos_sim > self._min_cluster_cos_sim:
+                filtered_clusters.add(cluster)
             elif adjacent_sents_gap > self._min_adjacent_sents_gap:
                 cluster_detections = self.extend_new(set(cluster.seeds), adjacent_sents_gap - 1)
-                detections.update(cluster_detections)
-        return detections
-
-
-@dataclass(frozen=True)
-class Cluster:
-    seeds: frozenset[Seed]
-
-    @property
-    def doc1(self):
-        return list(self.seeds)[0].sent1.doc
-
-    @property
-    def doc2(self):
-        return list(self.seeds)[0].sent2.doc
-
-    def first_sent_idx(self, first: bool) -> int:
-        return min([seed.sent1.idx for seed in self.seeds]) if first else min([seed.sent2.idx for seed in self.seeds])
-
-    def last_sent_idx(self, first: bool) -> int:
-        return max([seed.sent1.idx for seed in self.seeds]) if first else max([seed.sent2.idx for seed in self.seeds])
-
-    def __repr__(self):
-        if not len(self.seeds):
-            return 'Cluster()'
-        string = 'Cluster('
-        for seed in self.seeds:
-            string = string + f'{repr(seed)}, '
-        return f'{string[:-2]})'
-
-
-@dataclass(frozen=True)
-class Detection:
-    cluster: Cluster
-    cos_sim: float
+                filtered_clusters.update(cluster_detections)
+        return filtered_clusters
