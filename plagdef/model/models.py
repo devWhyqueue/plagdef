@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from collections import Counter, Iterable, defaultdict
+from collections import Counter, defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass
 from functools import total_ordering
 
