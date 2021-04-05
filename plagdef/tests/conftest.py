@@ -18,7 +18,7 @@ def config():
         'lang': 'eng',
         'min_cos_sim': 0.3, 'min_dice_sim': 0.33, 'min_cluster_cos_sim': 0.34,
         'adjacent_sents_gap': 4, 'min_adjacent_sents_gap': 0,
-        'verbatim_minlen': 256, 'min_sent_number': 1, 'min_sent_len': 3, 'min_plaglen': 15,
+        'verbatim_minlen': 256, 'min_sent_number': 1, 'min_sent_len': 3, 'min_cluster_char_len': 15,
         'rem_stop_words': False, 'verbatim': 1, 'summary': 1, 'src_gap_summary': 24, 'susp_gap_summary': 24
     }
 
