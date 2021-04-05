@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from networkx import Graph, intersection, articulation_points, is_biconnected, is_empty
 
 from plagdef.model.models import Cluster, RatedCluster
