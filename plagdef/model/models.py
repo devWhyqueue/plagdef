@@ -32,11 +32,13 @@ class Document:
 
 @dataclass
 class Sentence:
-    doc: Document
-    start_char: int
-    end_char: int
-    bow: Counter
-    tf_isf_bow: dict
+    def __init__(self, doc: Document, start_char: int, end_char: int, bow: Counter, tf_isf_bow: dict):
+        self.doc = doc
+        self.start_char = start_char
+        self.end_char = end_char
+        self.length = end_char - start_char
+        self.bow = bow
+        self.tf_isf_bow = tf_isf_bow
 
     @property
     def idx(self):
@@ -175,3 +177,8 @@ class RatedCluster:
             return self.size < other.size
         else:
             return self.quality < other.quality
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.__dict__ == other.__dict__
+        return False

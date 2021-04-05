@@ -13,7 +13,8 @@ class LegacyClusterFilter:
         modify psr.
         """
         plags, psr = self.remove_overlap3(plags, psr, leg_obj.src_bow, leg_obj.susp_bow)
-        plags, psr = self.remove_small_plags(plags, psr, leg_obj.src_offsets, leg_obj.susp_offsets, leg_obj.min_plaglen)
+        plags, psr = self.remove_small_plags(plags, psr, leg_obj.src_offsets, leg_obj.susp_offsets,
+                                             leg_obj.min_cluster_char_len)
 
         return plags
 
@@ -154,10 +155,13 @@ class LegacyClusterFilter:
         """
         res_plags = []
         res_psr = []
-        for i in range(len(plags)):
+        for i in range(len(plags)):  # For each case
+            # First char of first sentence of case in susp, first char of last sent of case in susp
+            # + length of last sent in susp doc
             arg1 = (susp_offsets[plags[i][0][0]][0], susp_offsets[plags[i][0][1]][0] + susp_offsets[plags[i][0][1]][1])
+            # Same for src
             arg2 = (src_offsets[plags[i][1][0]][0], src_offsets[plags[i][1][1]][0] + src_offsets[plags[i][1][1]][1])
-            if arg1[1] - arg1[0] >= th and arg2[1] - arg2[0] >= th:
+            if arg1[1] - arg1[0] >= th and arg2[1] - arg2[0] >= th:  # only append if char num >= min_sentlen
                 res_plags.append(plags[i])
                 res_psr.append(psr[i])
         return res_plags, res_psr

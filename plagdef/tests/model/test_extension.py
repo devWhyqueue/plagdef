@@ -185,8 +185,8 @@ def _create_seeds(seed_tpls: list[tuple]):
     doc1, doc2 = Document('doc1', ''), Document('doc2', '')
     max_idx_doc1, max_idx_doc2 = max(seed_tpls, key=lambda seed: seed[0]), \
                                  max(seed_tpls, key=lambda seed: seed[1])
-    [doc1.sents.add(Sentence(doc1, idx, -1, Counter(), {})) for idx in range(max_idx_doc1[0] + 1)]
-    [doc2.sents.add(Sentence(doc2, idx, -1, Counter(), {})) for idx in range(max_idx_doc2[1] + 1)]
+    [doc1.sents.add(Sentence(doc1, idx, idx + 1, Counter(), {})) for idx in range(max_idx_doc1[0] + 1)]
+    [doc2.sents.add(Sentence(doc2, idx, idx + 1, Counter(), {})) for idx in range(max_idx_doc2[1] + 1)]
     seeds = []
     for seed_tpl in seed_tpls:
         seeds.append(Seed(doc1.sents[seed_tpl[0]], doc2.sents[seed_tpl[1]], 1, 1))

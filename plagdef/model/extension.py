@@ -22,6 +22,7 @@ class SeedExtender:
             sent2 = list(filter(lambda s: s.idx == seed[1], self._doc2.sents))[0]
             seeds_new.add(Seed(sent1, sent2, seed[2], seed[3]))
         clusters = self.extend_new(seeds_new)
+        leg_obj.clusters = clusters
         leg_det = [[(cluster.sents_doc1[0].idx, cluster.sents_doc1[-1].idx),
                     (cluster.sents_doc2[0].idx, cluster.sents_doc2[-1].idx)] for cluster in clusters]
         leg_clusters = []
