@@ -1,7 +1,6 @@
 init: ## initialize environment and install requirements
 	pip install pipenv
 	pipenv install --dev
-	pipenv run python -m nltk.downloader punkt
 
 clean-test: ## remove test and coverage artifacts
 	rm -fr .tox/
