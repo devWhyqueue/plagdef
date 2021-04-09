@@ -7,7 +7,7 @@ from pathlib import Path
 
 from charset_normalizer import CharsetNormalizerMatches as CnM
 
-from plagdef.model.legacy.algorithm import Document
+from plagdef.model.models import Document
 
 
 class DocumentFileRepository:

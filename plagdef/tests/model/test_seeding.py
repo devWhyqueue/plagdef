@@ -1,36 +1,47 @@
 from collections import Counter
 
-from plagdef.model.legacy.algorithm import SGSPLAG
-from plagdef.model.preprocessing import Sentence
-from plagdef.model.seeding import Seed
+from plagdef.model.models import Document
+from plagdef.model.seeding import Seed, _vectorize_sents
 
 
-def test_seeding_returns_seeds(seeder, config):
-    doc1_sent_bows = doc2_sent_bows = [{'this': 1.0986, 'be': 0.0, 'a': 1.0986, 'document': 1.0986},
-                                       {'all': 1.0986, 'the': 2.1972, 'word': 1.0986, 'be': 0.0, 'same': 1.0986},
-                                       {'even': 1.0986, 'these': 1.0986, 'last': 1.0986, 'one': 1.0986, 'be': 0.0}]
-    obj = SGSPLAG('This is a document. All the words are the same. Even these last ones are.',
-                  'This is a document. All the words are the same. Even these last ones are.', config)
-    obj.susp_bow, obj.src_bow = doc1_sent_bows, doc2_sent_bows
-    seeds = seeder.seeding(obj)
-    assert len(seeds) == len(doc1_sent_bows)
-    assert [s[:2] for s in seeds] == [(0, 0), (1, 1), (2, 2)]
-
-
-def test_match_returns_nothing_if_not_similar(seeder):
-    sen1 = Sentence(None, -1, -1, Counter({'this': 1, 'be': 1, 'a': 1, 'document': 1}),
-                    {'this': 0.69, 'be': 0.0, 'a': 0.69, 'document': 0.69})
-    sen2 = Sentence(None, -1, -1, Counter({'these': 1, 'however': 1, 'be': 1, 'different': 1, 'word': 1}),
-                    {'these': 0.69, 'be': 0.0, 'different': 0.69,
-                     'word': 0.69, 'however': 0.69})
-    match = seeder._match(sen1, sen2)
+def test_match_returns_nothing_if_not_similar(preprocessor, seeder):
+    doc1, doc2 = Document('doc1', 'This is a document.'), Document('doc2', 'These are different words however.')
+    preprocessor.preprocess([doc1, doc2], 'eng')
+    match = seeder.seed(doc1, doc2)
     assert not match
 
 
-def test_match_returns_match_if_similar(seeder):
+def test_match_returns_match_if_similar(preprocessor, seeder):
     # We need a second sentence with some different words because otherwise every term would have zero specificity
-    # doc1/doc2: 'The words are all the same. Even these are.'
-    doc1_sent1 = doc2_sent1 = Sentence(None, -1, -1, Counter({'the': 2, 'word': 1, 'be': 1, 'all': 1, 'same': 1}),
-                                       {'the': 1.38, 'word': 0.69, 'be': 0.0, 'all': 0.69, 'same': 0.69})
-    match = seeder._match(doc1_sent1, doc2_sent1)
-    assert match == Seed(doc1_sent1, doc2_sent1, 1, 1)
+    doc1 = Document('doc1', 'The words are all the same. Even these are.')
+    doc2 = Document('doc2', 'The words are all the same. Even these are.')
+    preprocessor.preprocess([doc1, doc2], 'eng')
+    matches = seeder.seed(doc1, doc2)
+    assert Seed(doc1.sents[0], doc2.sents[0], 1, 1) in matches
+
+
+def test_vectorize_sents(preprocessed_docs):
+    doc1, doc2 = preprocessed_docs
+    _vectorize_sents(doc1, doc2)
+    # Lemma error "rights" ignored
+    # Example for copyright in third sent:
+    # tf-isf = tf x ln(N/sf)
+    # tf('copyright') in sent3 = 3
+    # N (num of all sents) = 6
+    # sf (num of sents containing 'copyright') = 3
+    # tf-isf = 3 x ln(6/3) = 2.0794...
+    assert [sent.tf_isf_bow for sent in doc1.sents] == \
+           [Counter({'not': 1.0986122886681098, 'same': 1.0986122886681098, 'as': 1.0986122886681098,
+                     'copyright': 0.6931471805599453, 'infringement': 0.6931471805599453,
+                     'plagiarism': 0.4054651081081644, 'be': 0.1823215567939546, 'the': 0.1823215567939546}),
+            Counter({'while': 1.791759469228055, 'both': 1.791759469228055, 'term': 1.791759469228055,
+                     'apply': 1.791759469228055, 'particular': 1.791759469228055, 'they': 1.791759469228055,
+                     'different': 1.791759469228055, 'concept': 1.791759469228055, 'may': 1.0986122886681098,
+                     'to': 1.0986122886681098, 'act': 1.0986122886681098, 'a': 0.4054651081081644,
+                     'be': 0.1823215567939546}),
+            Counter({'use': 3.58351893845611, 'of': 2.1972245773362196, 'copyright': 2.0794415416798357,
+                     'violation': 1.791759469228055, 'rights': 1.791759469228055, 'holder': 1.791759469228055,
+                     'when': 1.791759469228055, 'material': 1.791759469228055, 'whose': 1.791759469228055,
+                     'restrict': 1.791759469228055, 'by': 1.791759469228055, 'without': 1.791759469228055,
+                     'consent': 1.791759469228055, 'a': 0.8109302162163288, 'infringement': 0.6931471805599453,
+                     'be': 0.5469646703818638, 'the': 0.1823215567939546})]

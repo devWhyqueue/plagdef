@@ -4,7 +4,8 @@ from unittest.mock import patch
 import pytest
 from click import UsageError
 
-from plagdef.model.legacy.algorithm import DocumentPairMatches, Match, Section
+from plagdef.model.detection import DocumentMatcher
+from plagdef.model.models import DocumentPairMatches, Match, Fragment
 from plagdef.model.preprocessing import Document, UnsupportedLanguageError
 from plagdef.services import find_matches, write_xml_reports
 from plagdef.tests.fakes import ConfigFakeRepository, DocumentFakeRepository, DocumentPairReportFakeRepository
@@ -16,12 +17,12 @@ def test_find_matches(config):
     doc_repo = DocumentFakeRepository(docs, 'eng')
     config_repo = ConfigFakeRepository(config)
     doc_pair_matches = DocumentPairMatches()
-    doc_pair_matches.add(Match(Section(docs[0], 0, 18), Section(docs[1], 0, 23)))
-    with patch('plagdef.model.legacy.algorithm.find_matches') as alg_fm:
+    doc_pair_matches.add(Match(Fragment(0, 18, docs[0]), Fragment(0, 23, docs[1])))
+    with patch.object(DocumentMatcher, 'find_matches') as alg_fm:
         alg_fm.return_value = [doc_pair_matches]
         matches = find_matches(doc_repo, config_repo)
     assert matches == [doc_pair_matches]
-    alg_fm.assert_called_with(doc_repo.list(), doc_repo.lang, config_repo.get())
+    alg_fm.assert_called_with(doc_repo.list(), doc_repo.lang)
 
 
 def test_find_matches_catches_parsing_error():
@@ -34,21 +35,12 @@ def test_find_matches_catches_parsing_error():
             find_matches(doc_repo, config_repo)
 
 
-def test_find_matches_catches_invalid_config_error():
-    docs = [Document('doc1', 'This is a document.\n'),
-            Document('doc2', 'This also is a document.\n')]
-    doc_repo = DocumentFakeRepository(docs, 'eng')
-    config_repo = ConfigFakeRepository({})
-    with pytest.raises(UsageError):
-        find_matches(doc_repo, config_repo)
-
-
 def test_find_matches_catches_unsupported_language_error(config):
     docs = [Document('doc1', 'This is a document.\n'),
             Document('doc2', 'This also is a document.\n')]
     doc_repo = DocumentFakeRepository(docs, 'eng')
     config_repo = ConfigFakeRepository(config)
-    with patch('plagdef.model.legacy.algorithm.find_matches') as alg_fm:
+    with patch.object(DocumentMatcher, 'find_matches') as alg_fm:
         alg_fm.side_effect = UnsupportedLanguageError()
         with pytest.raises(UsageError):
             find_matches(doc_repo, config_repo)
@@ -59,7 +51,7 @@ def test_find_matches_fails_on_unexpected_error(config):
             Document('doc2', 'This also is a document.\n')]
     doc_repo = DocumentFakeRepository(docs, 'eng')
     config_repo = ConfigFakeRepository(config)
-    with patch('plagdef.model.legacy.algorithm.find_matches') as alg_fm:
+    with patch.object(DocumentMatcher, 'find_matches') as alg_fm:
         alg_fm.side_effect = Exception()
         with pytest.raises(Exception):
             find_matches(doc_repo, config_repo)

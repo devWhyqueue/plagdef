@@ -1,9 +1,9 @@
 import stanza
 from pytest import fixture
 
-from plagdef.model.legacy.algorithm import DocumentPairMatches, Match, Section
+from plagdef.model.models import DocumentPairMatches, Match, Fragment
 from plagdef.model.preprocessing import Preprocessor, Document
-from plagdef.model.seeding import Seeder
+from plagdef.model.seeding import SeedFinder
 
 
 @fixture(scope="session", autouse=True)
@@ -17,20 +17,15 @@ def config():
     return {
         'lang': 'eng',
         'min_cos_sim': 0.3, 'min_dice_sim': 0.33, 'min_cluster_cos_sim': 0.34,
-        'adjacent_sents_gap': 4, 'min_adjacent_sents_gap': 0,
-        'verbatim_minlen': 256, 'min_sent_number': 1, 'min_sent_len': 3, 'min_cluster_char_len': 15,
-        'rem_stop_words': False, 'verbatim': 1, 'summary': 1, 'src_gap_summary': 24, 'susp_gap_summary': 24
+        'adjacent_sents_gap': 4, 'min_adjacent_sents_gap': 0, 'adjacent_sents_gap_summary': 24,
+        'min_verbatim_match_char_len': 256, 'min_sent_number': 1, 'min_sent_len': 3, 'min_cluster_char_len': 15,
+        'rem_stop_words': False
     }
 
 
 @fixture(scope='session')
-def preprocessor_eng(config):
-    return Preprocessor('eng', config['min_sent_len'], config['rem_stop_words'])
-
-
-@fixture(scope='session')
-def preprocessor_ger(config):
-    return Preprocessor('ger', config['min_sent_len'], config['rem_stop_words'])
+def preprocessor(config):
+    return Preprocessor(config['min_sent_len'], config['rem_stop_words'])
 
 
 @fixture(scope='session')
@@ -40,11 +35,11 @@ def nlp_ger():
 
 @fixture(scope='session')
 def seeder(config):
-    return Seeder(config['min_cos_sim'], config['min_dice_sim'])
+    return SeedFinder(config['min_cos_sim'], config['min_dice_sim'])
 
 
 @fixture
-def preprocessed_docs(preprocessor_eng):
+def preprocessed_docs(preprocessor):
     doc1 = Document('doc1',
                     'Plagiarism is not the same as copyright infringement. While both terms may '
                     'apply to a particular act, they are different concepts. Copyright infringement '
@@ -55,8 +50,7 @@ def preprocessed_docs(preprocessor_eng):
                     'plagiarist with a benefit in exchange for what is specifically supposed to be original '
                     'content. Plagiarism is not the same as copyright infringement. Acts of plagiarism may '
                     'sometimes also form part of a claim for breach of the plagiarist\'s contract.')
-    preprocessor_eng.preprocess_new([doc1, doc2])
-    preprocessor_eng.preprocess_doc_pair(doc1, doc2)
+    preprocessor.preprocess([doc1, doc2], 'eng')
     return doc1, doc2
 
 
@@ -65,10 +59,10 @@ def matches():
     doc1, doc2 = Document('doc1', 'This is a document.\n'), \
                  Document('doc2', 'This also is a document.\n')
     doc1_doc2_matches = DocumentPairMatches()
-    doc1_doc2_matches.add(Match(Section(doc1, 0, 5), Section(doc2, 0, 5)))
-    doc1_doc2_matches.add(Match(Section(doc1, 5, 10), Section(doc2, 5, 10)))
+    doc1_doc2_matches.add(Match(Fragment(0, 5, doc1), Fragment(0, 5, doc2)))
+    doc1_doc2_matches.add(Match(Fragment(5, 10, doc1), Fragment(5, 10, doc2)))
     doc3, doc4 = Document('doc3', 'This is another document.\n'), \
                  Document('doc4', 'This also is another document.\n')
     doc3_doc4_matches = DocumentPairMatches()
-    doc3_doc4_matches.add(Match(Section(doc3, 2, 6), Section(doc4, 2, 8)))
+    doc3_doc4_matches.add(Match(Fragment(2, 6, doc3), Fragment(2, 8, doc4)))
     return [doc1_doc2_matches, doc3_doc4_matches]

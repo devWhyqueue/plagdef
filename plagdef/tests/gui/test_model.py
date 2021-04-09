@@ -4,7 +4,8 @@ from plagdef.gui.model import ResultsTableModel, ResultRow
 def test_results_table_model_init(matches):
     model = ResultsTableModel(matches)
     assert model.rowCount() == 3
-    assert model._rows[0] == ResultRow('doc1', 0, 5, 'doc2', 0, 5)
+    assert model._rows[0] == ResultRow('doc1', 0, 5, 'doc2', 0, 5) \
+           or model._rows[0] == ResultRow('doc2', 0, 5, 'doc1', 0, 5)
 
 
 def test_results_table_model_data(matches):

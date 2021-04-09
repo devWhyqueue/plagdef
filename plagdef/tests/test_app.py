@@ -47,11 +47,10 @@ def test_text_report_with_matches_is_printed(matches, tmp_path):
     runner = CliRunner()
     result = runner.invoke(cli, ['-l', 'eng', str(tmp_path)])
     assert result.exit_code == 0
-    assert 'Pair(doc1, doc2):\n' \
-           '  Match(Section(0, 5), Section(0, 5))\n' \
-           '  Match(Section(5, 10), Section(5, 10))\n' \
-           'Pair(doc3, doc4):\n' \
-           '  Match(Section(2, 6), Section(2, 8))\n' in result.output
+    assert 'Match(Fragment(0, 5), Fragment(0, 5))' in result.output
+    assert 'Match(Fragment(5, 10), Fragment(5, 10))' in result.output
+    assert 'Match(Fragment(2, 6), Fragment(2, 8))' in result.output \
+           or 'Match(Fragment(2, 8), Fragment(2, 6))' in result.output
 
 
 def test_confirmation_after_xml_reports_are_generated(matches, tmp_path):

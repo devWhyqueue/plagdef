@@ -13,7 +13,7 @@ import plagdef.gui.resources
 from plagdef.gui.controllers import HomeController, LoadingController, ErrorController, NoResultsController, \
     ResultController
 from plagdef.gui.views import MainWindow, ResultView, NoResultsView, ErrorView
-from plagdef.model.legacy.algorithm import DocumentPairMatches
+from plagdef.model.models import DocumentPairMatches
 
 app = None
 

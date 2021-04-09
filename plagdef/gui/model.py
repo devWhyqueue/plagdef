@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 from PySide6.QtGui import QColor
 
-from plagdef.model.legacy import algorithm
+from plagdef.model.models import DocumentPairMatches
 
 
 @dataclass(frozen=True)
@@ -19,16 +19,17 @@ class ResultRow:
 
 
 class ResultsTableModel(QAbstractTableModel):
-    def __init__(self, matches: list[algorithm.DocumentPairMatches]):
+    def __init__(self, matches: list[DocumentPairMatches]):
         super().__init__()
         self._rows = []
         for doc_pair_matches in matches:
             for match in doc_pair_matches.list():
-                self._rows.append(ResultRow(doc_pair_matches.doc1.name, match.sec1.offset, match.sec1.length,
-                                            doc_pair_matches.doc2.name, match.sec2.offset, match.sec2.length))
+                frag1, frag2 = match.frag_pair
+                self._rows.append(ResultRow(frag1.doc.name, frag1.start_char, frag1.end_char,
+                                            frag2.doc.name, frag2.start_char, frag2.end_char))
 
     def headerData(self, section: int, orientation: Qt.Orientation, role: int = Qt.DisplayRole):
-        headers = ['Document 1', 'Offset', 'Length', 'Document 2', 'Offset', 'Length']
+        headers = ['Document 1', 'Start', 'End', 'Document 2', 'Start', 'End']
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
             return headers[section]
 

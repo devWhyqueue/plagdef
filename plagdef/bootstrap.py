@@ -7,7 +7,7 @@ import pkg_resources
 from click import UsageError
 
 from plagdef import services
-from plagdef.model.legacy.algorithm import DocumentPairMatches
+from plagdef.model.models import DocumentPairMatches
 from plagdef.repositories import ConfigFileRepository, DocumentFileRepository, DocumentPairReportFileRepository, \
     UnsupportedFileFormatError, NoDocumentFilePairFoundError
 

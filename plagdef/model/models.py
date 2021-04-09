@@ -5,12 +5,11 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from functools import total_ordering
 
-from sortedcontainers import SortedSet
+from sortedcontainers import SortedSet, SortedList
 
 from plagdef.model import util
 
 
-@dataclass
 class Document:
     def __init__(self, name: str, text: str):
         self.name = name
@@ -30,15 +29,38 @@ class Document:
         return f"Document('{self.name}')"
 
 
-@dataclass
-class Sentence:
-    def __init__(self, doc: Document, start_char: int, end_char: int, bow: Counter, tf_isf_bow: dict):
-        self.doc = doc
+class Fragment:
+    def __init__(self, start_char: int, end_char: int, doc: Document):
         self.start_char = start_char
         self.end_char = end_char
-        self.length = end_char - start_char
+        self.doc = doc
+        self.text = doc.text[start_char:end_char]
+
+    def overlaps_with(self, other: Fragment) -> bool:
+        if self.doc == other.doc:
+            own_interval = set(range(self.start_char, self.end_char))
+            other_interval = set(range(other.start_char, other.end_char))
+            return len(own_interval.intersection(other_interval)) > 0
+        return False
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.start_char == other.start_char and self.end_char == other.end_char and self.doc == other.doc
+        return False
+
+    def __hash__(self):
+        return hash((self.start_char, self.doc))
+
+    def __len__(self):
+        return self.end_char - self.start_char
+
+
+class Sentence(Fragment):
+    def __init__(self, start_char: int, end_char: int, bow: Counter, doc: Document):
+        super().__init__(start_char, end_char, doc)
+        self.words = SortedList(key=lambda word: word.start_char)
         self.bow = bow
-        self.tf_isf_bow = tf_isf_bow
+        self.tf_isf_bow = {}
 
     @property
     def idx(self):
@@ -47,13 +69,11 @@ class Sentence:
     def adjacent_to(self, other: Sentence, adjacent_sents_gap: int) -> bool:
         return abs(self.idx - other.idx) - 1 <= adjacent_sents_gap
 
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return self.doc == other.doc and self.start_char == other.start_char
-        return False
 
-    def __hash__(self):
-        return hash((self.doc, self.start_char))
+class Word(Fragment):
+    def __init__(self, start_char: int, end_char: int, sent: Sentence):
+        super().__init__(start_char, end_char, sent.doc)
+        self.sent = sent
 
 
 @dataclass(frozen=True)
@@ -67,12 +87,11 @@ class Seed:
         return f'Seed({self.sent1.idx}, {self.sent2.idx}, {self.cos_sim}, {self.dice_sim})'
 
 
-@dataclass
 class Cluster:
     def __init__(self, seeds: set[Seed]):
         self.seeds = frozenset(seeds)
-        self._doc1 = next(iter(self.seeds)).sent1.doc
-        self._doc2 = next(iter(self.seeds)).sent2.doc
+        self.doc1 = next(iter(self.seeds)).sent1.doc
+        self.doc2 = next(iter(self.seeds)).sent2.doc
         self.sents_doc1 = tuple(self._sents(in_first_doc=True))
         self.sents_doc2 = tuple(self._sents(in_first_doc=False))
         self.tf_isf_bow_doc1 = self._tf_isf_bow(doc1_sents=True)
@@ -83,7 +102,7 @@ class Cluster:
         sent_idc = [seed.sent1.idx for seed in self.seeds] if in_first_doc else [seed.sent2.idx for seed in self.seeds]
         start = min(sent_idc)
         end = max(sent_idc)
-        return self._doc1.sents[start:end + 1] if in_first_doc else self._doc2.sents[start:end + 1]
+        return self.doc1.sents[start:end + 1] if in_first_doc else self.doc2.sents[start:end + 1]
 
     def _tf_isf_bow(self, doc1_sents: bool) -> dict:
         sents = self.sents_doc1 if doc1_sents else self.sents_doc2
@@ -93,10 +112,12 @@ class Cluster:
                 sent_vec_sum[lemma] += tf_isf_val
         return sent_vec_sum
 
-    def overlaps_with(self, other: Cluster, in_first_doc: bool) -> bool:
-        own_sents = self.sents_doc1 if in_first_doc else self.sents_doc2
-        other_sents = other.sents_doc1 if in_first_doc else other.sents_doc2
-        return any([sent in other_sents for sent in own_sents])
+    def overlaps_with(self, other: Cluster) -> bool:
+        """Contrary to Sanchez-Perez et al.'s algorithm,
+        two clusters are considered overlapping if and only if
+        they share at least one sentence in doc1 and doc2."""
+        return any([sent in other.sents_doc1 for sent in self.sents_doc1]) \
+               and any([sent in other.sents_doc2 for sent in self.sents_doc2])
 
     def best_in_respect_to(self, ol_cluster: Cluster) -> RatedCluster:
         """Pick the best of the two overlapping clusters depending on their quality and size."""
@@ -148,6 +169,11 @@ class Cluster:
             frag_sents_len += 1
         return similarity / frag_sents_len if frag_sents_len else 0
 
+    def char_lengths(self) -> tuple[int, int]:
+        char_len_doc1 = sum([len(sent) for sent in self.sents_doc1])
+        char_len_doc2 = sum([len(sent) for sent in self.sents_doc2])
+        return char_len_doc1, char_len_doc2
+
     def __eq__(self, other):
         if type(other) is type(self):
             return self.seeds == other.seeds
@@ -170,7 +196,7 @@ class RatedCluster:
     def __init__(self, cluster: Cluster, quality: float, size: int):
         self.cluster = cluster
         self.quality = quality
-        self.size = size
+        self.size = size  # number of sentences
 
     def __lt__(self, other: RatedCluster) -> bool:
         if (self.quality > 0.99 and other.quality > 0.99) or self.quality == other.quality:
@@ -180,5 +206,66 @@ class RatedCluster:
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self.__dict__ == other.__dict__
+            return self.quality == other.quality and self.size == other.size and self.cluster == other.cluster
         return False
+
+
+class Match:
+    def __init__(self, frag1: Fragment, frag2: Fragment):
+        if frag1.doc == frag2.doc:
+            raise SameDocumentError('Each fragment must belong to its own distinct document.')
+        self.frag_pair = frozenset({frag1, frag2})
+
+    @classmethod
+    def from_cluster(cls, cluster: Cluster) -> Match:
+        text_doc1_start, text_doc1_end = cluster.sents_doc1[0].start_char, cluster.sents_doc1[-1].end_char
+        text_doc2_start, text_doc2_end = cluster.sents_doc2[0].start_char, cluster.sents_doc2[-1].end_char
+        return Match(Fragment(text_doc1_start, text_doc1_end, cluster.doc1),
+                     Fragment(text_doc2_start, text_doc2_end, cluster.doc2))
+
+    def overlaps_with(self, other: Match) -> bool:
+        frag1, frag2 = self.frag_pair
+        return any([frag1.overlaps_with(other_frag) for other_frag in other.frag_pair]) \
+               and any([frag2.overlaps_with(other_frag) for other_frag in other.frag_pair])
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.frag_pair == other.frag_pair
+        return False
+
+    def __hash__(self):
+        return hash(self.frag_pair)
+
+    def __len__(self):
+        return sum([len(frag) for frag in self.frag_pair])
+
+
+class DocumentPairMatches:
+    def __init__(self, matches=None):
+        self.doc_pair = set()
+        self.matches = set()
+        if matches:
+            [self.add(match) for match in matches]
+
+    def add(self, match: Match):
+        frag1, frag2 = match.frag_pair
+        if len(self):
+            if not self.doc_pair == {frag1.doc, frag2.doc}:
+                raise DifferentDocumentPairError(f'Only matches of document pair {self.doc_pair} can be added.')
+        else:
+            self.doc_pair.update({frag1.doc, frag2.doc})
+        self.matches.add(match)
+
+    def list(self) -> set[Match]:
+        return self.matches
+
+    def __len__(self):
+        return len(self.matches)
+
+
+class DifferentDocumentPairError(Exception):
+    pass
+
+
+class SameDocumentError(Exception):
+    pass

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from plagdef.model.legacy.algorithm import Document
+from plagdef.model.models import Document
 from plagdef.model.reporting import DocumentPairReport
 
 

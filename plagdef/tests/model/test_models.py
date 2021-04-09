@@ -1,7 +1,11 @@
 from collections import Counter
 from unittest.mock import patch
 
-from plagdef.model.models import Document, Sentence, Cluster
+import pytest
+
+from plagdef.model.models import Document, Sentence, Cluster, Fragment, Word, RatedCluster, Match, \
+    DocumentPairMatches, \
+    DifferentDocumentPairError, SameDocumentError
 from plagdef.tests.model.test_extension import _create_seeds
 
 
@@ -20,34 +24,53 @@ def test_documents_are_the_same_if_same_name():
 
 def test_document_sents_are_ordered_by_start_char():
     doc = Document('doc', '')
-    doc.sents.add(Sentence(doc, 5, -1, Counter(), {}))
-    doc.sents.add(Sentence(doc, 3, -1, Counter(), {}))
-    doc.sents.add(Sentence(doc, 7, -1, Counter(), {}))
+    doc.sents.add(Sentence(5, -1, Counter(), doc))
+    doc.sents.add(Sentence(3, -1, Counter(), doc))
+    doc.sents.add(Sentence(7, -1, Counter(), doc))
     assert [sent.start_char for sent in doc.sents] == [3, 5, 7]
+
+
+def test_fragment_length():
+    frag = Fragment(0, 15, Document('doc', ''))
+    assert len(frag) == 15
+
+
+def test_fragment_overlaps():
+    doc = Document('doc', '')
+    frag1 = Fragment(0, 15, doc)
+    frag2 = Fragment(4, 8, doc)
+    assert frag1.overlaps_with(frag2) and frag2.overlaps_with(frag1)
+
+
+def test_fragment_overlaps_with_different_docs():
+    doc1, doc2 = Document('doc1', ''), Document('doc2', '')
+    frag1 = Fragment(0, 15, doc1)
+    frag2 = Fragment(14, 16, doc2)
+    assert not frag1.overlaps_with(frag2) and not frag2.overlaps_with(frag1)
 
 
 def test_sentence_idx():
     doc = Document('doc', '')
-    sent = Sentence(doc, 3, -1, Counter(), {})
-    doc.sents.add(Sentence(doc, 4, -1, Counter(), {}))
+    sent = Sentence(3, -1, Counter(), doc)
+    doc.sents.add(Sentence(4, -1, Counter(), doc))
     doc.sents.add(sent)
-    doc.sents.add(Sentence(doc, 0, -1, Counter(), {}))
+    doc.sents.add(Sentence(0, -1, Counter(), doc))
     assert sent.idx == 1
 
 
-def test_sentences_are_equal_if_doc_and_start_char_are_equal():
+def test_sentences_are_equal():
     doc = Document('doc', '')
-    sent1 = Sentence(doc, 3, 17, Counter(), {})
-    sent2 = Sentence(doc, 3, 21, Counter({'xyz': 2}), {'xyz': 0.9845})  # unrealistic
-    sent3 = Sentence(doc, 4, 17, Counter(), {})
+    sent1 = Sentence(3, 17, Counter(), doc)
+    sent2 = Sentence(3, 17, Counter({'xyz': 2}), doc)  # unrealistic
+    sent3 = Sentence(4, 17, Counter(), doc)
     assert sent1 == sent2, sent1 != sent3
 
 
 def test_sentences_are_the_same_if_doc_and_start_char_are_equal():
     doc = Document('doc', '')
     sents = set()
-    sents.add(Sentence(doc, 3, 17, Counter(), {}))
-    sents.add(Sentence(doc, 3, 21, Counter({'xyz': 2}), {'xyz': 0.9845}))  # unrealistic
+    sents.add(Sentence(3, 17, Counter(), doc))
+    sents.add(Sentence(3, 17, Counter({'xyz': 2}), doc))  # unrealistic
     assert len(sents) == 1
 
 
@@ -64,6 +87,13 @@ def test_sentence_adjacent_to_with_gap_over_th():
     # Five sentences in-between
     adj = sent1.adjacent_to(sent2, 4)
     assert not adj
+
+
+def test_word_equals():
+    sent = Sentence(0, 15, Counter(), Document('doc', ''))
+    word1, word2, word3 = Word(0, 6, sent), Word(0, 6, sent), Word(6, 15, sent)
+    assert word1 == word2
+    assert word1 != word3 and word2 != word3
 
 
 def test_clusters_are_equal_if_same_seeds():
@@ -91,31 +121,35 @@ def test_cluster_tf_isf_bow():
     # Just for this example. In reality the last two sentences are too different.
     cluster = Cluster(_create_seeds([(0, 0), (1, 1), (2, 2)]))
     # Simulate the preprocessing for doc1
-    cluster.sents_doc1 = (Sentence(cluster._doc1, 0, -1, Counter(),
-                                   {'this': 0.22, 'be': 0.51, 'a': 1.60, 'awesome': 1.60, 'document': 0.91}),
-                          Sentence(cluster._doc1, 1, -1, Counter(),
-                                   {'all': 1.60, 'of': 1.60, 'this': 0.22, 'bow': 1.60, 'be': 0.51, 'combine': 1.60}),
-                          Sentence(cluster._doc1, 2, -1, Counter(),
-                                   {'even': 1.60, 'this': 0.22, 'last': 1.60, 'one': 1.60}))
+    cluster.sents_doc1 = (Sentence(0, -1, Counter(), cluster.doc1),
+                          Sentence(1, -1, Counter(), cluster.doc1),
+                          Sentence(2, -1, Counter(), cluster.doc1))
+    cluster.sents_doc1[0].tf_isf_bow = {'this': 0.22, 'be': 0.51, 'a': 1.60, 'awesome': 1.60, 'document': 0.91}
+    cluster.sents_doc1[1].tf_isf_bow = {'all': 1.60, 'of': 1.60, 'this': 0.22, 'bow': 1.60, 'be': 0.51, 'combine': 1.60}
+    cluster.sents_doc1[2].tf_isf_bow = {'even': 1.60, 'this': 0.22, 'last': 1.60, 'one': 1.60}
     tf_isf_bow_doc1 = cluster._tf_isf_bow(doc1_sents=True)
     assert tf_isf_bow_doc1 == {'this': 0.66, 'be': 1.02, 'a': 1.6, 'awesome': 1.6, 'document': 0.91,
                                'all': 1.6, 'of': 1.6, 'bow': 1.6, 'combine': 1.6, 'even': 1.6, 'last': 1.6, 'one': 1.6}
 
 
-def test_clusters_overlap_if_they_share_a_sentence_in_first_doc():
+def test_clusters_overlap():
+    cluster1 = Cluster(_create_seeds([(0, 4), (3, 2), (6, 0)]))
+    cluster2 = Cluster(_create_seeds([(4, 8), (7, 5), (10, 2)]))
+    assert cluster1.overlaps_with(cluster2)
+    assert cluster2.overlaps_with(cluster1)
+
+
+def test_clusters_do_not_overlap_if_they_only_share_a_sentence_in_first_doc():
     cluster1 = Cluster(_create_seeds([(0, 1), (4, 5)]))
     cluster2 = Cluster(_create_seeds([(3, 6), (7, 7)]))
-    assert cluster1.overlaps_with(cluster2, in_first_doc=True)
-    assert cluster2.overlaps_with(cluster1, in_first_doc=True)
-    assert not cluster1.overlaps_with(cluster2, in_first_doc=False)
-    assert not cluster2.overlaps_with(cluster1, in_first_doc=False)
+    assert not cluster1.overlaps_with(cluster2)
+    assert not cluster2.overlaps_with(cluster1)
 
 
-def test_clusters_overlap_if_they_share_a_sentence_in_second_doc():
+def test_clusters_do_not_overlap_if_they_only_share_a_sentence_in_second_doc():
     cluster1 = Cluster(_create_seeds([(0, 1), (4, 5)]))
     cluster2 = Cluster(_create_seeds([(6, 5), (7, 7)]))
-    assert cluster1.overlaps_with(cluster2, in_first_doc=False)
-    assert not cluster1.overlaps_with(cluster2, in_first_doc=True)
+    assert not cluster1.overlaps_with(cluster2)
 
 
 def test_cluster_fragment_similarity():
@@ -215,7 +249,135 @@ def test_cluster_best_in_respect_to():
     assert rated_cluster.size == 7
 
 
+def test_cluster_char_lengths():
+    cluster = Cluster(_create_seeds([(0, 4), (3, 2), (6, 0)]))
+    char_lengths = cluster.char_lengths()
+    assert char_lengths[0] == 7 and char_lengths[1] == 5
+
+
+def test_rated_cluster_equality():
+    cluster_a = Cluster(_create_seeds([(0, 4), (3, 2), (6, 0)]))
+    cluster_b = Cluster(_create_seeds([(4, 8), (7, 5), (10, 2)]))
+    rated_cluster_a = RatedCluster(cluster_a, 0.7, 10)
+    rated_cluster_b = RatedCluster(cluster_b, 0.6, 10)
+    assert rated_cluster_a > rated_cluster_b and rated_cluster_a >= rated_cluster_b \
+           and rated_cluster_b < rated_cluster_a and rated_cluster_b <= rated_cluster_a
+
+
+def test_rated_cluster_equality_with_same_quality():
+    cluster_a = Cluster(_create_seeds([(0, 4), (3, 2), (6, 0)]))
+    cluster_b = Cluster(_create_seeds([(4, 8), (7, 5), (10, 2)]))
+    rated_cluster_a = RatedCluster(cluster_a, 0.7, 11)
+    rated_cluster_b = RatedCluster(cluster_b, 0.7, 10)
+    assert rated_cluster_a > rated_cluster_b and rated_cluster_a >= rated_cluster_b \
+           and rated_cluster_b < rated_cluster_a and rated_cluster_b <= rated_cluster_a
+
+
+def test_rated_cluster_equality_with_high_quality():
+    cluster_a = Cluster(_create_seeds([(0, 4), (3, 2), (6, 0)]))
+    cluster_b = Cluster(_create_seeds([(4, 8), (7, 5), (10, 2)]))
+    rated_cluster_a = RatedCluster(cluster_a, 0.998, 11)
+    rated_cluster_b = RatedCluster(cluster_b, 0.999, 10)
+    assert rated_cluster_a > rated_cluster_b and rated_cluster_a >= rated_cluster_b \
+           and rated_cluster_b < rated_cluster_a and rated_cluster_b <= rated_cluster_a
+
+
+def test_match_init_with_fragments_of_same_doc_fails():
+    doc = Document('doc', '')
+    with pytest.raises(SameDocumentError):
+        Match(Fragment(0, 7, doc), Fragment(13, 15, doc))
+
+
+def test_match_from_cluster():
+    cluster = Cluster(_create_seeds([(0, 4), (3, 2), (6, 0)]))
+    match = Match.from_cluster(cluster)
+    assert match == Match(Fragment(0, 7, cluster.doc1), Fragment(0, 5, cluster.doc2))
+
+
+def test_match_overlaps_with():
+    doc1, doc2 = Document('doc1', ''), Document('doc2', '')
+    match1 = Match(Fragment(0, 7, doc1), Fragment(13, 15, doc2))
+    match2 = Match(Fragment(10, 15, doc2), Fragment(6, 9, doc1))
+    assert match1.overlaps_with(match2) and match2.overlaps_with(match1)
+
+
+def test_matches_do_not_overlap_if_overlap_only_in_one_frag():
+    doc1, doc2 = Document('doc1', ''), Document('doc2', '')
+    match1 = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))
+    match2 = Match(Fragment(10, 15, doc2), Fragment(6, 9, doc1))
+    assert not match1.overlaps_with(match2) and not match2.overlaps_with(match1)
+
+
+def test_match_len():
+    doc1, doc2 = Document('doc1', ''), Document('doc2', '')
+    match = Match(Fragment(0, 5, doc1), Fragment(0, 30, doc2))
+    assert len(match) == 35
+
+
+def test_doc_pair_matches_init():
+    doc_pair_matches = DocumentPairMatches()
+    assert doc_pair_matches.matches == set()
+
+
+def test_doc_pair_matches_init_with_matches():
+    doc1, doc2 = Document('doc1', ''), Document('doc2', '')
+    match1 = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))
+    match2 = Match(Fragment(10, 15, doc2), Fragment(6, 9, doc1))
+    doc_pair_matches = DocumentPairMatches({match1, match2})
+    assert doc_pair_matches.matches == {match1, match2}
+
+
+def test_doc_pair_matches_add():
+    doc1, doc2 = Document('doc1', ''), Document('doc2', '')
+    match1 = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))
+    match2 = Match(Fragment(10, 15, doc2), Fragment(6, 9, doc1))
+    doc_pair_matches = DocumentPairMatches()
+    doc_pair_matches.add(match1)
+    doc_pair_matches.add(match2)
+    assert len(doc_pair_matches.matches) == 2
+    assert match1, match2 in doc_pair_matches.matches
+
+
+def test_doc_pair_matches_add_same_match_twice():
+    doc1, doc2 = Document('doc1', ''), Document('doc2', '')
+    match = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))
+    doc_pair_matches = DocumentPairMatches()
+    doc_pair_matches.add(match)
+    doc_pair_matches.add(match)
+    assert len(doc_pair_matches.matches) == 1
+    assert match in doc_pair_matches.matches
+
+
+def test_doc_pair_matches_add_match_from_other_pair_fails():
+    doc1, doc2, doc3 = Document('doc1', ''), Document('doc2', ''), Document('doc3', '')
+    match1 = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))
+    match2 = Match(Fragment(10, 15, doc2), Fragment(6, 9, doc3))
+    doc_pair_matches = DocumentPairMatches()
+    doc_pair_matches.add(match1)
+    with pytest.raises(DifferentDocumentPairError):
+        doc_pair_matches.add(match2)
+    assert len(doc_pair_matches.matches) == 1
+    assert doc_pair_matches.doc_pair == {doc2, doc1}
+
+
+def test_doc_pair_matches_list():
+    doc1, doc2 = Document('doc1', ''), Document('doc2', '')
+    match1 = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))
+    match2 = Match(Fragment(10, 15, doc1), Fragment(6, 9, doc2))
+    doc_pair_matches = DocumentPairMatches({match1, match2})
+    matches = doc_pair_matches.list()
+    assert matches == {match1, match2}
+
+
+def test_doc_pair_matches_len():
+    doc1, doc2 = Document('doc1', ''), Document('doc2', '')
+    match1 = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))
+    match2 = Match(Fragment(10, 15, doc1), Fragment(6, 9, doc2))
+    doc_pair_matches = DocumentPairMatches({match1, match2})
+    assert len(doc_pair_matches) == 2
+
+
 def _create_sent(doc_name: str, sent_idx: int):
     doc = Document(doc_name, '')
-    [doc.sents.add(Sentence(doc, idx, -1, Counter(), {})) for idx in range(sent_idx + 1)]
+    [doc.sents.add(Sentence(idx, -1, Counter(), doc)) for idx in range(sent_idx + 1)]
     return doc.sents[sent_idx]
