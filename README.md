@@ -23,12 +23,6 @@ $ git clone git://github.com/devWhyqueue/plagdef
 $ pip install -e .
 ````
 
-And install necessary resources:
-
-```
-$ python -m nltk.downloader punkt
-````
-
 # Usage
 
 Run the GUI:
@@ -45,12 +39,11 @@ $ plagdef -h
 
 # Development
 
-Clone the repo and install dependencies/resources:
+Clone the repo and install dependencies:
 
 ```
 $ git clone git://github.com/devWhyqueue/plagdef
 $ pipenv install --dev
-$ pipenv run python -m nltk.downloader punkt
 ````
 
 # Publish to PyPI

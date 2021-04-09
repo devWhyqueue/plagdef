@@ -5,6 +5,7 @@ from configparser import ConfigParser
 from itertools import islice
 from pathlib import Path
 
+import pdfplumber
 from charset_normalizer import CharsetNormalizerMatches as CnM
 
 from plagdef.model.models import Document
@@ -13,23 +14,29 @@ from plagdef.model.models import Document
 class DocumentFileRepository:
     def __init__(self, dir_path: Path, lang: str, recursive=False):
         self.lang = lang
-        self._documents = []
+        self._dir_path = dir_path
+        self._recursive = recursive
         if not dir_path.is_dir():
             raise NotADirectoryError(f'The given path {dir_path} does not point to an existing directory!')
         if not any(dir_path.iterdir()) or not next(islice(dir_path.iterdir(), 1, None), None):
             raise NoDocumentFilePairFoundError(f'The directory {dir_path} must contain at least two documents.')
-        if recursive:
-            doc_files = [file_path for file_path in dir_path.rglob('*') if file_path.is_file()]
-        else:
-            doc_files = [file_path for file_path in dir_path.iterdir() if file_path.is_file()]
-        for file in doc_files:
-            normalized_text = CnM.from_path(str(file)).best().first()
-            if normalized_text is None:
-                raise UnsupportedFileFormatError(f'The file {file.name} has an supported encoding and cannot be read.')
-            self._documents.append(Document(file.stem, str(normalized_text)))
 
     def list(self) -> [Document]:
-        return self._documents
+        if self._recursive:
+            doc_files = [file_path for file_path in self._dir_path.rglob('*') if file_path.is_file()]
+        else:
+            doc_files = [file_path for file_path in self._dir_path.iterdir() if file_path.is_file()]
+        documents = []
+        for file in doc_files:
+            if file.suffix == '.pdf':
+                with pdfplumber.open(file) as pdf:
+                    text = ' '.join(page.extract_text() for page in pdf.pages)
+            else:
+                text = CnM.from_path(str(file)).best().first()
+            if text is None:
+                raise UnsupportedFileFormatError(f'The file {file.name} has an supported encoding and cannot be read.')
+            documents.append(Document(file.stem, str(text)))
+        return documents
 
 
 class DocumentPairReportFileRepository:

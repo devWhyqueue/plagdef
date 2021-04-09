@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from fpdf import FPDF
 
 from plagdef.model.preprocessing import Document
 from plagdef.repositories import DocumentFileRepository, NoDocumentFilePairFoundError, UnsupportedFileFormatError
@@ -31,17 +32,18 @@ def test_init_with_doc_dir_containing_only_one_file_fails(tmp_path):
         DocumentFileRepository(Path(tmp_path), 'eng')
 
 
-def test_init_with_doc_dir_containing_files_with_undetected_encoding(tmp_path):
+def test_list_with_doc_dir_containing_files_with_undetected_encoding(tmp_path):
     with (tmp_path / 'doc1.txt').open('w', encoding='utf-8') as f:
         f.write('This is a document.\n')
     with (tmp_path / 'doc2.txt').open('w', encoding='utf-8') as f:
         # This document seems to be too hard for charset_normalizer
         f.write('∮ E⋅da = Q,  n → ∞, ∑ f(i) = ∏ g(i), ∀x∈ℝ: ⌈x⌉ = −⌊−x⌋, α ∧ ¬β = ¬(¬α ∨ β)')
+    repo = DocumentFileRepository(tmp_path, 'eng')
     with pytest.raises(UnsupportedFileFormatError):
-        DocumentFileRepository(tmp_path, 'eng')
+        repo.list()
 
 
-def test_init_creates_documents(tmp_path):
+def test_list_documents(tmp_path):
     with (tmp_path / 'doc1.txt').open('w', encoding='utf-8') as f:
         f.write('This is a document.\n')
     with (tmp_path / 'doc2.txt').open('w', encoding='utf-8') as f:
@@ -56,7 +58,7 @@ def test_init_creates_documents(tmp_path):
     assert Document('doc2', 'This also is a document.\n') in docs
 
 
-def test_init_with_file_containing_special_characters(tmp_path):
+def test_list_with_file_containing_special_characters(tmp_path):
     with (tmp_path / 'doc1.txt').open('w', encoding='utf-8') as f:
         f.write('These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n')
     with (tmp_path / 'doc2.txt').open('w', encoding='utf-8') as f:
@@ -68,7 +70,7 @@ def test_init_with_file_containing_special_characters(tmp_path):
 
 
 @pytest.mark.skipif('sys.platform != "win32"')
-def test_init_with_doc_dir_containing_ansi_file_creates_document(tmp_path):
+def test_list_with_doc_dir_containing_ansi_file_creates_document(tmp_path):
     with (tmp_path / 'doc1.txt').open('w', encoding='ANSI') as f:
         f.write('These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n')
     with (tmp_path / 'doc2.txt').open('w', encoding='utf-8') as f:
@@ -79,7 +81,7 @@ def test_init_with_doc_dir_containing_ansi_file_creates_document(tmp_path):
     assert 'These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n' in [doc.text for doc in docs]
 
 
-def test_init_with_doc_dir_containing_iso_8559_1_file_creates_documents(tmp_path):
+def test_list_with_doc_dir_containing_iso_8559_1_file_creates_documents(tmp_path):
     with (tmp_path / 'doc1.txt').open('w', encoding='ISO-8859-1') as f:
         f.write('These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n')
     with (tmp_path / 'doc2.txt').open('w', encoding='utf-8') as f:
@@ -91,7 +93,7 @@ def test_init_with_doc_dir_containing_iso_8559_1_file_creates_documents(tmp_path
     assert 'Hello world, Καλημέρα κόσμε, コンニチハ' in [doc.text for doc in docs]
 
 
-def test_init_recursive_creates_documents(tmp_path):
+def test_list_recursive_creates_documents(tmp_path):
     with (tmp_path / 'doc1.txt').open('w', encoding='utf-8') as f:
         f.write('This is a document.\n')
     Path(f'{tmp_path}/a/subdir').mkdir(parents=True)
@@ -106,3 +108,17 @@ def test_init_recursive_creates_documents(tmp_path):
     assert Document('doc1', 'This is a document.\n') in docs
     assert Document('doc2', 'This also is a document.\n') in docs
     assert Document('doc3', 'The third document.\n') in docs
+
+
+def test_list_with_doc_dir_containing_pdf(tmp_path):
+    doc1 = FPDF()
+    doc1.add_page()
+    doc1.set_font('helvetica', size=12)
+    doc1.cell(w=0, txt='This is a PDF file containing one sentence.')
+    doc1.output(f'{tmp_path}/doc1.pdf')
+    with (tmp_path / 'doc2.txt').open('w', encoding='utf-8') as f:
+        f.write('This also is a document.\n')
+    repo = DocumentFileRepository(tmp_path, 'eng')
+    docs = repo.list()
+    assert 'This is a PDF file containing one sentence.' in [doc.text for doc in docs]
+    assert 'This also is a document.\n' in [doc.text for doc in docs]
