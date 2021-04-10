@@ -50,7 +50,7 @@ def preprocessed_docs(preprocessor):
                     'plagiarist with a benefit in exchange for what is specifically supposed to be original '
                     'content. Plagiarism is not the same as copyright infringement. Acts of plagiarism may '
                     'sometimes also form part of a claim for breach of the plagiarist\'s contract.')
-    preprocessor.preprocess([doc1, doc2], 'eng')
+    preprocessor.preprocess('eng', [doc1, doc2])
     return doc1, doc2
 
 

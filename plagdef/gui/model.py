@@ -11,11 +11,11 @@ from plagdef.model.models import DocumentPairMatches
 @dataclass(frozen=True)
 class ResultRow:
     doc1: str
-    doc1_offset: int
-    doc1_length: int
+    doc1_start_char: int
+    doc1_end_char: int
     doc2: str
-    doc2_offset: int
-    doc2_length: int
+    doc2_start_char: int
+    doc2_end_char: int
 
 
 class ResultsTableModel(QAbstractTableModel):
@@ -41,8 +41,8 @@ class ResultsTableModel(QAbstractTableModel):
 
     def data(self, index: QModelIndex, role: int = Qt.DisplayRole):
         match = self._rows[index.row()]
-        match_attributes = [match.doc1, match.doc1_offset, match.doc1_length,
-                            match.doc2, match.doc2_offset, match.doc2_length]
+        match_attributes = [match.doc1, match.doc1_start_char, match.doc1_end_char,
+                            match.doc2, match.doc2_start_char, match.doc2_end_char]
         if role == Qt.DisplayRole:
             return match_attributes[index.column()]
         elif role == Qt.ForegroundRole:

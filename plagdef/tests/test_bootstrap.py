@@ -4,7 +4,7 @@ import pytest
 from click import UsageError
 
 from plagdef import bootstrap
-from plagdef.repositories import ConfigFileRepository, UnsupportedFileFormatError, NoDocumentFilePairFoundError
+from plagdef.repositories import ConfigFileRepository, NoDocumentFilePairFoundError
 from plagdef.tests.fakes import DocumentFakeRepository, ConfigFakeRepository, DocumentPairReportFakeRepository
 
 
@@ -34,13 +34,6 @@ def test_find_matches_catches_not_a_directory_error():
     with patch('plagdef.bootstrap.DocumentFileRepository', side_effect=NotADirectoryError()):
         with pytest.raises(UsageError):
             find_matches('some/wrong/path', 'eng')
-
-
-def test_find_matches_catches_unsupported_file_format_error():
-    find_matches = bootstrap.find_matches()
-    with patch('plagdef.bootstrap.DocumentFileRepository', side_effect=UnsupportedFileFormatError()):
-        with pytest.raises(UsageError):
-            find_matches('some/path', 'eng')
 
 
 def test_find_matches_catches_no_document_file_pair_found_error():

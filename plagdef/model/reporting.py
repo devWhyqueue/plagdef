@@ -23,7 +23,7 @@ def generate_text_report(matches: list[DocumentPairMatches]) -> str:
         doc1, doc2 = doc_pair_matches.doc_pair
         report = f'Pair({doc1.name}, {doc2.name}):\n'
         for match in doc_pair_matches.list():
-            frag1, frag2 = match.frag_pair
+            frag1, frag2 = match.frag_from_doc(doc1), match.frag_from_doc(doc2)
             report += f'  Match(Fragment({frag1.start_char}, {frag1.end_char}), Fragment({frag2.start_char},' \
                       f' {frag2.end_char}))\n'
 
@@ -41,7 +41,7 @@ def generate_xml_reports(matches: list[DocumentPairMatches]) -> list[DocumentPai
         doc1, doc2 = doc_pair_matches.doc_pair
         root = E.report(doc1=doc1.name, doc2=doc2.name)
         for match in doc_pair_matches.list():
-            frag1, frag2 = match.frag_pair
+            frag1, frag2 = match.frag_from_doc(doc1), match.frag_from_doc(doc2)
             root.append(E.match(
                 doc1_start_char=str(frag1.start_char), doc1_end_char=str(frag1.end_char),
                 doc2_start_char=str(frag2.start_char), doc2_end_char=str(frag2.start_char)

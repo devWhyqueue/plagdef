@@ -4,7 +4,7 @@ import pytest
 from fpdf import FPDF
 
 from plagdef.model.preprocessing import Document
-from plagdef.repositories import DocumentFileRepository, NoDocumentFilePairFoundError, UnsupportedFileFormatError
+from plagdef.repositories import DocumentFileRepository, NoDocumentFilePairFoundError
 
 
 def test_init_with_nonexistent_doc_dir_fails():
@@ -32,15 +32,10 @@ def test_init_with_doc_dir_containing_only_one_file_fails(tmp_path):
         DocumentFileRepository(Path(tmp_path), 'eng')
 
 
-def test_list_with_doc_dir_containing_files_with_undetected_encoding(tmp_path):
+def test_init_with_doc_dir_containing_only_one_file_with_at_least_two_false(tmp_path):
     with (tmp_path / 'doc1.txt').open('w', encoding='utf-8') as f:
-        f.write('This is a document.\n')
-    with (tmp_path / 'doc2.txt').open('w', encoding='utf-8') as f:
-        # This document seems to be too hard for charset_normalizer
-        f.write('∮ E⋅da = Q,  n → ∞, ∑ f(i) = ∏ g(i), ∀x∈ℝ: ⌈x⌉ = −⌊−x⌋, α ∧ ¬β = ¬(¬α ∨ β)')
-    repo = DocumentFileRepository(tmp_path, 'eng')
-    with pytest.raises(UnsupportedFileFormatError):
-        repo.list()
+        f.write('Some content.\n')
+    DocumentFileRepository(Path(tmp_path), 'eng', at_least_two=False)
 
 
 def test_list_documents(tmp_path):

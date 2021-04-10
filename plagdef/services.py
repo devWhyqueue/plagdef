@@ -8,16 +8,18 @@ from plagdef.model.detection import DocumentMatcher
 from plagdef.model.models import DocumentPairMatches
 from plagdef.model.preprocessing import UnsupportedLanguageError
 from plagdef.model.reporting import generate_xml_reports
+from plagdef.repositories import UnsupportedFileFormatError
 
 
-def find_matches(doc_repo, config_repo) -> set[DocumentPairMatches]:
+def find_matches(doc_repo, config_repo, common_doc_repo=None) -> set[DocumentPairMatches]:
     try:
         docs = doc_repo.list()
+        common_docs = common_doc_repo.list() if common_doc_repo else None
         config = config_repo.get()
         doc_matcher = DocumentMatcher(config)
-        doc_pair_matches = doc_matcher.find_matches(docs, doc_repo.lang)
+        doc_pair_matches = doc_matcher.find_matches(doc_repo.lang, docs, common_docs)
         return doc_pair_matches
-    except (ParsingError, UnsupportedLanguageError) as e:
+    except (ParsingError, UnsupportedFileFormatError, UnsupportedLanguageError) as e:
         raise UsageError(str(e)) from e
 
 

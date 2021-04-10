@@ -15,14 +15,16 @@ write_xml_reports = bootstrap.write_xml_reports()
 @click.option('lang', '--lang', '-l', required=True, help='Bibliographical language code of the documents\' language.')
 @click.option('rec', '--recursive', '-R', is_flag=True,
               help='Recursively search for documents in subdirectories.')
+@click.option('common_docdir', '--common-docs', '-c', type=click.Path(exists=True),
+              help='Directory containing documents with sentences which should be excluded from detection.')
 @click.option('xmldir', '--xml', '-x', type=click.Path(), help='Output directory for XML reports.')
-def cli(docdir: click.Path, lang: str, xmldir: click.Path, rec: bool):
+def cli(docdir: click.Path, lang: str, common_docdir: click.Path, xmldir: click.Path, rec: bool):
     """
     \b
     PlagDef supports plagiarism detection for student assignments.
     It must be provided with a directory <DOCDIR> containing at least two documents and their language.
     """
-    matches = find_matches(docdir, lang, recursive=rec)
+    matches = find_matches(lang, docdir, recursive=rec, common_doc_dir=common_docdir)
     click.echo(f'Found {len(matches) if len(matches) else "no"} suspicious document pair'
                f'{"s" if len(matches) > 1 else ""}.\n')
     if matches:

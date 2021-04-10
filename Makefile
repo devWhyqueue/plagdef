@@ -1,4 +1,5 @@
 init: ## initialize environment and install requirements
+	sudo apt-get install libmagic1
 	pip install pipenv
 	pipenv install --dev
 
@@ -12,14 +13,14 @@ lint: ## check style with flake8
 	pipenv run flake8 plagdef tests
 
 test-ci: ## run tests, GUI tests excluded
-	pipenv run pytest --ignore=plagdef/tests/gui/test_model.py
+	pipenv run pytest
 
 test-all-ci: ## run tests on every Python version with tox
 	pipenv run tox
 
 coverage-ci: ## check code coverage quickly with the default Python
 	pipenv run coverage erase
-	pipenv run coverage run --source plagdef --omit="*/test*,*/gui/model.py" -m pytest --ignore=plagdef/tests/gui/test_model.py
+	pipenv run coverage run --source plagdef --omit="*/test*" -m pytest
 	pipenv run coverage report -m
 	pipenv run coverage xml
 

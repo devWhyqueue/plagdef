@@ -5,20 +5,20 @@ from configparser import ConfigParser
 from itertools import islice
 from pathlib import Path
 
+import magic
 import pdfplumber
-from charset_normalizer import CharsetNormalizerMatches as CnM
 
 from plagdef.model.models import Document
 
 
 class DocumentFileRepository:
-    def __init__(self, dir_path: Path, lang: str, recursive=False):
+    def __init__(self, dir_path: Path, lang: str, recursive=False, at_least_two=True):
         self.lang = lang
         self._dir_path = dir_path
         self._recursive = recursive
         if not dir_path.is_dir():
             raise NotADirectoryError(f'The given path {dir_path} does not point to an existing directory!')
-        if not any(dir_path.iterdir()) or not next(islice(dir_path.iterdir(), 1, None), None):
+        if at_least_two and (not any(dir_path.iterdir()) or not next(islice(dir_path.iterdir(), 1, None), None)):
             raise NoDocumentFilePairFoundError(f'The directory {dir_path} must contain at least two documents.')
 
     def list(self) -> [Document]:
@@ -32,9 +32,13 @@ class DocumentFileRepository:
                 with pdfplumber.open(file) as pdf:
                     text = ' '.join(page.extract_text() for page in pdf.pages)
             else:
-                text = CnM.from_path(str(file)).best().first()
-            if text is None:
-                raise UnsupportedFileFormatError(f'The file {file.name} has an supported encoding and cannot be read.')
+                try:
+                    detect_enc = magic.Magic(mime_encoding=True)
+                    enc = detect_enc.from_buffer(open(str(file), 'rb').read())
+                    text = file.read_text(encoding=enc)
+                except UnicodeDecodeError:
+                    raise UnsupportedFileFormatError(f'The file {file.name} has an supported encoding'
+                                                     f' and cannot be read.')
             documents.append(Document(file.stem, str(text)))
         return documents
 

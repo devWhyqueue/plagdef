@@ -6,7 +6,7 @@ from plagdef.model.seeding import Seed, _vectorize_sents
 
 def test_match_returns_nothing_if_not_similar(preprocessor, seeder):
     doc1, doc2 = Document('doc1', 'This is a document.'), Document('doc2', 'These are different words however.')
-    preprocessor.preprocess([doc1, doc2], 'eng')
+    preprocessor.preprocess('eng', [doc1, doc2])
     match = seeder.seed(doc1, doc2)
     assert not match
 
@@ -15,7 +15,7 @@ def test_match_returns_match_if_similar(preprocessor, seeder):
     # We need a second sentence with some different words because otherwise every term would have zero specificity
     doc1 = Document('doc1', 'The words are all the same. Even these are.')
     doc2 = Document('doc2', 'The words are all the same. Even these are.')
-    preprocessor.preprocess([doc1, doc2], 'eng')
+    preprocessor.preprocess('eng', [doc1, doc2])
     matches = seeder.seed(doc1, doc2)
     assert Seed(doc1.sents[0], doc2.sents[0], 1, 1) in matches
 

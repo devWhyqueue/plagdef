@@ -228,6 +228,9 @@ class Match:
         return any([frag1.overlaps_with(other_frag) for other_frag in other.frag_pair]) \
                and any([frag2.overlaps_with(other_frag) for other_frag in other.frag_pair])
 
+    def frag_from_doc(self, doc: Document):
+        return next(filter(lambda frag: frag.doc == doc, self.frag_pair), None)
+
     def __eq__(self, other):
         if type(other) is type(self):
             return self.frag_pair == other.frag_pair

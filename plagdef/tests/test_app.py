@@ -13,7 +13,7 @@ def test_cli_if_no_matches_found(tmp_path):
     app.find_matches = MagicMock(return_value=[])
     runner = CliRunner()
     result = runner.invoke(cli, ['-l', 'eng', str(tmp_path)])
-    app.find_matches.assert_called_with(ANY, ANY, recursive=False)
+    app.find_matches.assert_called_with(ANY, ANY, recursive=False, common_doc_dir=None)
     assert result.exit_code == 0
     assert result.output == 'Found no suspicious document pair.\n\n'
 
@@ -38,7 +38,16 @@ def test_cli_with_recursive_option(tmp_path):
     app.find_matches = MagicMock()
     runner = CliRunner()
     result = runner.invoke(cli, ['-l', 'eng', '-R', str(tmp_path)])
-    app.find_matches.assert_called_with(ANY, ANY, recursive=True)
+    app.find_matches.assert_called_with(ANY, ANY, recursive=True, common_doc_dir=None)
+    assert result.exit_code == 0
+
+
+def test_cli_with_common_doc_dir_option(tmp_path):
+    (tmp_path / 'common').mkdir()
+    app.find_matches = MagicMock()
+    runner = CliRunner()
+    result = runner.invoke(cli, ['-l', 'eng', '-c', str((tmp_path / 'common')), str(tmp_path)])
+    app.find_matches.assert_called_with(ANY, ANY, recursive=False, common_doc_dir=str((tmp_path / 'common')))
     assert result.exit_code == 0
 
 

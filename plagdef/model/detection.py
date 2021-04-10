@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from itertools import combinations
 
 from plagdef.model.extension import ClusterBuilder
@@ -17,8 +19,8 @@ class DocumentMatcher:
         self._adjacent_sents_gap_summary = config['adjacent_sents_gap_summary']
         self._min_verbatim_match_char_len = config['min_verbatim_match_char_len']
 
-    def find_matches(self, docs: list[Document], lang: str) -> set[DocumentPairMatches]:
-        self._preprocessor.preprocess(docs, lang)
+    def find_matches(self, lang: str, docs: list[Document], common_docs=None) -> set[DocumentPairMatches]:
+        self._preprocessor.preprocess(lang, docs, common_docs)
         matches = set()
         for doc1, doc2 in combinations(docs, 2):
             seeds = self._seeder.seed(doc1, doc2)

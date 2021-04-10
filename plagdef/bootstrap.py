@@ -9,26 +9,29 @@ from click import UsageError
 from plagdef import services
 from plagdef.model.models import DocumentPairMatches
 from plagdef.repositories import ConfigFileRepository, DocumentFileRepository, DocumentPairReportFileRepository, \
-    UnsupportedFileFormatError, NoDocumentFilePairFoundError
+    NoDocumentFilePairFoundError
 
 CONFIG_PATH = pathlib.Path('config/alg.ini')
 
 
-def find_matches(doc_repo=None, config_repo=None):
+def find_matches(doc_repo=None, common_doc_repo=None, config_repo=None):
     if not config_repo:
         config_path = pkg_resources.resource_filename(__name__, str(CONFIG_PATH))
         config_repo = ConfigFileRepository(pathlib.Path(config_path))
     if not doc_repo:
-        return partial(_needs_doc_dir_and_lang, config_repo=config_repo)
+        return partial(_needs_doc_dir_and_lang, config_repo=config_repo, common_doc_repo=common_doc_repo)
     else:
-        return partial(services.find_matches, (doc_repo, config_repo))
+        return partial(services.find_matches, (doc_repo, config_repo, common_doc_repo))
 
 
-def _needs_doc_dir_and_lang(doc_dir: str, lang: str, config_repo, recursive=False):
+def _needs_doc_dir_and_lang(lang: str, doc_dir: str, config_repo, common_doc_repo, recursive=False,
+                            common_doc_dir: str = None):
     try:
         doc_repo = DocumentFileRepository(pathlib.Path(doc_dir), lang, recursive)
-        return services.find_matches(doc_repo, config_repo)
-    except (NotADirectoryError, UnsupportedFileFormatError, NoDocumentFilePairFoundError) as e:
+        if not common_doc_repo and common_doc_dir:
+            common_doc_repo = DocumentFileRepository(pathlib.Path(common_doc_dir), lang, at_least_two=False)
+        return services.find_matches(doc_repo, config_repo, common_doc_repo)
+    except (NotADirectoryError, NoDocumentFilePairFoundError) as e:
         raise UsageError(str(e)) from e
 
 

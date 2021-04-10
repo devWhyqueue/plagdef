@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import textwrap
 from pathlib import Path
 
 import pkg_resources
@@ -72,9 +73,10 @@ class HomeView(View):
         self.widget.change_lang_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.widget.change_lang_button.setVisible(False)
 
-    def register_for_signals(self, open_folder=None, remove_folder=None, select_lang=None,
+    def register_for_signals(self, open_folder=None, remove_folder=None, exclude_common=None, select_lang=None,
                              reset_lang_sel=None, detect=None):
         self.widget.open_folder_button.clicked.connect(lambda: open_folder())
+        self.widget.exclude_common_check_box.toggled.connect(lambda checked: exclude_common(checked))
         self.widget.remove_folder_button.clicked.connect(lambda: remove_folder())
         self.widget.lang_button_group.buttonClicked.connect(lambda: select_lang())
         self.widget.change_lang_button.clicked.connect(lambda: reset_lang_sel())
@@ -84,11 +86,16 @@ class HomeView(View):
         self.widget.folder_name_label.setText(
             f'<html><head/><body><p align="center"><span style="font-size:12pt; color:#ffffff;"> '
             f'{folder_name}</span></p></body></html>')
+        self.widget.folder_name_label.setWordWrap(True)
         self.widget.open_folder_button.setVisible(False)
         self.widget.folder_name_label.setVisible(True)
         self.widget.recursive_check_box.setVisible(True)
         self.widget.remove_folder_button.setVisible(True)
         [radio.setEnabled(True) for radio in self.widget.lang_button_group.buttons()]
+
+    def common_folder_selected(self, folder_name: str):
+        wrapped_name = textwrap.fill(folder_name, 20)
+        self.widget.exclude_common_check_box.setText(f'Excluding text in:\n{wrapped_name}')
 
     def reset_folder_selection(self):
         self.recursive = False
@@ -112,6 +119,7 @@ class HomeView(View):
         self.widget.sel_lang_label.setVisible(True)
         self.widget.change_lang_button.setVisible(True)
         self.widget.detect_button.setEnabled(True)
+        self.widget.exclude_common_check_box.setEnabled(True)
 
     def reset_language_selection(self):
         self.lang = None
@@ -119,11 +127,17 @@ class HomeView(View):
         self.widget.lang_button_group.checkedButton().setChecked(False)
         self.widget.lang_button_group.setExclusive(True)
         self.widget.detect_button.setEnabled(False)
+        self.widget.exclude_common_check_box.setEnabled(False)
+        self.reset_exclude_common()
         self.widget.sel_lang_label.setVisible(False)
         self.widget.change_lang_button.setVisible(False)
         [radio.setVisible(True) for radio in self.widget.lang_button_group.buttons()]
         self.widget.remove_folder_button.setVisible(True)
         self.widget.recursive_check_box.setEnabled(True)
+
+    def reset_exclude_common(self):
+        self.widget.exclude_common_check_box.setChecked(False)
+        self.widget.exclude_common_check_box.setText('Exclude common text')
 
     def on_destroy(self):
         self.reset_language_selection()

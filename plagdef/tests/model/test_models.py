@@ -301,6 +301,21 @@ def test_match_overlaps_with():
     assert match1.overlaps_with(match2) and match2.overlaps_with(match1)
 
 
+def test_match_frag_from_doc():
+    doc1, doc2 = Document('doc1', ''), Document('doc2', '')
+    match = Match(Fragment(0, 7, doc1), Fragment(13, 15, doc2))
+    frag1, frag2 = match.frag_from_doc(doc1), match.frag_from_doc(doc2)
+    assert frag1.doc == doc1
+    assert frag2.doc == doc2
+
+
+def test_match_frag_from_doc_with_other_doc():
+    doc1, doc2, doc3 = Document('doc1', ''), Document('doc2', ''), Document('doc3', '')
+    match = Match(Fragment(0, 7, doc1), Fragment(13, 15, doc2))
+    frag = match.frag_from_doc(doc3)
+    assert frag is None
+
+
 def test_matches_do_not_overlap_if_overlap_only_in_one_frag():
     doc1, doc2 = Document('doc1', ''), Document('doc2', '')
     match1 = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))

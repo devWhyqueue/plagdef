@@ -20,9 +20,13 @@ class Preprocessor:
         self._min_sent_len = min_sent_len
         self._rem_stop_words = rem_stop_words
 
-    def preprocess(self, docs: list[Document], lang: str):
+    def preprocess(self, lang: str, docs: list[Document], common_docs: list[Document] = None):
+        if common_docs:
+            self.preprocess(lang, common_docs)
         nlp_model = _nlp_pipe(lang)
         parsed_docs = nlp_model([stanza.Document([], text=doc.text) for doc in docs]) if docs else []
+        common_sent_bows = [sent.bow for doc_sents in [doc.sents for doc in common_docs] for sent in doc_sents] \
+            if common_docs else []
         stop_words = stopwords.ENGLISH if lang == 'eng' else stopwords.GERMAN
         for doc_idx, parsed_doc in enumerate(parsed_docs):
             for sent_idx, sent in enumerate(parsed_doc.sentences):
@@ -35,9 +39,10 @@ class Preprocessor:
                     lemma_count = Counter(sent_lemmas)
                     sentence = Sentence(sent.tokens[0].start_char, sent.tokens[-1].end_char, lemma_count, docs[doc_idx])
                     sentence.words = _to_words(sent.tokens, sentence)
-                    docs[doc_idx].sents.add(sentence)
-                    for lemma in lemma_count.keys():
-                        docs[doc_idx].vocab[lemma] += 1
+                    if sentence.bow not in common_sent_bows:
+                        docs[doc_idx].sents.add(sentence)
+                        for lemma in lemma_count.keys():
+                            docs[doc_idx].vocab[lemma] += 1
             self._join_small_sentences(docs[doc_idx])
 
     def _join_small_sentences(self, doc: Document):
