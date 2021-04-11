@@ -17,6 +17,19 @@
             <string notr="true">background-color: rgb(77, 80, 87);</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
+            <item alignment="Qt::AlignHCenter">
+                <widget class="QLabel" name="doc_pairs_label">
+                    <property name="styleSheet">
+                        <string notr="true">color: rgb(255, 255, 255);
+                            font-size: 12pt;
+                            margin-bottom: 10;
+                        </string>
+                    </property>
+                    <property name="text">
+                        <string>Found {count} suspicious document pairs.</string>
+                    </property>
+                </widget>
+            </item>
             <item alignment="Qt::AlignHCenter|Qt::AlignTop">
                 <widget class="QTableView" name="results_table">
                     <property name="frameShape">
@@ -24,6 +37,18 @@
                     </property>
                     <property name="sizeAdjustPolicy">
                         <enum>QAbstractScrollArea::AdjustToContents</enum>
+                    </property>
+                    <property name="editTriggers">
+                        <set>QAbstractItemView::NoEditTriggers</set>
+                    </property>
+                    <property name="tabKeyNavigation">
+                        <bool>true</bool>
+                    </property>
+                    <property name="selectionMode">
+                        <enum>QAbstractItemView::SingleSelection</enum>
+                    </property>
+                    <property name="selectionBehavior">
+                        <enum>QAbstractItemView::SelectRows</enum>
                     </property>
                     <attribute name="horizontalHeaderStretchLastSection">
                         <bool>false</bool>

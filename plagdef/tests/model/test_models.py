@@ -331,7 +331,7 @@ def test_match_len():
 
 def test_doc_pair_matches_init():
     doc_pair_matches = DocumentPairMatches()
-    assert doc_pair_matches.matches == set()
+    assert doc_pair_matches._matches == set()
 
 
 def test_doc_pair_matches_init_with_matches():
@@ -339,7 +339,7 @@ def test_doc_pair_matches_init_with_matches():
     match1 = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))
     match2 = Match(Fragment(10, 15, doc2), Fragment(6, 9, doc1))
     doc_pair_matches = DocumentPairMatches({match1, match2})
-    assert doc_pair_matches.matches == {match1, match2}
+    assert doc_pair_matches._matches == {match1, match2}
 
 
 def test_doc_pair_matches_add():
@@ -349,8 +349,8 @@ def test_doc_pair_matches_add():
     doc_pair_matches = DocumentPairMatches()
     doc_pair_matches.add(match1)
     doc_pair_matches.add(match2)
-    assert len(doc_pair_matches.matches) == 2
-    assert match1, match2 in doc_pair_matches.matches
+    assert len(doc_pair_matches._matches) == 2
+    assert match1, match2 in doc_pair_matches._matches
 
 
 def test_doc_pair_matches_add_same_match_twice():
@@ -359,8 +359,8 @@ def test_doc_pair_matches_add_same_match_twice():
     doc_pair_matches = DocumentPairMatches()
     doc_pair_matches.add(match)
     doc_pair_matches.add(match)
-    assert len(doc_pair_matches.matches) == 1
-    assert match in doc_pair_matches.matches
+    assert len(doc_pair_matches._matches) == 1
+    assert match in doc_pair_matches._matches
 
 
 def test_doc_pair_matches_add_match_from_other_pair_fails():
@@ -371,7 +371,7 @@ def test_doc_pair_matches_add_match_from_other_pair_fails():
     doc_pair_matches.add(match1)
     with pytest.raises(DifferentDocumentPairError):
         doc_pair_matches.add(match2)
-    assert len(doc_pair_matches.matches) == 1
+    assert len(doc_pair_matches._matches) == 1
     assert doc_pair_matches.doc_pair == {doc2, doc1}
 
 

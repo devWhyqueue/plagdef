@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
+        <file>before_white.png</file>
+        <file>next_white.png</file>
         <file>error_white.png</file>
         <file>done_circle_white.png</file>
         <file>search_white.png</file>

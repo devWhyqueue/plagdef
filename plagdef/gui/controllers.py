@@ -1,6 +1,7 @@
 import plagdef.gui.main as main
 from plagdef.gui.views import HomeView, LoadingView, NoResultsView, ErrorView, ResultView, \
-    FileDialog
+    FileDialog, MatchesDialog
+from plagdef.model.models import DocumentPairMatches
 
 
 class HomeController:
@@ -44,6 +45,7 @@ class HomeController:
         main.app.find_matches(self.view.lang, self.doc_dir_dialog.selected_dir, self.view.recursive,
                               self.common_doc_dir_dialog.selected_dir)
         main.app.window.switch_to(LoadingView)
+        self.common_doc_dir_dialog.selected_dir = None
 
 
 class LoadingController:
@@ -78,10 +80,21 @@ class ErrorController:
 class ResultController:
     def __init__(self):
         self.view = ResultView()
+        self.matches_dialog = MatchesDialog()
         self._connect_slots()
 
     def _connect_slots(self):
-        self.view.register_for_signals(self._on_again)
+        self.view.register_for_signals(self._on_again, self.on_select_pair)
+        self.matches_dialog.register_for_signals(self.on_prev_match, self.on_next_match)
 
     def _on_again(self):
         main.app.window.switch_to(HomeView)
+
+    def on_select_pair(self, doc_pair_matches: DocumentPairMatches):
+        self.matches_dialog.open(doc_pair_matches)
+
+    def on_prev_match(self):
+        self.matches_dialog.prev_match()
+
+    def on_next_match(self):
+        self.matches_dialog.next_match()

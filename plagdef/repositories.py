@@ -36,8 +36,8 @@ class DocumentFileRepository:
                     detect_enc = magic.Magic(mime_encoding=True)
                     enc = detect_enc.from_buffer(open(str(file), 'rb').read())
                     text = file.read_text(encoding=enc)
-                except UnicodeDecodeError:
-                    raise UnsupportedFileFormatError(f'The file {file.name} has an supported encoding'
+                except (UnicodeDecodeError, LookupError):
+                    raise UnsupportedFileFormatError(f'The file {file.name} has an unsupported encoding'
                                                      f' and cannot be read.')
             documents.append(Document(file.stem, str(text)))
         return documents

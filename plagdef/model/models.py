@@ -246,7 +246,7 @@ class Match:
 class DocumentPairMatches:
     def __init__(self, matches=None):
         self.doc_pair = set()
-        self.matches = set()
+        self._matches = set()
         if matches:
             [self.add(match) for match in matches]
 
@@ -257,13 +257,13 @@ class DocumentPairMatches:
                 raise DifferentDocumentPairError(f'Only matches of document pair {self.doc_pair} can be added.')
         else:
             self.doc_pair.update({frag1.doc, frag2.doc})
-        self.matches.add(match)
+        self._matches.add(match)
 
     def list(self) -> set[Match]:
-        return self.matches
+        return self._matches
 
     def __len__(self):
-        return len(self.matches)
+        return len(self._matches)
 
 
 class DifferentDocumentPairError(Exception):

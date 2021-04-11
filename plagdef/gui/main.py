@@ -36,7 +36,7 @@ class MyQtApp(QApplication):
         pool = QThreadPool.globalInstance()
         pool.start(worker)
 
-    def _on_success(self, matches: list[DocumentPairMatches]):
+    def _on_success(self, matches: set[DocumentPairMatches]):
         if matches:
             self.window.switch_to(ResultView, matches)
         else:

@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+    <class>Dialog</class>
+    <widget class="QDialog" name="Dialog">
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>800</width>
+                <height>600</height>
+            </rect>
+        </property>
+        <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+            </sizepolicy>
+        </property>
+        <property name="minimumSize">
+            <size>
+                <width>800</width>
+                <height>600</height>
+            </size>
+        </property>
+        <property name="maximumSize">
+            <size>
+                <width>800</width>
+                <height>600</height>
+            </size>
+        </property>
+        <property name="windowTitle">
+            <string>Document Pair Matches</string>
+        </property>
+        <property name="windowIcon">
+            <iconset resource="../res/resources.qrc">
+                <normaloff>:/icon.ico</normaloff>:/icon.ico
+            </iconset>
+        </property>
+        <property name="styleSheet">
+            <string notr="true">background-color: rgb(77, 80, 87);</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+                <spacer name="top_spacer">
+                    <property name="orientation">
+                        <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>QSizePolicy::Fixed</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                        <size>
+                            <width>20</width>
+                            <height>40</height>
+                        </size>
+                    </property>
+                </spacer>
+            </item>
+            <item>
+                <layout class="QGridLayout" name="doc_layout">
+                    <item row="0" column="1" alignment="Qt::AlignHCenter">
+                        <widget class="QLabel" name="doc2_label">
+                            <property name="styleSheet">
+                                <string notr="true">color: rgb(255, 255, 255);
+                                    font-size: 12pt;
+                                </string>
+                            </property>
+                            <property name="text">
+                                <string>doc2</string>
+                            </property>
+                        </widget>
+                    </item>
+                    <item row="0" column="0" alignment="Qt::AlignHCenter">
+                        <widget class="QLabel" name="doc1_label">
+                            <property name="styleSheet">
+                                <string notr="true">color: rgb(255, 255, 255);
+                                    font-size: 12pt;
+                                </string>
+                            </property>
+                            <property name="text">
+                                <string>doc1</string>
+                            </property>
+                        </widget>
+                    </item>
+                    <item row="1" column="1">
+                        <widget class="QTextBrowser" name="doc2_text">
+                            <property name="sizePolicy">
+                                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                                    <horstretch>0</horstretch>
+                                    <verstretch>0</verstretch>
+                                </sizepolicy>
+                            </property>
+                            <property name="styleSheet">
+                                <string notr="true">color: rgb(186, 33, 33);
+                                    background-color: rgb(253, 243, 229);
+                                </string>
+                            </property>
+                        </widget>
+                    </item>
+                    <item row="1" column="0">
+                        <widget class="QTextBrowser" name="doc1_text">
+                            <property name="sizePolicy">
+                                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                                    <horstretch>0</horstretch>
+                                    <verstretch>0</verstretch>
+                                </sizepolicy>
+                            </property>
+                            <property name="styleSheet">
+                                <string notr="true">color: rgb(186, 33, 33);
+                                    background-color: rgb(253, 243, 229);
+                                </string>
+                            </property>
+                        </widget>
+                    </item>
+                </layout>
+            </item>
+            <item>
+                <layout class="QHBoxLayout" name="button_layout">
+                    <item>
+                        <spacer name="button_left_spacer">
+                            <property name="orientation">
+                                <enum>Qt::Horizontal</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                                <size>
+                                    <width>40</width>
+                                    <height>20</height>
+                                </size>
+                            </property>
+                        </spacer>
+                    </item>
+                    <item>
+                        <widget class="QPushButton" name="prev_button">
+                            <property name="enabled">
+                                <bool>true</bool>
+                            </property>
+                            <property name="text">
+                                <string/>
+                            </property>
+                            <property name="icon">
+                                <iconset resource="../res/resources.qrc">
+                                    <normaloff>:/before_white.png</normaloff>:/before_white.png
+                                </iconset>
+                            </property>
+                        </widget>
+                    </item>
+                    <item>
+                        <widget class="QLabel" name="page_label">
+                            <property name="styleSheet">
+                                <string notr="true">color: #fff;
+                                    font-size: 10pt;
+                                </string>
+                            </property>
+                            <property name="text">
+                                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;{p}/{pgs}&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                            </property>
+                        </widget>
+                    </item>
+                    <item>
+                        <widget class="QPushButton" name="next_button">
+                            <property name="text">
+                                <string/>
+                            </property>
+                            <property name="icon">
+                                <iconset resource="../res/resources.qrc">
+                                    <normaloff>:/next_white.png</normaloff>:/next_white.png
+                                </iconset>
+                            </property>
+                        </widget>
+                    </item>
+                    <item>
+                        <spacer name="button_right_spacer">
+                            <property name="orientation">
+                                <enum>Qt::Horizontal</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                                <size>
+                                    <width>40</width>
+                                    <height>20</height>
+                                </size>
+                            </property>
+                        </spacer>
+                    </item>
+                </layout>
+            </item>
+            <item>
+                <spacer name="bottom_spacer">
+                    <property name="orientation">
+                        <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>QSizePolicy::Fixed</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                        <size>
+                            <width>20</width>
+                            <height>40</height>
+                        </size>
+                    </property>
+                </spacer>
+            </item>
+        </layout>
+    </widget>
+    <resources>
+        <include location="../res/resources.qrc"/>
+    </resources>
+    <connections/>
+</ui>

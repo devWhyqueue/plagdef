@@ -619,7 +619,7 @@
                     <item alignment="Qt::AlignHCenter|Qt::AlignTop">
                         <widget class="QCheckBox" name="exclude_common_check_box">
                             <property name="enabled">
-                                <bool>false</bool>
+                                <bool>true</bool>
                             </property>
                             <property name="styleSheet">
                                 <string notr="true">color: rgb(255, 255, 255);</string>
