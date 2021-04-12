@@ -119,7 +119,7 @@ class Cluster:
         return any([sent in other.sents_doc1 for sent in self.sents_doc1]) \
                and any([sent in other.sents_doc2 for sent in self.sents_doc2])
 
-    def best_in_respect_to(self, ol_cluster: Cluster) -> RatedCluster:
+    def best_with_respect_to(self, ol_cluster: Cluster) -> RatedCluster:
         """Pick the best of the two overlapping clusters depending on their quality and size."""
         own = self._best_variant(ol_cluster)
         ol_cluster = ol_cluster._best_variant(self)
@@ -135,11 +135,11 @@ class Cluster:
         sentence in doc1 (from which doc2 potentially plagiarized this sentence). If this quality b computed with the
         clusters' overlapping fragments in doc2 combined with this cluster's non-overlapping fragment in doc2 is higher
         than a it is returned."""
-        a = self._rate_in_respect_to(ol_cluster, first_doc_susp=True)
-        b = self._rate_in_respect_to(ol_cluster, first_doc_susp=False)
+        a = self._rate_with_respect_to(ol_cluster, first_doc_susp=True)
+        b = self._rate_with_respect_to(ol_cluster, first_doc_susp=False)
         return a if a >= b else b
 
-    def _rate_in_respect_to(self, ol_cluster: Cluster, first_doc_susp: bool) -> RatedCluster:
+    def _rate_with_respect_to(self, ol_cluster: Cluster, first_doc_susp: bool) -> RatedCluster:
         """Compute the quality of this cluster in respect to an overlapping cluster ol_cluster according to the
         formula:
         q_{ol_cluster}(self) = sim_{self.sents_doc2}(O) + (1 - sim_{self.sents_doc2}(O))

@@ -190,7 +190,7 @@ def test_cluster_rate_in_respect_to():
     with patch('plagdef.model.models.util.cos_sim') as cos_sim:
         cos_sim.side_effect = [0, 0, 0, 0.4, 0, 0.6, 0, 0, 0, 0, 0, 0, 0, 0, 0.5,
                                0, 0, 0, 0.4, 0, 0.2, 0, 0, 0, 0, 0, 0, 0, 0, 0.1, 0, 0.9, 0, 0, 0]
-        rated_cluster = cluster_a._rate_in_respect_to(cluster_b, first_doc_susp=True)
+        rated_cluster = cluster_a._rate_with_respect_to(cluster_b, first_doc_susp=True)
     assert rated_cluster.quality == 0.7
     assert rated_cluster.size == 7
 
@@ -244,7 +244,7 @@ def test_cluster_best_in_respect_to():
                                0.5, 0, 0, 0.4, 0, 0, 0, 0.6, 0.8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0, 0,
                                0, 0, 0, 0.4, 0, 0, 0, 0.2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.4, 0, 0, 0, 0, 0, 0, 0.4, 0, 0,
                                0]
-        rated_cluster = cluster_a.best_in_respect_to(cluster_b)
+        rated_cluster = cluster_a.best_with_respect_to(cluster_b)
     assert rated_cluster.quality == 0.74
     assert rated_cluster.size == 7
 

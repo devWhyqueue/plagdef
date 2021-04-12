@@ -64,7 +64,7 @@ def test_resolve_overlaps():
     cluster_b = Cluster(_create_seeds([(4, 8), (7, 5), (10, 2)]))
     cluster_c = Cluster(_create_seeds([(9, 7), (11, 9), (13, 11)]))
     # common_cluster_ol = {cluster_a: {cluster_b}, cluster_b: {cluster_a, cluster_c}, cluster_c: {cluster_b}}
-    with patch.object(Cluster, 'best_in_respect_to', _best_in_respect_to_fake):
+    with patch.object(Cluster, 'best_with_respect_to', _best_with_respect_to_fake):
         resolved_clusters = _resolve_overlaps({cluster_a, cluster_b, cluster_c})
     assert resolved_clusters == {cluster_a, cluster_c}
 
@@ -105,7 +105,7 @@ def test_next_overlapping_cluster_with_not_biconnected_graph():
     assert _next_overlapping_cluster(graph) == cluster_b
 
 
-def _best_in_respect_to_fake(self: Cluster, ol_cluster: Cluster):
+def _best_with_respect_to_fake(self: Cluster, ol_cluster: Cluster):
     cluster_a = Cluster(_create_seeds([(0, 4), (3, 2), (6, 0)]))
     cluster_b = Cluster(_create_seeds([(4, 8), (7, 5), (10, 2)]))
     cluster_c = Cluster(_create_seeds([(9, 7), (11, 9), (13, 11)]))

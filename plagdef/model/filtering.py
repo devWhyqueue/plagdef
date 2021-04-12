@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from networkx import Graph, articulation_points, is_biconnected, is_empty
+from networkx import Graph, articulation_points, is_empty
 
 from plagdef.model.models import Cluster, RatedCluster
 
@@ -25,19 +25,19 @@ class ClusterFilter:
 
 def _resolve_overlaps(clusters: set[Cluster]) -> set[Cluster]:
     overlap_graph = _build_overlap_graph(clusters)
-    overlapping_cluster = _next_overlapping_cluster(overlap_graph)
-    while overlapping_cluster:
-        ol_clusters = overlap_graph.adj[overlapping_cluster]
-        best_rated_cluster = RatedCluster(overlapping_cluster, 0, 0)
+    cluster = _next_overlapping_cluster(overlap_graph)
+    while cluster:
+        ol_clusters = overlap_graph.adj[cluster]
+        best_rated_cluster = RatedCluster(cluster, 0, 0)
         for ol_cluster in ol_clusters:
-            better_rated_cluster = overlapping_cluster.best_in_respect_to(ol_cluster)
+            better_rated_cluster = cluster.best_with_respect_to(ol_cluster)
             if better_rated_cluster > best_rated_cluster:
                 best_rated_cluster = better_rated_cluster
-        if overlapping_cluster == best_rated_cluster:
+        if cluster == best_rated_cluster:
             overlap_graph.remove_nodes_from(ol_clusters)
         else:
-            overlap_graph.remove_node(overlapping_cluster)
-        overlapping_cluster = _next_overlapping_cluster(overlap_graph)
+            overlap_graph.remove_node(cluster)
+        cluster = _next_overlapping_cluster(overlap_graph)
     return set(overlap_graph)
 
 
@@ -54,8 +54,8 @@ def _build_overlap_graph(clusters: set[Cluster]) -> Graph:
 def _next_overlapping_cluster(graph: Graph):
     cluster = None
     if not is_empty(graph):
-        if not is_biconnected(graph):
+        try:
             cluster = next(articulation_points(graph))
-        else:
+        except StopIteration:
             cluster = max(graph.degree, key=lambda x: x[1])[0]
     return cluster
