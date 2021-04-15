@@ -158,6 +158,17 @@ def test_join_small_sents_at_start(preprocessor):
         {'sentence': 1, 'short': 1, 'this': 1, 'should': 1, 'one': 1, 'be': 1, 'with': 1, 'join': 1})
 
 
+def test_join_multiple_small_sents(preprocessor):
+    doc1 = Document('doc1', 'Short sentence. Another one. But this is a longer one.')
+    doc2 = Document('doc2', 'Another document for good measure.')
+    preprocessor.preprocess('eng', [doc1, doc2])
+    assert len(doc1.sents) == 2
+    assert [sent.bow for sent in doc1.sents] == [Counter({'short': 1, 'sentence': 1, 'another': 1, 'one': 1}),
+                                                 Counter({'but': 1, 'this': 1, 'be': 1, 'a': 1, 'longer': 1, 'one': 1})]
+    assert doc1.vocab == Counter({'one': 2, 'short': 1, 'sentence': 1, 'another': 1, 'but': 1, 'this': 1, 'be': 1,
+                                  'a': 1, 'longer': 1})
+
+
 def test_join_small_sents_in_the_middle(preprocessor):
     doc1 = Document('doc1', 'This is a long sentence. Short sentence. Short sentence should be '
                             'joined with this one.')

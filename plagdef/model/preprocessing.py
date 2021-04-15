@@ -3,7 +3,6 @@ from __future__ import annotations
 from collections import Counter
 
 import stanza
-from more_itertools import pairwise
 from stanza import Pipeline
 
 from plagdef.model import stopwords
@@ -46,7 +45,9 @@ class Preprocessor:
             self._join_small_sentences(docs[doc_idx])
 
     def _join_small_sentences(self, doc: Document):
-        for sent1, sent2 in pairwise(doc.sents):
+        idx, sent_count = 0, len(doc.sents)
+        while idx < sent_count - 1:
+            sent1, sent2 = doc.sents[idx], doc.sents[idx + 1]
             if sum(sent1.bow.values()) < self._min_sent_len \
                 or (sent2 == doc.sents[-1] and sum(sent2.bow.values()) < self._min_sent_len):
                 for lemma in sent1.bow.keys():
@@ -56,6 +57,8 @@ class Preprocessor:
                 joined_sent.words = sent1.words + sent2.words
                 doc.sents.remove(sent1), doc.sents.remove(sent2)
                 doc.sents.add(joined_sent)
+                sent_count -= 1
+            idx += 1
 
 
 def _nlp_pipe(lang: str) -> Pipeline:
