@@ -8,12 +8,6 @@
 
 PlagDef supports plagiarism detection for student assignments.
 
-# Requirements
-
-PlagDef uses python-magic to detect character encodings which needs the libmagic library.
-
-Installation instructions can be found here: https://github.com/ahupp/python-magic#installation
-
 # Installation
 
 Get it from PyPI:
@@ -28,6 +22,14 @@ Or build it yourself:
 $ git clone git://github.com/devWhyqueue/plagdef
 $ pip install -e .
 ````
+
+# Requirements
+
+**After** (important!) you installed PlagDef, install the libmagic library.
+
+PlagDef uses it to detect character encodings.
+
+Further instructions can be found here: https://github.com/ahupp/python-magic#installation
 
 # Usage
 
