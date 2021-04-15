@@ -117,3 +117,15 @@ def test_list_with_doc_dir_containing_pdf(tmp_path):
     docs = repo.list()
     assert 'This is a PDF file containing one sentence.' in [doc.text for doc in docs]
     assert 'This also is a document.\n' in [doc.text for doc in docs]
+
+
+def test_list_with_doc_dir_containing_pdf_with_no_text(tmp_path):
+    doc1 = FPDF()
+    doc1.add_page()
+    doc1.output(f'{tmp_path}/doc1.pdf')
+    with (tmp_path / 'doc2.txt').open('w', encoding='utf-8') as f:
+        f.write('This also is a document.\n')
+    repo = DocumentFileRepository(tmp_path, 'eng')
+    docs = repo.list()
+    assert len(docs) == 2
+    assert 'This also is a document.\n' in [doc.text for doc in docs]

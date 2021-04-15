@@ -30,7 +30,7 @@ class DocumentFileRepository:
         for file in doc_files:
             if file.suffix == '.pdf':
                 with pdfplumber.open(file) as pdf:
-                    text = ' '.join(page.extract_text() for page in pdf.pages)
+                    text = ' '.join(filter(None, (page.extract_text() for page in pdf.pages)))
             else:
                 try:
                     detect_enc = magic.Magic(mime_encoding=True)
