@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+import logging
 from itertools import combinations
+
+from tqdm import tqdm
 
 from plagdef.model.extension import ClusterBuilder
 from plagdef.model.filtering import ClusterFilter
 from plagdef.model.models import Document, Match, DocumentPairMatches, Cluster, Fragment
 from plagdef.model.preprocessing import Preprocessor
 from plagdef.model.seeding import SeedFinder
+
+log = logging.getLogger(__name__)
 
 
 class DocumentMatcher:
@@ -21,8 +26,10 @@ class DocumentMatcher:
 
     def find_matches(self, lang: str, docs: list[Document], common_docs=None) -> set[DocumentPairMatches]:
         self._preprocessor.preprocess(lang, docs, common_docs)
+        log.info(f'Looking for matches in all pairs of {len(docs)} documents...')
         matches = set()
-        for doc1, doc2 in combinations(docs, 2):
+        doc_combs = set(combinations(docs, 2))
+        for idx, (doc1, doc2) in enumerate(tqdm(doc_combs)):
             seeds = self._seeder.seed(doc1, doc2)
             clusters = self._extender.extend(seeds)
             clusters = self._cluster_filter.filter(clusters)

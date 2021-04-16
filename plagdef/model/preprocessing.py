@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import logging
 from collections import Counter
 
 import stanza
 from stanza import Pipeline
+from tqdm import trange
 
 from plagdef.model import stopwords
 from plagdef.model.models import Document, Sentence, Word
+
+log = logging.getLogger(__name__)
 
 PRCS = 'tokenize,mwt,pos,lemma'
 PIPE_LVL = 'WARN'
@@ -20,29 +24,35 @@ class Preprocessor:
         self._rem_stop_words = rem_stop_words
 
     def preprocess(self, lang: str, docs: list[Document], common_docs: list[Document] = None):
-        if common_docs:
-            self.preprocess(lang, common_docs)
+        log.info('Preprocessing documents...')
         nlp_model = _nlp_pipe(lang)
-        parsed_docs = nlp_model([stanza.Document([], text=doc.text) for doc in docs]) if docs else []
         stop_words = stopwords.ENGLISH if lang == 'eng' else stopwords.GERMAN
+        # Preprocess common docs
+        parsed_common_docs = (nlp_model(common_doc.text) for common_doc in common_docs) if common_docs else ()
+        for idx, parsed_doc in enumerate(parsed_common_docs):
+            self._preprocess(common_docs[idx], parsed_doc.sentences, [], stop_words)
         common_sent_words = [sent.words for doc_sents in (doc.sents for doc in common_docs)
                              for sent in doc_sents] if common_docs else []
-        for doc_idx, parsed_doc in enumerate(parsed_docs):
-            for sent_idx, sent in enumerate(parsed_doc.sentences):
-                non_punct_words = [word for word in sent.words if not word.upos == 'PUNCT']
-                if self._rem_stop_words:
-                    sent_lemmas = [word.lemma for word in non_punct_words if word.text.lower() not in stop_words]
-                else:
-                    sent_lemmas = [word.lemma for word in non_punct_words]
-                if len(sent_lemmas):
-                    lemma_count = Counter(sent_lemmas)
-                    sentence = Sentence(sent.tokens[0].start_char, sent.tokens[-1].end_char, lemma_count, docs[doc_idx])
-                    sentence.words = _to_words(sent.tokens, sentence)
-                    if not _sent_contains_words_of_common_sent(sentence.words, common_sent_words):
-                        docs[doc_idx].sents.add(sentence)
-                        for lemma in lemma_count.keys():
-                            docs[doc_idx].vocab[lemma] += 1
-            self._join_small_sentences(docs[doc_idx])
+        for idx in trange(len(docs)):
+            parsed_doc = nlp_model(docs[idx].text)
+            self._preprocess(docs[idx], parsed_doc.sentences, common_sent_words, stop_words)
+
+    def _preprocess(self, doc: Document, sents, common_sent_words: list[list[Word]], stop_words: set[str]):
+        for sent_idx, sent in enumerate(sents):
+            non_punct_words = [word for word in sent.words if not word.upos == 'PUNCT']
+            if self._rem_stop_words:
+                sent_lemmas = [word.lemma for word in non_punct_words if word.text.lower() not in stop_words]
+            else:
+                sent_lemmas = [word.lemma for word in non_punct_words]
+            if len(sent_lemmas):
+                lemma_count = Counter(sent_lemmas)
+                sentence = Sentence(sent.tokens[0].start_char, sent.tokens[-1].end_char, lemma_count, doc)
+                sentence.words = _to_words(sent.tokens, sentence)
+                if not _sent_contains_words_of_common_sent(sentence.words, common_sent_words):
+                    doc.sents.add(sentence)
+                    for lemma in lemma_count.keys():
+                        doc.vocab[lemma] += 1
+        self._join_small_sentences(doc)
 
     def _join_small_sentences(self, doc: Document):
         idx, sent_count = 0, len(doc.sents)
