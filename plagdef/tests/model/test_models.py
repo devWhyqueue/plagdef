@@ -10,15 +10,15 @@ from plagdef.tests.model.test_extension import _create_seeds
 
 
 def test_documents_are_equal():
-    doc1 = Document('doc', 'Arbitrary text.')
+    doc1 = Document('doc', 'Some text.')
     doc2 = Document('doc', 'Some text.')
     assert doc1 == doc2
 
 
-def test_documents_are_the_same_if_same_name():
+def test_documents_are_the_same_if_same_name_and_text():
     docs = set()
     docs.add(Document('doc', 'abc'))
-    docs.add(Document('doc', 'cde'))
+    docs.add(Document('doc', 'abc'))
     assert len(docs) == 1
 
 

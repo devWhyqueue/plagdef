@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from ast import literal_eval
 from configparser import ConfigParser
 from itertools import islice
@@ -7,8 +8,11 @@ from pathlib import Path
 
 import magic
 import pdfplumber
+from magic import MagicException
 
 from plagdef.model.models import Document
+
+log = logging.getLogger(__name__)
 
 
 class DocumentFileRepository:
@@ -18,28 +22,31 @@ class DocumentFileRepository:
         self._recursive = recursive
         if not dir_path.is_dir():
             raise NotADirectoryError(f'The given path {dir_path} does not point to an existing directory!')
-        if at_least_two and (not any(dir_path.iterdir()) or not next(islice(dir_path.iterdir(), 1, None), None)):
+        if at_least_two and (not any(self._list_files()) or not next(islice(self._list_files(), 1, None), None)):
             raise NoDocumentFilePairFoundError(f'The directory {dir_path} must contain at least two documents.')
 
-    def list(self) -> [Document]:
+    def _list_files(self):
         if self._recursive:
-            doc_files = [file_path for file_path in self._dir_path.rglob('*') if file_path.is_file()]
+            return (file_path for file_path in self._dir_path.rglob('*') if file_path.is_file())
         else:
-            doc_files = [file_path for file_path in self._dir_path.iterdir() if file_path.is_file()]
-        documents = []
-        for file in doc_files:
+            return (file_path for file_path in self._dir_path.iterdir() if file_path.is_file())
+
+    def list(self) -> set[Document]:
+        documents = set()
+        for file in self._list_files():
             if file.suffix == '.pdf':
                 with pdfplumber.open(file) as pdf:
                     text = ' '.join(filter(None, (page.extract_text() for page in pdf.pages)))
+                    documents.add(Document(file.stem, str(text)))
             else:
                 try:
                     detect_enc = magic.Magic(mime_encoding=True)
-                    enc = detect_enc.from_buffer(open(str(file), 'rb').read())
+                    enc = detect_enc.from_buffer(open(str(file), 'rb').read(2048))
                     text = file.read_text(encoding=enc)
-                except (UnicodeDecodeError, LookupError):
-                    raise UnsupportedFileFormatError(f'The file {file.name} has an unsupported encoding'
-                                                     f' and cannot be read.')
-            documents.append(Document(file.stem, str(text)))
+                    documents.add(Document(file.stem, str(text)))
+                except (UnicodeDecodeError, LookupError, MagicException):
+                    log.error(f"The file '{file.name}' has an unsupported encoding and cannot be read.")
+                    log.debug('Following error occurred:', exc_info=True)
         return documents
 
 

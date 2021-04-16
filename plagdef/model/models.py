@@ -19,11 +19,11 @@ class Document:
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self.name == other.name
+            return self.name == other.name and self.text == other.text
         return False
 
     def __hash__(self):
-        return hash(self.name)
+        return hash((self.name, self.text))
 
     def __repr__(self):
         return f"Document('{self.name}')"

@@ -32,6 +32,16 @@ def test_init_with_doc_dir_containing_only_one_file_fails(tmp_path):
         DocumentFileRepository(Path(tmp_path), 'eng')
 
 
+def test_init_with_doc_dir_containing_only_multiple_files_in_subdirectory(tmp_path):
+    subdir = Path(f'{tmp_path}/subdir')
+    subdir.mkdir()
+    with (subdir / 'doc1.txt').open('w', encoding='utf-8') as f:
+        f.write('Some content.\n')
+    with (subdir / 'doc2.txt').open('w', encoding='utf-8') as f:
+        f.write('Some different content.\n')
+    DocumentFileRepository(Path(tmp_path), 'eng', recursive=True)
+
+
 def test_init_with_doc_dir_containing_only_one_file_with_at_least_two_false(tmp_path):
     with (tmp_path / 'doc1.txt').open('w', encoding='utf-8') as f:
         f.write('Some content.\n')
