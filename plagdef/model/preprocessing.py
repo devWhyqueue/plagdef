@@ -24,9 +24,9 @@ class Preprocessor:
             self.preprocess(lang, common_docs)
         nlp_model = _nlp_pipe(lang)
         parsed_docs = nlp_model([stanza.Document([], text=doc.text) for doc in docs]) if docs else []
-        common_sent_bows = [sent.bow for doc_sents in [doc.sents for doc in common_docs] for sent in doc_sents] \
-            if common_docs else []
         stop_words = stopwords.ENGLISH if lang == 'eng' else stopwords.GERMAN
+        common_sent_words = [sent.words for doc_sents in (doc.sents for doc in common_docs)
+                             for sent in doc_sents] if common_docs else []
         for doc_idx, parsed_doc in enumerate(parsed_docs):
             for sent_idx, sent in enumerate(parsed_doc.sentences):
                 non_punct_words = [word for word in sent.words if not word.upos == 'PUNCT']
@@ -38,7 +38,7 @@ class Preprocessor:
                     lemma_count = Counter(sent_lemmas)
                     sentence = Sentence(sent.tokens[0].start_char, sent.tokens[-1].end_char, lemma_count, docs[doc_idx])
                     sentence.words = _to_words(sent.tokens, sentence)
-                    if sentence.bow not in common_sent_bows:
+                    if not _sent_contains_words_of_common_sent(sentence.words, common_sent_words):
                         docs[doc_idx].sents.add(sentence)
                         for lemma in lemma_count.keys():
                             docs[doc_idx].vocab[lemma] += 1
@@ -79,6 +79,14 @@ def _to_words(stanza_tokens, sentence: Sentence) -> list[Word]:
             if not stanza_word.upos == 'PUNCT':
                 words.append(Word(stanza_token.start_char, stanza_token.end_char, sentence))
     return words
+
+
+def _sent_contains_words_of_common_sent(sent_words: list[Word], common_sent_words: list[list[Word]]) -> bool:
+    sent_word_texts = [word.text for word in sent_words]
+    for sent_words in common_sent_words:
+        if all(word.text in sent_word_texts for word in sent_words):
+            return True
+    return False
 
 
 class UnsupportedLanguageError(Exception):

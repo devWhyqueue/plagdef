@@ -212,3 +212,15 @@ def test_remove_common_sents(preprocessor):
     assert len(doc1.sents) == 1
     assert doc1.sents.pop().text == 'This is the first document.'
     assert doc1.vocab == Counter({'this': 1, 'be': 1, 'the': 1, 'first': 1, 'document': 1})
+
+
+def test_remove_common_sents_with_non_identical_sents(preprocessor):
+    doc1 = Document('doc1', 'This is the first document.\n'
+                            'Presenting the last sentence:\n'
+                            'Last sentence is expected to be common to all docs.')
+    doc2 = Document('doc2', 'This sentence could be part of doc1 but is not. Last sentence is expected to be common '
+                            'to all docs.')
+    preprocessor.preprocess('eng', [doc1], [doc2])
+    assert len(doc1.sents) == 1
+    assert doc1.sents.pop().text == 'This is the first document.'
+    assert doc1.vocab == Counter({'this': 1, 'be': 1, 'the': 1, 'first': 1, 'document': 1})
