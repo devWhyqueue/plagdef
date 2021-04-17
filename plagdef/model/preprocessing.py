@@ -50,6 +50,7 @@ class Preprocessor:
                     for lemma in lemma_count.keys():
                         doc.vocab[lemma] += 1
         self._join_small_sentences(doc)
+        self._remove_small_sentences(doc)
 
     def _join_small_sentences(self, doc: Document):
         sents = doc.sents(include_common=True)
@@ -57,8 +58,8 @@ class Preprocessor:
         while idx < sent_count - 1:
             sent1, sent2 = sents[idx], sents[idx + 1]
             if (not sent1.common and not sent2.common) and \
-                (sum(sent1.bow.values()) < self._min_sent_len or
-                 (sent2 == sents[-1] and sum(sent2.bow.values()) < self._min_sent_len)):
+                (len(sent1.words) < self._min_sent_len or
+                 (sent2 == sents[-1] and len(sent2.words) < self._min_sent_len)):
                 for lemma in sent1.bow.keys():
                     if lemma in sent2.bow:
                         doc.vocab[lemma] -= 1
@@ -66,8 +67,22 @@ class Preprocessor:
                 joined_sent.words = sent1.words + sent2.words
                 doc.remove_sent(sent1), doc.remove_sent(sent2)
                 doc.add_sent(joined_sent)
+                idx -= 1
                 sent_count -= 1
             idx += 1
+
+    def _remove_small_sentences(self, doc: Document):
+        sents = list(doc.sents())
+        idx, sent_count = 0, len(sents)
+        while idx < sent_count:
+            if len(sents[idx].words) < self._min_sent_len:
+                for lemma in sents[idx].bow.keys():
+                    doc.vocab[lemma] -= 1
+                doc.remove_sent(sents[idx]), sents.remove(sents[idx])
+                idx -= 1
+                sent_count -= 1
+            idx += 1
+        doc.vocab += Counter()  # Remove zero counts
 
 
 def _nlp_pipe(lang: str) -> Pipeline:

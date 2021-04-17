@@ -160,15 +160,14 @@ def test_join_small_sents_at_start(preprocessor):
 
 
 def test_join_multiple_small_sents(preprocessor):
-    doc1 = Document('doc1', 'Short sentence. Another one. But this is a longer one.')
+    doc1 = Document('doc1', 'Short. Still. But this is a longer one.')
     doc2 = Document('doc2', 'Another document for good measure.')
     preprocessor.preprocess('eng', [doc1, doc2])
-    assert len(doc1.sents(include_common=True)) == 2
-    assert [sent.bow for sent in doc1.sents(include_common=True)] == [
-        Counter({'short': 1, 'sentence': 1, 'another': 1, 'one': 1}),
-        Counter({'but': 1, 'this': 1, 'be': 1, 'a': 1, 'longer': 1, 'one': 1})]
-    assert doc1.vocab == Counter({'one': 2, 'short': 1, 'sentence': 1, 'another': 1, 'but': 1, 'this': 1, 'be': 1,
-                                  'a': 1, 'longer': 1})
+    assert len(doc1.sents(include_common=True)) == 1
+    assert [sent.bow for sent in doc1.sents(include_common=True)] == \
+           [Counter({'short': 1, 'still': 1, 'but': 1, 'this': 1, 'be': 1, 'a': 1, 'longer': 1, 'one': 1})]
+    assert doc1.vocab == Counter(
+        {'short': 1, 'still': 1, 'but': 1, 'this': 1, 'be': 1, 'a': 1, 'longer': 1, 'one': 1})
 
 
 def test_join_small_sents_in_the_middle(preprocessor):
@@ -208,6 +207,15 @@ def test_join_small_sents_contains_words_of_both_sents(preprocessor):
 
 def test_join_small_sents_does_not_join_common_sent(preprocessor):
     doc1 = Document('doc1', 'This is the first document. Common sent.')
+    doc2 = Document('doc2', 'This sentence could be part of doc1 but is not.\nCommon sent.')
+    preprocessor.preprocess('eng', [doc1], [doc2])
+    assert len(doc1.sents(include_common=True)) == 2
+    assert doc1.sents(include_common=True)[1].common
+    assert doc1.vocab == Counter({'this': 1, 'be': 1, 'the': 1, 'first': 1, 'document': 1})
+
+
+def test_remove_small_sents_near_common_sents(preprocessor):
+    doc1 = Document('doc1', 'This is the first document. Common sent. Remove this.')
     doc2 = Document('doc2', 'This sentence could be part of doc1 but is not.\nCommon sent.')
     preprocessor.preprocess('eng', [doc1], [doc2])
     assert len(doc1.sents(include_common=True)) == 2
