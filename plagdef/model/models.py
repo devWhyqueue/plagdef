@@ -15,7 +15,19 @@ class Document:
         self.name = name
         self.text = text
         self.vocab = Counter()  # <lemma, sent_freq>
-        self.sents = SortedSet(key=lambda sent: sent.start_char)
+        self._sents = SortedSet(key=lambda sent: sent.start_char)
+
+    def add_sent(self, sent: Sentence):
+        self._sents.add(sent)
+
+    def remove_sent(self, sent: Sentence):
+        self._sents.remove(sent)
+
+    def sents(self, include_common=False):
+        if include_common:
+            return self._sents
+        else:
+            return filter(lambda sent: not sent.common, self._sents)
 
     def __eq__(self, other):
         if type(other) is type(self):
@@ -61,10 +73,11 @@ class Sentence(Fragment):
         self.words = SortedList(key=lambda word: word.start_char)
         self.bow = bow
         self.tf_isf_bow = {}
+        self.common = False
 
     @property
     def idx(self):
-        return self.doc.sents.index(self)
+        return self.doc.sents(include_common=True).index(self)
 
     def adjacent_to(self, other: Sentence, adjacent_sents_gap: int) -> bool:
         return abs(self.idx - other.idx) - 1 <= adjacent_sents_gap
@@ -102,7 +115,9 @@ class Cluster:
         sent_idc = [seed.sent1.idx for seed in self.seeds] if in_first_doc else [seed.sent2.idx for seed in self.seeds]
         start = min(sent_idc)
         end = max(sent_idc)
-        return self.doc1.sents[start:end + 1] if in_first_doc else self.doc2.sents[start:end + 1]
+        # A sent idx of a seed can never be a common sent
+        return list(self.doc1.sents())[start:end + 1] if in_first_doc \
+            else list(self.doc2.sents())[start:end + 1]
 
     def _tf_isf_bow(self, doc1_sents: bool) -> dict:
         sents = self.sents_doc1 if doc1_sents else self.sents_doc2
@@ -170,8 +185,8 @@ class Cluster:
         return similarity / frag_sents_len if frag_sents_len else 0
 
     def char_lengths(self) -> tuple[int, int]:
-        char_len_doc1 = sum([len(sent) for sent in self.sents_doc1])
-        char_len_doc2 = sum([len(sent) for sent in self.sents_doc2])
+        char_len_doc1 = sum(len(sent) for sent in self.sents_doc1)
+        char_len_doc2 = sum(len(sent) for sent in self.sents_doc2)
         return char_len_doc1, char_len_doc2
 
     def __eq__(self, other):

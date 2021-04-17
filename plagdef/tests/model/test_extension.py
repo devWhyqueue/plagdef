@@ -103,7 +103,7 @@ def test_clustering_seed_order_makes_no_difference():
     assert clusters == {Cluster({seeds[0], seeds[1]})}
 
 
-def test_filter_with_only_similar_clusters():
+def test_validate_with_only_similar_clusters():
     seeds = _create_seeds([(0, 2), (2, 4), (10, 5), (11, 7), (14, 11)])
     extender = ClusterBuilder(4, 0, 1, 0.34)
     # Calculation of cluster similarity untested
@@ -115,7 +115,7 @@ def test_filter_with_only_similar_clusters():
     assert filtered_clusters == {clusters[0], clusters[1]}
 
 
-def test_filter_with_cluster_with_similarity_below_th():
+def test_validate_with_cluster_with_similarity_below_th():
     seeds = _create_seeds([(0, 2)])
     extender = ClusterBuilder(4, 0, 1, 0.34)
     # Calculation of cluster similarity untested
@@ -126,7 +126,7 @@ def test_filter_with_cluster_with_similarity_below_th():
     assert filtered_clusters == set()
 
 
-def test_filter_with_cluster_which_is_reduced():
+def test_validate_with_cluster_which_is_reduced():
     seeds = _create_seeds([(0, 5), (1, 7), (6, 11)])
     extender = ClusterBuilder(4, 0, 1, 0.34)
     # Calculation of cluster similarity untested
@@ -146,9 +146,10 @@ def _create_seeds(seed_tpls: list[tuple]):
     doc1, doc2 = Document('doc1', ''), Document('doc2', '')
     max_idx_doc1, max_idx_doc2 = max(seed_tpls, key=lambda seed: seed[0]), \
                                  max(seed_tpls, key=lambda seed: seed[1])
-    [doc1.sents.add(Sentence(idx, idx + 1, Counter(), doc1)) for idx in range(max_idx_doc1[0] + 1)]
-    [doc2.sents.add(Sentence(idx, idx + 1, Counter(), doc2)) for idx in range(max_idx_doc2[1] + 1)]
+    [doc1.add_sent(Sentence(idx, idx + 1, Counter(), doc1)) for idx in range(max_idx_doc1[0] + 1)]
+    [doc2.add_sent(Sentence(idx, idx + 1, Counter(), doc2)) for idx in range(max_idx_doc2[1] + 1)]
     seeds = []
     for seed_tpl in seed_tpls:
-        seeds.append(Seed(doc1.sents[seed_tpl[0]], doc2.sents[seed_tpl[1]], 1, 1))
+        seeds.append(Seed(doc1.sents(include_common=True)[seed_tpl[0]],
+                          doc2.sents(include_common=True)[seed_tpl[1]], 1, 1))
     return seeds

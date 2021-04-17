@@ -54,7 +54,7 @@ class DocumentMatcher:
         matches = set()
         for cluster in clusters:
             cluster_matches = self._common_words(cluster)
-            matches.update(self._resolve_overlaps(cluster_matches))
+            matches.update(_resolve_overlaps(cluster_matches))
         return matches
 
     def _common_words(self, cluster: Cluster) -> set[Match]:
@@ -74,9 +74,10 @@ class DocumentMatcher:
                         verbatim_matches.add(Match(frag1, frag2))
         return verbatim_matches
 
-    def _resolve_overlaps(self, matches: set[Match]) -> set[Match]:
-        non_ol_matches = set()
-        for match in sorted(matches, key=len, reverse=True):
-            if not any(match.overlaps_with(non_ol_match) for non_ol_match in non_ol_matches):
-                non_ol_matches.add(match)
-        return non_ol_matches
+
+def _resolve_overlaps(matches: set[Match]) -> set[Match]:
+    non_ol_matches = set()
+    for match in sorted(matches, key=len, reverse=True):
+        if not any(match.overlaps_with(non_ol_match) for non_ol_match in non_ol_matches):
+            non_ol_matches.add(match)
+    return non_ol_matches

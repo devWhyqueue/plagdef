@@ -9,6 +9,33 @@ from plagdef.model.models import Document, Sentence, Cluster, Fragment, Word, Ra
 from plagdef.tests.model.test_extension import _create_seeds
 
 
+def test_document_sents():
+    doc = Document('doc', 'Some text.')
+    doc.add_sent(Sentence(0, 10, Counter(), doc))
+    assert len(list(doc.sents(include_common=True))) == 1
+    assert list(doc.sents(include_common=True))[0].text == 'Some text.'
+
+
+def test_document_remove_sent():
+    doc = Document('doc', 'Some text.')
+    sent = Sentence(0, 10, Counter(), doc)
+    doc.add_sent(sent)
+    doc.remove_sent(sent)
+    assert len(list(doc.sents(include_common=True))) == 0
+
+
+def test_document_sents_exclude_common():
+    doc = Document('doc', 'Some text. A common sent.')
+    doc.add_sent(Sentence(0, 10, Counter(), doc))
+    common_sent = Sentence(11, 25, Counter(), doc)
+    common_sent.common = True
+    doc.add_sent(common_sent)
+    assert len(list(doc.sents())) == 1
+    assert len(list(doc.sents(include_common=True))) == 2
+    assert list(doc.sents(include_common=True))[0].text == 'Some text.'
+    assert list(doc.sents(include_common=True))[1].text == 'A common sent.'
+
+
 def test_documents_are_equal():
     doc1 = Document('doc', 'Some text.')
     doc2 = Document('doc', 'Some text.')
@@ -24,10 +51,10 @@ def test_documents_are_the_same_if_same_name_and_text():
 
 def test_document_sents_are_ordered_by_start_char():
     doc = Document('doc', '')
-    doc.sents.add(Sentence(5, -1, Counter(), doc))
-    doc.sents.add(Sentence(3, -1, Counter(), doc))
-    doc.sents.add(Sentence(7, -1, Counter(), doc))
-    assert [sent.start_char for sent in doc.sents] == [3, 5, 7]
+    doc.add_sent(Sentence(5, -1, Counter(), doc))
+    doc.add_sent(Sentence(3, -1, Counter(), doc))
+    doc.add_sent(Sentence(7, -1, Counter(), doc))
+    assert [sent.start_char for sent in doc.sents(include_common=True)] == [3, 5, 7]
 
 
 def test_fragment_length():
@@ -52,9 +79,9 @@ def test_fragment_overlaps_with_different_docs():
 def test_sentence_idx():
     doc = Document('doc', '')
     sent = Sentence(3, -1, Counter(), doc)
-    doc.sents.add(Sentence(4, -1, Counter(), doc))
-    doc.sents.add(sent)
-    doc.sents.add(Sentence(0, -1, Counter(), doc))
+    doc.sents(include_common=True).add(Sentence(4, -1, Counter(), doc))
+    doc.sents(include_common=True).add(sent)
+    doc.sents(include_common=True).add(Sentence(0, -1, Counter(), doc))
     assert sent.idx == 1
 
 
@@ -255,6 +282,17 @@ def test_cluster_char_lengths():
     assert char_lengths[0] == 7 and char_lengths[1] == 5
 
 
+def test_cluster_char_lengths_ignores_common_sents():
+    seeds = _create_seeds([(0, 4), (3, 9)])
+    for i in range(1, 3):
+        seeds[0].sent1.doc.sents(include_common=True)[i].common = True
+    for i in range(2, 4):
+        seeds[0].sent2.doc.sents(include_common=True)[i].common = True
+    cluster = Cluster(seeds)
+    char_lengths = cluster.char_lengths()
+    assert char_lengths[0] == 2 and char_lengths[1] == 4
+
+
 def test_rated_cluster_equality():
     cluster_a = Cluster(_create_seeds([(0, 4), (3, 2), (6, 0)]))
     cluster_b = Cluster(_create_seeds([(4, 8), (7, 5), (10, 2)]))
@@ -394,5 +432,5 @@ def test_doc_pair_matches_len():
 
 def _create_sent(doc_name: str, sent_idx: int):
     doc = Document(doc_name, '')
-    [doc.sents.add(Sentence(idx, -1, Counter(), doc)) for idx in range(sent_idx + 1)]
-    return doc.sents[sent_idx]
+    [doc.sents(include_common=True).add(Sentence(idx, -1, Counter(), doc)) for idx in range(sent_idx + 1)]
+    return doc.sents(include_common=True)[sent_idx]

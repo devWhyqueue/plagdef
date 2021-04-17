@@ -16,8 +16,8 @@ class SeedFinder:
     def seed(self, doc1: Document, doc2: Document) -> set[Seed]:
         _vectorize_sents(doc1, doc2)
         seeds = set()
-        for doc1_sent in doc1.sents:
-            for doc2_sent in doc2.sents:
+        for doc1_sent in doc1.sents():
+            for doc2_sent in doc2.sents():
                 seed = self._match(doc1_sent, doc2_sent)
                 if seed:
                     seeds.add(seed)
@@ -36,10 +36,11 @@ def _vectorize_sents(doc1: Document, doc2: Document):
     and sf the number of sentences containing the term
     """
     sf = doc1.vocab + doc2.vocab
-    N = len(doc1.sents) + len(doc2.sents)
-    for sent in doc1.sents:
+    doc1_sents, doc2_sents = list(doc1.sents()), list(doc2.sents())
+    N = len(doc1_sents) + len(doc2_sents)
+    for sent in doc1_sents:
         for lemma in sent.bow:
             sent.tf_isf_bow[lemma] = sent.bow[lemma] * math.log(N / float(sf[lemma]))
-    for sent in doc2.sents:
+    for sent in doc2_sents:
         for lemma in sent.bow:
             sent.tf_isf_bow[lemma] = sent.bow[lemma] * math.log(N / float(sf[lemma]))

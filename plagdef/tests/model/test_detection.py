@@ -8,8 +8,9 @@ def test_common_words(preprocessor, config):
     doc2 = Document('doc2', 'Some text in doc2. There must be identical sentences. But Case or punctuation like this'
                             ' \';:\' do not matter. A different ending.')
     preprocessor.preprocess('eng', [doc1, doc2])
-    cluster = Cluster({Seed(doc1.sents[0], doc2.sents[0], 0.8, 0.8), Seed(doc1.sents[1], doc2.sents[1], 1, 1),
-                       Seed(doc1.sents[2], doc2.sents[2], 0.4, 0.4)})
+    cluster = Cluster({Seed(doc1.sents(include_common=True)[0], doc2.sents(include_common=True)[0], 0.8, 0.8),
+                       Seed(doc1.sents(include_common=True)[1], doc2.sents(include_common=True)[1], 1, 1),
+                       Seed(doc1.sents(include_common=True)[2], doc2.sents(include_common=True)[2], 0.4, 0.4)})
     config['min_verbatim_match_char_len'] = 65
     doc_matcher = DocumentMatcher(config)
     match = doc_matcher._common_words(cluster).pop()
@@ -24,8 +25,9 @@ def test_common_words_with_two_substrings(preprocessor, config):
     doc2 = Document('doc2', 'Some text in doc2. There must be identical sentences. But Case or punctuation like this'
                             ' \';:\' do not matter. A different ending.')
     preprocessor.preprocess('eng', [doc1, doc2])
-    cluster = Cluster({Seed(doc1.sents[0], doc2.sents[0], 0.8, 0.8), Seed(doc1.sents[1], doc2.sents[1], 1, 1),
-                       Seed(doc1.sents[2], doc2.sents[2], 0.4, 0.4)})
+    cluster = Cluster({Seed(doc1.sents(include_common=True)[0], doc2.sents(include_common=True)[0], 0.8, 0.8),
+                       Seed(doc1.sents(include_common=True)[1], doc2.sents(include_common=True)[1], 1, 1),
+                       Seed(doc1.sents(include_common=True)[2], doc2.sents(include_common=True)[2], 0.4, 0.4)})
     config['min_verbatim_match_char_len'] = 25
     doc_matcher = DocumentMatcher(config)
     matches = doc_matcher._common_words(cluster)
@@ -46,8 +48,9 @@ def test_resolve_overlaps(preprocessor, config):
     doc2 = Document('doc2', 'Some text in doc2. There must be identical sentences. But Case or punctuation like this'
                             " ';:' do not matter. A different ending.")
     preprocessor.preprocess('eng', [doc1, doc2])
-    cluster = Cluster({Seed(doc1.sents[0], doc2.sents[0], 0.8, 0.8), Seed(doc1.sents[1], doc2.sents[1], 1, 1),
-                       Seed(doc1.sents[2], doc2.sents[2], 0.4, 0.4)})
+    cluster = Cluster({Seed(doc1.sents(include_common=True)[0], doc2.sents(include_common=True)[0], 0.8, 0.8),
+                       Seed(doc1.sents(include_common=True)[1], doc2.sents(include_common=True)[1], 1, 1),
+                       Seed(doc1.sents(include_common=True)[2], doc2.sents(include_common=True)[2], 0.4, 0.4)})
     config['min_verbatim_match_char_len'] = 15
     doc_matcher = DocumentMatcher(config)
     matches = doc_matcher._common_words(cluster)
@@ -64,8 +67,8 @@ def test_verbatim_matches(preprocessor, config):
     doc1 = Document('doc1', 'Some identical text. This is a sentence. This as well. More similar text.')
     doc2 = Document('doc2', 'Some identical text. Totally different words. These are too. More similar text.')
     preprocessor.preprocess('eng', [doc1, doc2])
-    clusters = {Cluster({Seed(doc1.sents[0], doc2.sents[0], 1, 1)}),
-                Cluster({Seed(doc1.sents[3], doc2.sents[3], 1, 1)})}
+    clusters = {Cluster({Seed(doc1.sents(include_common=True)[0], doc2.sents(include_common=True)[0], 1, 1)}),
+                Cluster({Seed(doc1.sents(include_common=True)[3], doc2.sents(include_common=True)[3], 1, 1)})}
     config['min_verbatim_match_char_len'] = 5
     doc_matcher = DocumentMatcher(config)
     matches = doc_matcher._verbatim_matches(clusters)
