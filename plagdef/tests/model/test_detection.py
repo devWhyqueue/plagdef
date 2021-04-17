@@ -1,4 +1,4 @@
-from plagdef.model.detection import DocumentMatcher
+from plagdef.model.detection import DocumentMatcher, _resolve_match_overlaps
 from plagdef.model.models import Document, Cluster, Seed
 
 
@@ -54,7 +54,7 @@ def test_resolve_overlaps(preprocessor, config):
     config['min_verbatim_match_char_len'] = 15
     doc_matcher = DocumentMatcher(config)
     matches = doc_matcher._common_words(cluster)
-    res_matches = doc_matcher._resolve_overlaps(matches)
+    res_matches = _resolve_match_overlaps(matches)
     # 1: There must be identical sentences
     # 2: But case or punctuation like this ';:' OR "..," do not matter
     assert len(res_matches) == 2

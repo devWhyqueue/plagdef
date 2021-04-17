@@ -27,18 +27,12 @@ class Preprocessor:
         log.info('Preprocessing documents...')
         nlp_model = _nlp_pipe(lang)
         stop_words = stopwords.ENGLISH if lang == 'eng' else stopwords.GERMAN
-        # Preprocess common docs
-        parsed_common_docs = (nlp_model(common_doc.text) for common_doc in common_docs) if common_docs else ()
-        for idx, parsed_doc in enumerate(parsed_common_docs):
-            self._preprocess(common_docs[idx], parsed_doc.sentences, [], stop_words, join_small_sents=False)
-        common_sent_words = [sent.words for doc_sents in (doc.sents(include_common=True) for doc in common_docs)
-                             for sent in doc_sents] if common_docs else []
+        common_word_lists = _common_word_lists(nlp_model, common_docs) if common_docs else []
         for idx in trange(len(docs)):
             parsed_doc = nlp_model(docs[idx].text)
-            self._preprocess(docs[idx], parsed_doc.sentences, common_sent_words, stop_words)
+            self._preprocess(docs[idx], parsed_doc.sentences, common_word_lists, stop_words)
 
-    def _preprocess(self, doc: Document, sents, common_sent_words: list[list[Word]], stop_words: set[str],
-                    join_small_sents=True):
+    def _preprocess(self, doc: Document, sents, common_word_lists: list[list[str]], stop_words: set[str]):
         for sent_idx, sent in enumerate(sents):
             non_punct_words = [word for word in sent.words if not word.upos == 'PUNCT']
             if self._rem_stop_words:
@@ -50,13 +44,12 @@ class Preprocessor:
                 sentence = Sentence(sent.tokens[0].start_char, sent.tokens[-1].end_char, lemma_count, doc)
                 sentence.words = _to_words(sent.tokens, sentence)
                 doc.add_sent(sentence)
-                if _sent_contains_words_of_common_sent(sentence.words, common_sent_words):
+                if _sent_contains_common_words(sentence.words, common_word_lists):
                     sentence.common = True
                 else:
                     for lemma in lemma_count.keys():
                         doc.vocab[lemma] += 1
-        if join_small_sents:
-            self._join_small_sentences(doc)
+        self._join_small_sentences(doc)
 
     def _join_small_sentences(self, doc: Document):
         sents = doc.sents(include_common=True)
@@ -88,6 +81,18 @@ def _nlp_pipe(lang: str) -> Pipeline:
         raise UnsupportedLanguageError(f'The language "{lang}" is currently not supported.')
 
 
+def _common_word_lists(pipe: Pipeline, common_docs: list[Document]) -> list[list[str]]:
+    common_word_lists = []
+    for doc in common_docs:
+        for line in doc.text.splitlines():
+            parsed_line = pipe(line)
+            line_words = []
+            for sent in parsed_line.sentences:
+                [line_words.append(word.text.lower()) for word in filter(lambda w: not w.upos == 'PUNCT', sent.words)]
+            common_word_lists.append(line_words)
+    return common_word_lists
+
+
 def _to_words(stanza_tokens, sentence: Sentence) -> list[Word]:
     words = []
     for stanza_token in stanza_tokens:
@@ -97,10 +102,10 @@ def _to_words(stanza_tokens, sentence: Sentence) -> list[Word]:
     return words
 
 
-def _sent_contains_words_of_common_sent(sent_words: list[Word], common_sent_words: list[list[Word]]) -> bool:
-    sent_word_texts = [word.text for word in sent_words]
-    for sent_words in common_sent_words:
-        if all(word.text in sent_word_texts for word in sent_words):
+def _sent_contains_common_words(sent_words: list[Word], common_word_lists: list[list[str]]) -> bool:
+    sent_word_texts = [word.text.lower() for word in sent_words]
+    for common_word_list in common_word_lists:
+        if all(common_word in sent_word_texts for common_word in common_word_list):
             return True
     return False
 
