@@ -25,7 +25,7 @@ class DocumentPairMatches:
 
 
 class ResultsTableModel(QAbstractTableModel):
-    def __init__(self, doc_pair_matches: set[models.DocumentPairMatches]):
+    def __init__(self, doc_pair_matches: list[models.DocumentPairMatches]):
         super().__init__()
         self._rows = []
         self._doc_pair_matches = []

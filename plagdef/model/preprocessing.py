@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-import logging
+import os
 from collections import Counter
+from functools import partial
 
 import stanza
 from stanza import Pipeline
-from tqdm import trange
+from tqdm.contrib.concurrent import thread_map
 
 from plagdef.model import stopwords
 from plagdef.model.models import Document, Sentence, Word
-
-log = logging.getLogger(__name__)
 
 PRCS = 'tokenize,mwt,pos,lemma'
 PIPE_LVL = 'WARN'
@@ -24,15 +23,15 @@ class Preprocessor:
         self._rem_stop_words = rem_stop_words
 
     def preprocess(self, lang: str, docs: list[Document], common_docs: list[Document] = None):
-        log.info('Preprocessing documents...')
         nlp_model = _nlp_pipe(lang)
         stop_words = stopwords.ENGLISH if lang == 'eng' else stopwords.GERMAN
         common_word_lists = _common_word_lists(nlp_model, common_docs) if common_docs else []
-        for idx in trange(len(docs)):
-            parsed_doc = nlp_model(docs[idx].text)
-            self._preprocess(docs[idx], parsed_doc.sentences, common_word_lists, stop_words)
+        thread_map(partial(self._preprocess, nlp_model=nlp_model,
+                           common_word_lists=common_word_lists, stop_words=stop_words),
+                   docs, max_workers=os.cpu_count(), desc='Preprocessing', unit='doc')
 
-    def _preprocess(self, doc: Document, sents, common_word_lists: list[list[str]], stop_words: set[str]):
+    def _preprocess(self, doc: Document, nlp_model: Pipeline, common_word_lists: list[list[str]], stop_words: set[str]):
+        sents = nlp_model(doc.text).sentences
         for sent_idx, sent in enumerate(sents):
             non_punct_words = [word for word in sent.words if not word.upos == 'PUNCT']
             if self._rem_stop_words:

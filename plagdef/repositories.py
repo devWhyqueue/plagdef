@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from ast import literal_eval
 from configparser import ConfigParser
 from itertools import islice
@@ -9,6 +10,7 @@ from pathlib import Path
 import magic
 import pdfplumber
 from magic import MagicException
+from tqdm.contrib.concurrent import thread_map
 
 from plagdef.model.models import Document
 
@@ -32,22 +34,24 @@ class DocumentFileRepository:
             return (file_path for file_path in self._dir_path.iterdir() if file_path.is_file())
 
     def list(self) -> set[Document]:
-        documents = set()
-        for file in self._list_files():
-            if file.suffix == '.pdf':
-                with pdfplumber.open(file) as pdf:
-                    text = ' '.join(filter(None, (page.extract_text() for page in pdf.pages)))
-                    documents.add(Document(file.stem, str(text)))
-            else:
-                try:
-                    detect_enc = magic.Magic(mime_encoding=True)
-                    enc = detect_enc.from_buffer(open(str(file), 'rb').read(2048))
-                    text = file.read_text(encoding=enc)
-                    documents.add(Document(file.stem, str(text)))
-                except (UnicodeDecodeError, LookupError, MagicException):
-                    log.error(f"The file '{file.name}' has an unsupported encoding and cannot be read.")
-                    log.debug('Following error occurred:', exc_info=True)
-        return documents
+        files = list(self._list_files())
+        return set(thread_map(self._read_file, files, max_workers=os.cpu_count(),
+                              desc=f"Reading documents in '{self._dir_path}'", unit='doc'))
+
+    def _read_file(self, file):
+        if file.suffix == '.pdf':
+            with pdfplumber.open(file) as pdf:
+                text = ' '.join(filter(None, (page.extract_text() for page in pdf.pages)))
+                return Document(file.stem, str(text))
+        else:
+            try:
+                detect_enc = magic.Magic(mime_encoding=True)
+                enc = detect_enc.from_buffer(open(str(file), 'rb').read(2048))
+                text = file.read_text(encoding=enc)
+                return Document(file.stem, str(text))
+            except (UnicodeDecodeError, LookupError, MagicException):
+                log.error(f"The file '{file.name}' has an unsupported encoding and cannot be read.")
+                log.debug('Following error occurred:', exc_info=True)
 
 
 class DocumentPairReportFileRepository:

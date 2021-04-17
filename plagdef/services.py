@@ -15,7 +15,7 @@ from plagdef.repositories import UnsupportedFileFormatError
 log = logging.getLogger(__name__)
 
 
-def find_matches(doc_repo, config_repo, common_doc_repo=None) -> set[DocumentPairMatches]:
+def find_matches(doc_repo, config_repo, common_doc_repo=None) -> list[DocumentPairMatches]:
     try:
         start_time = time()
         docs = list(doc_repo.list())

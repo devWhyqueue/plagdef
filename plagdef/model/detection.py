@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import logging
+import os
 from itertools import combinations
 
-from tqdm import tqdm
+from tqdm.contrib.concurrent import thread_map
 
 from plagdef.model.extension import ClusterBuilder
 from plagdef.model.filtering import ClusterFilter
@@ -24,31 +25,31 @@ class DocumentMatcher:
         self._adjacent_sents_gap_summary = config['adjacent_sents_gap_summary']
         self._min_verbatim_match_char_len = config['min_verbatim_match_char_len']
 
-    def find_matches(self, lang: str, docs: list[Document], common_docs=None) -> set[DocumentPairMatches]:
+    def find_matches(self, lang: str, docs: list[Document], common_docs=None) -> list[DocumentPairMatches]:
         self._preprocessor.preprocess(lang, docs, common_docs)
-        log.info(f'Looking for matches in all pairs of {len(docs)} documents...')
-        matches = set()
         doc_combs = set(combinations(docs, 2))
-        for idx, (doc1, doc2) in enumerate(tqdm(doc_combs)):
-            seeds = self._seeder.seed(doc1, doc2)
-            clusters = self._extender.extend(seeds)
-            clusters = self._cluster_filter.filter(clusters)
-            verbatim_matches = self._verbatim_matches(clusters)
-            if len(verbatim_matches):  # Plagiarism type: verbatim
-                matches.add(DocumentPairMatches(verbatim_matches))
-            else:
-                summary_clusters = self._extender.extend(seeds, self._adjacent_sents_gap_summary)
-                summary_clusters = self._cluster_filter.filter(summary_clusters)
-                if len(summary_clusters):
-                    sum_cluster_len_doc1, sum_cluster_len_doc2 = \
-                        tuple(map(sum, zip(*(cluster.char_lengths() for cluster in summary_clusters))))
+        matches = thread_map(self._find_matches, doc_combs, max_workers=os.cpu_count(), desc='Matching', unit='pair')
+        return list(filter(None, matches))
 
-                    if sum_cluster_len_doc1 >= 3 * sum_cluster_len_doc2 \
-                        or sum_cluster_len_doc2 >= 3 * sum_cluster_len_doc1:  # Plagiarism type: summary
-                        matches.add(DocumentPairMatches({Match.from_cluster(cluster) for cluster in summary_clusters}))
-                    elif len(clusters):  # Plagiarism type: intelligent
-                        matches.add(DocumentPairMatches({Match.from_cluster(cluster) for cluster in clusters}))
-        return matches
+    def _find_matches(self, doc_pair: tuple[Document, Document]):
+        seeds = self._seeder.seed(doc_pair[0], doc_pair[1])
+        clusters = self._extender.extend(seeds)
+        clusters = self._cluster_filter.filter(clusters)
+        verbatim_matches = self._verbatim_matches(clusters)
+        if len(verbatim_matches):  # Plagiarism type: verbatim
+            return DocumentPairMatches(verbatim_matches)
+        else:
+            summary_clusters = self._extender.extend(seeds, self._adjacent_sents_gap_summary)
+            summary_clusters = self._cluster_filter.filter(summary_clusters)
+            if len(summary_clusters):
+                sum_cluster_len_doc1, sum_cluster_len_doc2 = \
+                    tuple(map(sum, zip(*(cluster.char_lengths() for cluster in summary_clusters))))
+
+                if sum_cluster_len_doc1 >= 3 * sum_cluster_len_doc2 \
+                    or sum_cluster_len_doc2 >= 3 * sum_cluster_len_doc1:  # Plagiarism type: summary
+                    return DocumentPairMatches({Match.from_cluster(cluster) for cluster in summary_clusters})
+                elif len(clusters):  # Plagiarism type: intelligent
+                    return DocumentPairMatches({Match.from_cluster(cluster) for cluster in clusters})
 
     def _verbatim_matches(self, clusters: set[Cluster]) -> set[Match]:
         matches = set()
