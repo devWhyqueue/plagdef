@@ -35,8 +35,8 @@ class DocumentFileRepository:
 
     def list(self) -> set[Document]:
         files = list(self._list_files())
-        return set(thread_map(self._read_file, files, max_workers=os.cpu_count(),
-                              desc=f"Reading documents in '{self._dir_path}'", unit='doc'))
+        return set(filter(None, thread_map(self._read_file, files, max_workers=os.cpu_count(),
+                                           desc=f"Reading documents in '{self._dir_path}'", unit='doc')))
 
     def _read_file(self, file):
         if file.suffix == '.pdf':

@@ -33,7 +33,7 @@ class Preprocessor:
     def _preprocess(self, doc: Document, nlp_model: Pipeline, common_word_lists: list[list[str]], stop_words: set[str]):
         sents = nlp_model(doc.text).sentences
         for sent_idx, sent in enumerate(sents):
-            non_punct_words = [word for word in sent.words if not word.upos == 'PUNCT']
+            non_punct_words = [word for word in sent.words if not word.upos == 'PUNCT' and len(word.text) > 1]
             if self._rem_stop_words:
                 sent_lemmas = [word.lemma for word in non_punct_words if word.text.lower() not in stop_words]
             else:
@@ -102,8 +102,9 @@ def _common_word_lists(pipe: Pipeline, common_docs: list[Document]) -> list[list
             parsed_line = pipe(line)
             line_words = []
             for sent in parsed_line.sentences:
-                [line_words.append(word.text.lower()) for word in filter(lambda w: not w.upos == 'PUNCT', sent.words)]
-            common_word_lists.append(line_words)
+                [line_words.append(word.text.lower()) for word in filter(lambda w: not w.upos == 'PUNCT'
+                                                                                   and len(w.text) > 1, sent.words)]
+            common_word_lists.append(line_words) if len(line_words) else None
     return common_word_lists
 
 
@@ -111,7 +112,7 @@ def _to_words(stanza_tokens, sentence: Sentence) -> list[Word]:
     words = []
     for stanza_token in stanza_tokens:
         for stanza_word in stanza_token.words:
-            if not stanza_word.upos == 'PUNCT':
+            if not stanza_word.upos == 'PUNCT' and len(stanza_word.text) > 1:
                 words.append(Word(stanza_token.start_char, stanza_token.end_char, sentence))
     return words
 

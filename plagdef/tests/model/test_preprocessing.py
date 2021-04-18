@@ -51,7 +51,7 @@ def test_preprocessed_voc_contains_lemmas_with_sentence_frequency(preprocessed_d
     doc = preprocessed_docs[0]
     # One error (ignored): rights -> right
     assert doc.vocab == Counter(
-        {'be': 3, 'infringement': 2, 'the': 2, 'copyright': 2, 'a': 2, 'plagiarism': 1, 'not': 1, 'same': 1, 'as': 1,
+        {'be': 3, 'infringement': 2, 'the': 2, 'copyright': 2, 'plagiarism': 1, 'not': 1, 'same': 1, 'as': 1,
          'to': 1, 'concept': 1, 'apply': 1, 'they': 1, 'may': 1, 'while': 1, 'different': 1, 'act': 1, 'particular': 1,
          'term': 1, 'both': 1, 'material': 1, 'consent': 1, 'holder': 1, 'whose': 1, 'violation': 1, 'of': 1, 'use': 1,
          'without': 1, 'restrict': 1, 'when': 1, 'rights': 1, 'by': 1})
@@ -85,9 +85,9 @@ def test_preprocessed_voc_contains_no_stop_words():
     assert len(doc1.vocab.keys()) == 3
 
 
-def test_preprocessed_voc_contains_short_tokens(preprocessed_docs):
+def test_preprocessed_voc_contains_no_short_tokens(preprocessed_docs):
     doc = preprocessed_docs[0]
-    assert any(len(token) < 2 for token in doc.vocab)
+    assert not any(len(token) < 2 for token in doc.vocab)
 
 
 def test_preprocessed_voc_contains_only_lowercase_tokens(preprocessed_docs):
@@ -100,7 +100,7 @@ def test_preprocessed_words(preprocessor):
     preprocessor.preprocess('eng', [doc])
     sent1_word_texts = [word.text.lower() for word in doc.sents(include_common=True)[0].words]
     sent2_word_texts = [word.text.lower() for word in doc.sents(include_common=True)[1].words]
-    assert sent1_word_texts == ['this', 'is', 'a', 'document']
+    assert sent1_word_texts == ['this', 'is', 'document']
     assert sent2_word_texts == ['it', 'consists', 'of', 'two', 'sentences', 'one', 'and', 'two']
 
 
@@ -126,9 +126,9 @@ def test_preprocessed_sent_bows(preprocessed_docs):
     # Lemma error "rights" ignored
     assert [sent.bow for sent in doc.sents(include_common=True)] == [
         Counter({'plagiarism': 1, 'be': 1, 'not': 1, 'the': 1, 'same': 1, 'as': 1, 'copyright': 1, 'infringement': 1}),
-        Counter({'while': 1, 'both': 1, 'term': 1, 'may': 1, 'apply': 1, 'to': 1, 'a': 1, 'particular': 1, 'act': 1,
+        Counter({'while': 1, 'both': 1, 'term': 1, 'may': 1, 'apply': 1, 'to': 1, 'particular': 1, 'act': 1,
                  'they': 1, 'be': 1, 'different': 1, 'concept': 1}),
-        Counter({'copyright': 3, 'be': 3, 'a': 2, 'of': 2, 'use': 2, 'infringement': 1, 'violation': 1, 'the': 1,
+        Counter({'copyright': 3, 'be': 3, 'of': 2, 'use': 2, 'infringement': 1, 'violation': 1, 'the': 1,
                  'rights': 1, 'holder': 1, 'when': 1, 'material': 1, 'whose': 1, 'restrict': 1, 'by': 1, 'without': 1,
                  'consent': 1})]
 
@@ -165,9 +165,9 @@ def test_join_multiple_small_sents(preprocessor):
     preprocessor.preprocess('eng', [doc1, doc2])
     assert len(doc1.sents(include_common=True)) == 1
     assert [sent.bow for sent in doc1.sents(include_common=True)] == \
-           [Counter({'short': 1, 'still': 1, 'but': 1, 'this': 1, 'be': 1, 'a': 1, 'longer': 1, 'one': 1})]
+           [Counter({'short': 1, 'still': 1, 'but': 1, 'this': 1, 'be': 1, 'longer': 1, 'one': 1})]
     assert doc1.vocab == Counter(
-        {'short': 1, 'still': 1, 'but': 1, 'this': 1, 'be': 1, 'a': 1, 'longer': 1, 'one': 1})
+        {'short': 1, 'still': 1, 'but': 1, 'this': 1, 'be': 1, 'longer': 1, 'one': 1})
 
 
 def test_join_small_sents_in_the_middle(preprocessor):
@@ -177,10 +177,10 @@ def test_join_small_sents_in_the_middle(preprocessor):
     preprocessor.preprocess('eng', [doc1, doc2])
     assert len(doc1.sents(include_common=True)) == 2
     assert [sent.bow for sent in doc1.sents(include_common=True)] == \
-           [Counter({'this': 1, 'be': 1, 'a': 1, 'long': 1, 'sentence': 1}),
+           [Counter({'this': 1, 'be': 1, 'long': 1, 'sentence': 1}),
             Counter({'short': 2, 'sentence': 2, 'should': 1, 'be': 1, 'join': 1, 'with': 1, 'this': 1, 'one': 1})]
     assert doc1.vocab == Counter(
-        {'be': 2, 'sentence': 2, 'this': 2, 'a': 1, 'long': 1, 'short': 1, 'one': 1, 'join': 1, 'with': 1, 'should': 1})
+        {'be': 2, 'sentence': 2, 'this': 2, 'long': 1, 'short': 1, 'one': 1, 'join': 1, 'with': 1, 'should': 1})
 
 
 def test_join_small_sents_at_the_end(preprocessor):
@@ -190,10 +190,10 @@ def test_join_small_sents_at_the_end(preprocessor):
     preprocessor.preprocess('eng', [doc1, doc2])
     assert len(doc1.sents(include_common=True)) == 2
     assert [sent.bow for sent in doc1.sents(include_common=True)] == \
-           [Counter({'this': 1, 'be': 1, 'a': 1, 'long': 1, 'sentence': 1}),
+           [Counter({'this': 1, 'be': 1, 'long': 1, 'sentence': 1}),
             Counter({'short': 2, 'sentence': 2, 'should': 1, 'be': 1, 'join': 1, 'with': 1, 'this': 1, 'one': 1})]
     assert doc1.vocab == Counter(
-        {'be': 2, 'sentence': 2, 'this': 2, 'a': 1, 'long': 1, 'short': 1, 'one': 1, 'join': 1, 'with': 1, 'should': 1})
+        {'be': 2, 'sentence': 2, 'this': 2, 'long': 1, 'short': 1, 'one': 1, 'join': 1, 'with': 1, 'should': 1})
 
 
 def test_join_small_sents_contains_words_of_both_sents(preprocessor):
@@ -229,6 +229,18 @@ def test_tag_common_sents(preprocessor):
                             'Last Sentence, is expected to be common to all docs.')
     preprocessor.preprocess('eng', [doc1], [doc2])
     assert len(doc1.sents(include_common=True)) == 2
+    assert doc1.sents(include_common=True)[1].common
+    assert doc1.vocab == Counter({'this': 1, 'be': 1, 'the': 1, 'first': 1, 'document': 1})
+
+
+def test_tag_common_sents_with_empty_line(preprocessor):
+    doc1 = Document('doc1', 'This is the first document. Last sentence is expected to be common to all docs.')
+    doc2 = Document('doc2', 'This sentence could be part of doc1 but is not.\n'
+                            '\n'
+                            'Last Sentence, is expected to be common to all docs.')
+    preprocessor.preprocess('eng', [doc1], [doc2])
+    assert len(doc1.sents(include_common=True)) == 2
+    assert len(list(doc1.sents())) == 1
     assert doc1.sents(include_common=True)[1].common
     assert doc1.vocab == Counter({'this': 1, 'be': 1, 'the': 1, 'first': 1, 'document': 1})
 
