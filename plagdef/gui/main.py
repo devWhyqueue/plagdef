@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import sys
-import traceback
+import os
+import signal
 from collections import Callable
+from concurrent.futures import ThreadPoolExecutor, Future
 
-from PySide6.QtCore import QThreadPool, QRunnable, Slot, QObject, Signal
 from PySide6.QtWidgets import QApplication
 from click import UsageError
 
@@ -13,7 +13,6 @@ import plagdef.gui.resources
 from plagdef.gui.controllers import HomeController, LoadingController, ErrorController, NoResultsController, \
     ResultController
 from plagdef.gui.views import MainWindow, ResultView, NoResultsView, ErrorView
-from plagdef.model.models import DocumentPairMatches
 
 app = None
 
@@ -21,6 +20,7 @@ app = None
 class MyQtApp(QApplication):
     def __init__(self, find_matches: Callable):
         super().__init__()
+        self.aboutToQuit.connect(lambda: os.kill(os.getpid(), signal.SIGINT))
         self._ctrls = [HomeController(), LoadingController(), ErrorController(), NoResultsController(),
                        ResultController()]
         self._views = [ctrl.view for ctrl in self._ctrls]
@@ -30,45 +30,24 @@ class MyQtApp(QApplication):
         app = self
 
     def find_matches(self, lang: str, doc_dir: str, recursive: bool, common_doc_dir: str):
-        worker = Worker(self._find_matches, lang, doc_dir, recursive=recursive, common_doc_dir=common_doc_dir)
-        worker.signals.result.connect(self._on_success)
-        worker.signals.error.connect(self._on_error)
-        pool = QThreadPool.globalInstance()
-        pool.start(worker)
+        pool = ThreadPoolExecutor()
+        future = pool.submit(self._find_matches, lang, doc_dir, recursive=recursive,
+                             common_doc_dir=common_doc_dir)
+        future.add_done_callback(self._on_completion)
+        pool.shutdown(wait=False)
 
-    def _on_success(self, matches: set[DocumentPairMatches]):
-        if matches:
-            self.window.switch_to(ResultView, matches)
+    def _on_completion(self, future: Future):
+        error = future.exception()
+        if error:
+            if type(error) == UsageError:
+                self.window.switch_to(ErrorView, str(error))
+            else:
+                self.window.switch_to(ErrorView,
+                                      'An error occurred. Please refer to the command line for more details.')
+                raise error
         else:
-            self.window.switch_to(NoResultsView)
-
-    def _on_error(self, error: (type, Exception)):
-        if error[0] == UsageError:
-            self.window.switch_to(ErrorView, str(error[1]))
-        else:
-            self.window.switch_to(ErrorView, 'An error occurred. Please refer to the command line for more details.')
-            raise error[1]
-
-
-class Worker(QRunnable):
-    def __init__(self, fn, *args, **kwargs):
-        super(Worker, self).__init__()
-        self.fn = fn
-        self.args = args
-        self.kwargs = kwargs
-        self.signals = WorkerSignals()
-
-    @Slot()
-    def run(self):
-        try:
-            result = self.fn(*self.args, **self.kwargs)
-        except Exception:
-            exctype, value = sys.exc_info()[:2]
-            self.signals.error.emit((exctype, value, traceback.format_exc()))
-        else:
-            self.signals.result.emit(result)
-
-
-class WorkerSignals(QObject):
-    error = Signal(tuple)
-    result = Signal(object)
+            matches = future.result()
+            if len(matches):
+                self.window.switch_to(ResultView, matches)
+            else:
+                self.window.switch_to(NoResultsView)

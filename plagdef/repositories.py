@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import logging
-import os
 from ast import literal_eval
+from concurrent.futures import ThreadPoolExecutor
 from configparser import ConfigParser
 from itertools import islice
 from pathlib import Path
@@ -10,7 +10,7 @@ from pathlib import Path
 import magic
 import pdfplumber
 from magic import MagicException
-from tqdm.contrib.concurrent import thread_map
+from tqdm import tqdm
 
 from plagdef.model.models import Document
 
@@ -35,8 +35,10 @@ class DocumentFileRepository:
 
     def list(self) -> set[Document]:
         files = list(self._list_files())
-        return set(filter(None, thread_map(self._read_file, files, max_workers=os.cpu_count(),
-                                           desc=f"Reading documents in '{self._dir_path}'", unit='doc')))
+        with ThreadPoolExecutor() as p:
+            docs = list(tqdm(p.map(self._read_file, files), desc=f"Reading documents in '{self._dir_path}'",
+                             unit='doc', total=len(files)))
+        return set(filter(None, docs))
 
     def _read_file(self, file):
         if file.suffix == '.pdf':

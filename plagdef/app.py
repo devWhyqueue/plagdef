@@ -1,3 +1,4 @@
+import signal
 import sys
 
 import click
@@ -45,6 +46,7 @@ def gui():
     The GUI for this tool is based on the Qt 6 framework and works on all platforms.
     """
     from plagdef.gui.main import MyQtApp
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     app = MyQtApp(find_matches)
     app.window.show()
     sys.exit(app.exec_())

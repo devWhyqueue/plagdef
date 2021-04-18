@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import os
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 
 import stanza
 from stanza import Pipeline
-from tqdm.contrib.concurrent import thread_map
+from tqdm import tqdm
 
 from plagdef.model import stopwords
 from plagdef.model.models import Document, Sentence, Word
@@ -26,9 +27,9 @@ class Preprocessor:
         nlp_model = _nlp_pipe(lang)
         stop_words = stopwords.ENGLISH if lang == 'eng' else stopwords.GERMAN
         common_word_lists = _common_word_lists(nlp_model, common_docs) if common_docs else []
-        thread_map(partial(self._preprocess, nlp_model=nlp_model,
-                           common_word_lists=common_word_lists, stop_words=stop_words),
-                   docs, max_workers=os.cpu_count(), desc='Preprocessing', unit='doc')
+        with ThreadPoolExecutor(max_workers=os.cpu_count()) as p:
+            list(tqdm(p.map(partial(self._preprocess, nlp_model=nlp_model, common_word_lists=common_word_lists,
+                                    stop_words=stop_words), docs), total=len(docs), desc='Preprocessing', unit='doc'))
 
     def _preprocess(self, doc: Document, nlp_model: Pipeline, common_word_lists: list[list[str]], stop_words: set[str]):
         sents = nlp_model(doc.text).sentences
