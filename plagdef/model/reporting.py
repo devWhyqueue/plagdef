@@ -19,7 +19,7 @@ class DocumentPairReport:
 
 def generate_text_report(matches: list[DocumentPairMatches]) -> str:
     doc_pair_reports = []
-    for doc_pair_matches in matches:
+    for doc_pair_matches in sorted(matches, key=lambda m: m.plag_type):
         doc1, doc2 = doc_pair_matches.doc_pair
         report = f"Pair('{doc1.path}', '{doc2.path}'):\n"
         for match in sorted(doc_pair_matches.list(), key=lambda m: m.frag_from_doc(doc1).start_char):
@@ -37,7 +37,7 @@ def generate_text_report(matches: list[DocumentPairMatches]) -> str:
 
 def generate_xml_reports(matches: list[DocumentPairMatches]) -> list[DocumentPairReport]:
     doc_pair_reports = []
-    for doc_pair_matches in matches:
+    for doc_pair_matches in sorted(matches, key=lambda m: m.plag_type):
         doc1, doc2 = doc_pair_matches.doc_pair
         root = E.report(doc1=doc1.path, doc2=doc2.path)
         for match in sorted(doc_pair_matches.list(), key=lambda m: m.frag_from_doc(doc1).start_char):

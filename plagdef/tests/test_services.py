@@ -5,7 +5,7 @@ import pytest
 from click import UsageError
 
 from plagdef.model.detection import DocumentMatcher
-from plagdef.model.models import DocumentPairMatches, Match, Fragment
+from plagdef.model.models import DocumentPairMatches, Match, Fragment, PlagiarismType
 from plagdef.model.preprocessing import Document, UnsupportedLanguageError
 from plagdef.repositories import UnsupportedFileFormatError
 from plagdef.services import find_matches, write_xml_reports
@@ -17,7 +17,7 @@ def test_find_matches(config):
             Document('doc2', 'path/to/doc2', 'This also is a document.\n')]
     doc_repo = DocumentFakeRepository(docs, 'eng')
     config_repo = ConfigFakeRepository(config)
-    doc_pair_matches = DocumentPairMatches()
+    doc_pair_matches = DocumentPairMatches(PlagiarismType.VERBATIM)
     doc_pair_matches.add(Match(Fragment(0, 18, docs[0]), Fragment(0, 23, docs[1])))
     with patch.object(DocumentMatcher, 'find_matches') as alg_fm:
         alg_fm.return_value = [doc_pair_matches]

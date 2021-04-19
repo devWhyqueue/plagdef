@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import Counter, defaultdict
 from collections.abc import Iterable
 from dataclasses import dataclass
+from enum import Enum
 from functools import total_ordering
 
 from sortedcontainers import SortedSet, SortedList
@@ -264,7 +265,8 @@ class Match:
 
 
 class DocumentPairMatches:
-    def __init__(self, matches=None):
+    def __init__(self, plag_type: PlagiarismType, matches=None):
+        self.plag_type = plag_type
         self.doc_pair = set()
         self._matches = set()
         if matches:
@@ -298,3 +300,15 @@ class DifferentDocumentPairError(Exception):
 
 class SameDocumentError(Exception):
     pass
+
+
+@total_ordering
+class PlagiarismType(Enum):
+    VERBATIM = 1,
+    INTELLIGENT = 2,
+    SUMMARY = 3
+
+    def __lt__(self, other):
+        if self.__class__ is other.__class__:
+            return self.value < other.value
+        return NotImplemented

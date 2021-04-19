@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from plagdef.model.extension import ClusterBuilder
 from plagdef.model.filtering import ClusterFilter
-from plagdef.model.models import Document, Match, DocumentPairMatches, Cluster, Fragment
+from plagdef.model.models import Document, Match, DocumentPairMatches, Cluster, Fragment, PlagiarismType
 from plagdef.model.preprocessing import Preprocessor
 from plagdef.model.seeding import SeedFinder
 
@@ -37,9 +37,9 @@ class DocumentMatcher:
             clusters = self._cluster_filter.filter(clusters)
             log.debug(f'Seeds were extended to the following clusters:\n{pformat(clusters)}')
             verbatim_matches = self._verbatim_matches(clusters)
-            if len(verbatim_matches):  # Plagiarism type: verbatim
+            if len(verbatim_matches):
                 log.debug(f'Plagiarism type is verbatim. Found these matches:\n{pformat(verbatim_matches)}')
-                matches.append(DocumentPairMatches(verbatim_matches))
+                matches.append(DocumentPairMatches(PlagiarismType.VERBATIM, verbatim_matches))
             else:
                 summary_clusters = self._extender.extend(seeds, self._adjacent_sents_gap_summary)
                 summary_clusters = self._cluster_filter.filter(summary_clusters)
@@ -48,15 +48,15 @@ class DocumentMatcher:
                         tuple(map(sum, zip(*(cluster.char_lengths() for cluster in summary_clusters))))
 
                     if sum_cluster_len_doc1 >= 3 * sum_cluster_len_doc2 \
-                        or sum_cluster_len_doc2 >= 3 * sum_cluster_len_doc1:  # Plagiarism type: summary
+                        or sum_cluster_len_doc2 >= 3 * sum_cluster_len_doc1:
                         summary_matches = {Match.from_cluster(cluster) for cluster in summary_clusters}
                         log.debug(f'Plagiarism type is summary. Found these matches:\n{pformat(summary_matches)}')
-                        matches.append(DocumentPairMatches(summary_matches))
-                    elif len(clusters):  # Plagiarism type: intelligent
+                        matches.append(DocumentPairMatches(PlagiarismType.SUMMARY, summary_matches))
+                    elif len(clusters):
                         intelligent_matches = {Match.from_cluster(cluster) for cluster in clusters}
                         log.debug(
                             f'Plagiarism type is intelligent. Found these matches:\n{pformat(intelligent_matches)}')
-                        matches.append(DocumentPairMatches(intelligent_matches))
+                        matches.append(DocumentPairMatches(PlagiarismType.INTELLIGENT, intelligent_matches))
         return matches
 
     def _verbatim_matches(self, clusters: set[Cluster]) -> set[Match]:
