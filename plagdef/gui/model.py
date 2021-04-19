@@ -9,12 +9,6 @@ from plagdef.model import models
 
 
 @dataclass(frozen=True)
-class ResultRow:
-    doc1: str
-    doc2: str
-
-
-@dataclass(frozen=True)
 class DocumentPairMatches:
     doc1: models.Document
     doc2: models.Document
@@ -28,13 +22,9 @@ class DocumentPairMatches:
 class ResultsTableModel(QAbstractTableModel):
     def __init__(self, doc_pair_matches: list[models.DocumentPairMatches]):
         super().__init__()
-        self._rows = []
         self._doc_pair_matches = []
         for matches in sorted(doc_pair_matches, key=lambda m: m.plag_type):
             doc1, doc2 = matches.doc_pair
-            doc1_path = doc1.path if len(doc1.path) < 50 else f'...{doc1.path[len(doc1.path) - 50:]}'
-            doc2_path = doc2.path if len(doc2.path) < 50 else f'...{doc2.path[len(doc2.path) - 50:]}'
-            self._rows.append(ResultRow(doc1_path, doc2_path))
             self._doc_pair_matches.append(
                 DocumentPairMatches(doc1, doc2, matches.plag_type,
                                     sorted(matches.list(), key=lambda m: m.frag_from_doc(doc1).start_char)))
@@ -48,13 +38,12 @@ class ResultsTableModel(QAbstractTableModel):
         return 2
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
-        return len(self._rows)
+        return len(self._doc_pair_matches)
 
     def data(self, index: QModelIndex, role: int = Qt.DisplayRole):
-        doc_pair = self._rows[index.row()]
-        doc_pair_attributes = [doc_pair.doc1, doc_pair.doc2]
+        doc_pair = self._doc_pair_matches[index.row()].doc1, self._doc_pair_matches[index.row()].doc2
         if role == Qt.DisplayRole:
-            return doc_pair_attributes[index.column()]
+            return doc_pair[index.column()].name
         elif role == Qt.ForegroundRole:
             plag_type = self._doc_pair_matches[index.row()].plag_type
             if plag_type == models.PlagiarismType.VERBATIM:
@@ -63,6 +52,8 @@ class ResultsTableModel(QAbstractTableModel):
                 return QColor(242, 191, 121)
             elif plag_type == models.PlagiarismType.SUMMARY:
                 return QColor(255, 255, 255)
+        elif role == Qt.ToolTipRole:
+            return doc_pair[index.column()].path
 
     def doc_pair_matches(self, index: QModelIndex) -> DocumentPairMatches:
         return self._doc_pair_matches[index.row()]
