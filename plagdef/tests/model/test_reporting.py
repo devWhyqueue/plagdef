@@ -15,10 +15,10 @@ def test_generate_text_report_starts_with_intro(matches):
 
 def test_generate_text_report_contains_matches(matches):
     report = generate_text_report(matches)
-    assert 'Pair(doc1, doc2):\n' in report or 'Pair(doc2, doc1):\n' in report
+    assert "Pair('path/to/doc1', 'path/to/doc2'):\n" in report or "Pair('path/to/doc2', 'path/to/doc1'):\n" in report
     assert 'Match(Fragment(0, 5), Fragment(0, 5))\n' in report
     assert 'Match(Fragment(5, 10), Fragment(5, 10))\n' in report
-    assert 'Pair(doc3, doc4):\n' in report or 'Pair(doc4, doc3):\n' in report
+    assert "Pair('path/to/doc3', 'path/to/doc4'):\n" in report or "Pair('path/to/doc4', 'path/to/doc3'):\n" in report
     assert 'Match(Fragment(2, 6), Fragment(2, 8))\n' in report \
            or 'Match(Fragment(2, 8), Fragment(2, 6))\n' in report
 

@@ -11,8 +11,9 @@ from plagdef.model import util
 
 
 class Document:
-    def __init__(self, name: str, text: str):
+    def __init__(self, name: str, path: str, text: str):
         self.name = name
+        self.path = path
         self.text = text
         self.vocab = Counter()  # <lemma, sent_freq>
         self._sents = SortedSet(key=lambda sent: sent.start_char)
@@ -31,11 +32,11 @@ class Document:
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self.name == other.name and self.text == other.text
+            return self.name == other.name and self.path == other.path
         return False
 
     def __hash__(self):
-        return hash((self.name, self.text))
+        return hash((self.name, self.path))
 
     def __repr__(self):
         return f"Document('{self.name}')"

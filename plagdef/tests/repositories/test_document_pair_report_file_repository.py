@@ -21,10 +21,10 @@ def test_init_with_file_fails(tmp_path):
 
 
 def test_add_all_writes_report_files_to_out_path(tmp_path):
-    doc1, doc2 = Document('doc1', 'This is a document.\n'), \
-                 Document('doc2', 'This also is a document.\n')
-    doc3, doc4 = Document('doc3', 'This is another document.\n'), \
-                 Document('doc4', 'This also is another document.\n')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', 'This is a document.\n'), \
+                 Document('doc2', 'path/to/doc2', 'This also is a document.\n')
+    doc3, doc4 = Document('doc3', 'path/to/doc3', 'This is another document.\n'), \
+                 Document('doc4', 'path/to/doc4', 'This also is another document.\n')
     repo = DocumentPairReportFileRepository(tmp_path)
     repo.add(DocumentPairReport(doc1, doc2, 'Some content\n', 'fmt'))
     repo.add(DocumentPairReport(doc3, doc4, 'Some other content\n', 'fmt'))

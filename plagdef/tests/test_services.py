@@ -13,8 +13,8 @@ from plagdef.tests.fakes import ConfigFakeRepository, DocumentFakeRepository, Do
 
 
 def test_find_matches(config):
-    docs = [Document('doc1', 'This is a document.\n'),
-            Document('doc2', 'This also is a document.\n')]
+    docs = [Document('doc1', 'path/to/doc1', 'This is a document.\n'),
+            Document('doc2', 'path/to/doc2', 'This also is a document.\n')]
     doc_repo = DocumentFakeRepository(docs, 'eng')
     config_repo = ConfigFakeRepository(config)
     doc_pair_matches = DocumentPairMatches()
@@ -27,8 +27,8 @@ def test_find_matches(config):
 
 
 def test_find_matches_catches_parsing_error():
-    docs = [Document('doc1', 'This is a document.\n'),
-            Document('doc2', 'This also is a document.\n')]
+    docs = [Document('doc1', 'path/to/doc1', 'This is a document.\n'),
+            Document('doc2', 'path/to/doc2', 'This also is a document.\n')]
     doc_repo = DocumentFakeRepository(docs, 'eng')
     with patch.object(ConfigFakeRepository, 'get', side_effect=ParsingError('Error!')):
         config_repo = ConfigFakeRepository({})
@@ -37,8 +37,8 @@ def test_find_matches_catches_parsing_error():
 
 
 def test_find_matches_catches_unsupported_language_error(config):
-    docs = [Document('doc1', 'This is a document.\n'),
-            Document('doc2', 'This also is a document.\n')]
+    docs = [Document('doc1', 'path/to/doc1', 'This is a document.\n'),
+            Document('doc2', 'path/to/doc2', 'This also is a document.\n')]
     doc_repo = DocumentFakeRepository(docs, 'eng')
     config_repo = ConfigFakeRepository(config)
     with patch.object(DocumentMatcher, 'find_matches') as alg_fm:
@@ -48,8 +48,8 @@ def test_find_matches_catches_unsupported_language_error(config):
 
 
 def test_find_matches_catches_unsupported_file_format_error(config):
-    docs = [Document('doc1', 'This is a document.\n'),
-            Document('doc2', 'This also is a document.\n')]
+    docs = [Document('doc1', 'path/to/doc1', 'This is a document.\n'),
+            Document('doc2', 'path/to/doc2', 'This also is a document.\n')]
     doc_repo = DocumentFakeRepository(docs, 'eng')
     config_repo = ConfigFakeRepository(config)
     with patch.object(DocumentFakeRepository, 'list', side_effect=UnsupportedFileFormatError()):
@@ -58,8 +58,8 @@ def test_find_matches_catches_unsupported_file_format_error(config):
 
 
 def test_find_matches_fails_on_unexpected_error(config):
-    docs = [Document('doc1', 'This is a document.\n'),
-            Document('doc2', 'This also is a document.\n')]
+    docs = [Document('doc1', 'path/to/doc1', 'This is a document.\n'),
+            Document('doc2', 'path/to/doc2', 'This also is a document.\n')]
     doc_repo = DocumentFakeRepository(docs, 'eng')
     config_repo = ConfigFakeRepository(config)
     with patch.object(DocumentMatcher, 'find_matches') as alg_fm:

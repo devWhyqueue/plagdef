@@ -40,12 +40,12 @@ def seeder(config):
 
 @fixture
 def preprocessed_docs(preprocessor):
-    doc1 = Document('doc1',
+    doc1 = Document('doc1', 'path/to/doc1',
                     'Plagiarism is not the same as copyright infringement. While both terms may '
                     'apply to a particular act, they are different concepts. Copyright infringement '
                     'is a violation of the rights of a copyright holder, when material whose use is '
                     'restricted by copyright is used without consent.')
-    doc2 = Document('doc2',
+    doc2 = Document('doc2', 'path/to/doc2',
                     'Plagiarism is also considered a moral offense against anyone who has provided the '
                     'plagiarist with a benefit in exchange for what is specifically supposed to be original '
                     'content. Plagiarism is not the same as copyright infringement. Acts of plagiarism may '
@@ -56,13 +56,13 @@ def preprocessed_docs(preprocessor):
 
 @fixture
 def matches():
-    doc1, doc2 = Document('doc1', 'This is a document.\n'), \
-                 Document('doc2', 'This also is a document.\n')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', 'This is a document.\n'), \
+                 Document('doc2', 'path/to/doc2', 'This also is a document.\n')
     doc1_doc2_matches = DocumentPairMatches()
     doc1_doc2_matches.add(Match(Fragment(0, 5, doc1), Fragment(0, 5, doc2)))
     doc1_doc2_matches.add(Match(Fragment(5, 10, doc1), Fragment(5, 10, doc2)))
-    doc3, doc4 = Document('doc3', 'This is another document.\n'), \
-                 Document('doc4', 'This also is another document.\n')
+    doc3, doc4 = Document('doc3', 'path/to/doc3', 'This is another document.\n'), \
+                 Document('doc4', 'path/to/doc4', 'This also is another document.\n')
     doc3_doc4_matches = DocumentPairMatches()
     doc3_doc4_matches.add(Match(Fragment(2, 6, doc3), Fragment(2, 8, doc4)))
     return [doc1_doc2_matches, doc3_doc4_matches]

@@ -3,7 +3,6 @@ from pathlib import Path
 import pytest
 from fpdf import FPDF
 
-from plagdef.model.preprocessing import Document
 from plagdef.repositories import DocumentFileRepository, NoDocumentFilePairFoundError
 
 
@@ -59,8 +58,6 @@ def test_list_documents(tmp_path):
     repo = DocumentFileRepository(tmp_path, 'eng')
     docs = repo.list()
     assert len(docs) == 2
-    assert Document('doc1', 'This is a document.\n') in docs
-    assert Document('doc2', 'This also is a document.\n') in docs
 
 
 def test_list_with_file_containing_special_characters(tmp_path):
@@ -110,9 +107,6 @@ def test_list_recursive_creates_documents(tmp_path):
     repo = DocumentFileRepository(tmp_path, 'eng', recursive=True)
     docs = repo.list()
     assert len(docs) == 3
-    assert Document('doc1', 'This is a document.\n') in docs
-    assert Document('doc2', 'This also is a document.\n') in docs
-    assert Document('doc3', 'The third document.\n') in docs
 
 
 def test_list_with_doc_dir_containing_pdf(tmp_path):

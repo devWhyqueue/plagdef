@@ -3,10 +3,12 @@ from plagdef.model.models import Document, Cluster, Seed
 
 
 def test_common_words(preprocessor, config):
-    doc1 = Document('doc1', 'Some text in doc1. There must be identical sentences. But case or punctuation like this '
-                            '"..," do not matter. This is the end.')
-    doc2 = Document('doc2', 'Some text in doc2. There must be identical sentences. But Case or punctuation like this'
-                            ' \';:\' do not matter. A different ending.')
+    doc1 = Document('doc1', 'path/to/doc1',
+                    'Some text in doc1. There must be identical sentences. But case or punctuation like this '
+                    '"..," do not matter. This is the end.')
+    doc2 = Document('doc2', 'path/to/doc2',
+                    'Some text in doc2. There must be identical sentences. But Case or punctuation like this'
+                    ' \';:\' do not matter. A different ending.')
     preprocessor.preprocess('eng', [doc1, doc2])
     cluster = Cluster({Seed(doc1.sents(include_common=True)[0], doc2.sents(include_common=True)[0], 0.8, 0.8),
                        Seed(doc1.sents(include_common=True)[1], doc2.sents(include_common=True)[1], 1, 1),
@@ -20,10 +22,12 @@ def test_common_words(preprocessor, config):
 
 
 def test_common_words_with_two_substrings(preprocessor, config):
-    doc1 = Document('doc1', 'Some text in doc1. There must be identical sentences. SEPARATOR But case or punctuation '
-                            'like this "..," do not matter. This is the end.')
-    doc2 = Document('doc2', 'Some text in doc2. There must be identical sentences. But Case or punctuation like this'
-                            ' \';:\' do not matter. A different ending.')
+    doc1 = Document('doc1', 'path/to/doc1',
+                    'Some text in doc1. There must be identical sentences. SEPARATOR But case or punctuation '
+                    'like this "..," do not matter. This is the end.')
+    doc2 = Document('doc2', 'path/to/doc2',
+                    'Some text in doc2. There must be identical sentences. But Case or punctuation like this'
+                    ' \';:\' do not matter. A different ending.')
     preprocessor.preprocess('eng', [doc1, doc2])
     cluster = Cluster({Seed(doc1.sents(include_common=True)[0], doc2.sents(include_common=True)[0], 0.8, 0.8),
                        Seed(doc1.sents(include_common=True)[1], doc2.sents(include_common=True)[1], 1, 1),
@@ -43,10 +47,12 @@ def test_common_words_with_two_substrings(preprocessor, config):
 
 
 def test_resolve_overlaps(preprocessor, config):
-    doc1 = Document('doc1', 'Some text in doc1. There must be identical sentences. SEPARATOR But case or punctuation '
-                            'like this "..," do not matter. This is the end.')
-    doc2 = Document('doc2', 'Some text in doc2. There must be identical sentences. But Case or punctuation like this'
-                            " ';:' do not matter. A different ending.")
+    doc1 = Document('doc1', 'path/to/doc1',
+                    'Some text in doc1. There must be identical sentences. SEPARATOR But case or punctuation '
+                    'like this "..," do not matter. This is the end.')
+    doc2 = Document('doc2', 'path/to/doc2',
+                    'Some text in doc2. There must be identical sentences. But Case or punctuation like this'
+                    " ';:' do not matter. A different ending.")
     preprocessor.preprocess('eng', [doc1, doc2])
     cluster = Cluster({Seed(doc1.sents(include_common=True)[0], doc2.sents(include_common=True)[0], 0.8, 0.8),
                        Seed(doc1.sents(include_common=True)[1], doc2.sents(include_common=True)[1], 1, 1),
@@ -64,8 +70,9 @@ def test_resolve_overlaps(preprocessor, config):
 
 
 def test_verbatim_matches(preprocessor, config):
-    doc1 = Document('doc1', 'Some identical text. This is a sentence. This as well. More similar text.')
-    doc2 = Document('doc2', 'Some identical text. Totally different words. These are too. More similar text.')
+    doc1 = Document('doc1', 'path/to/doc1', 'Some identical text. This is a sentence. This as well. More similar text.')
+    doc2 = Document('doc2', 'path/to/doc2',
+                    'Some identical text. Totally different words. These are too. More similar text.')
     preprocessor.preprocess('eng', [doc1, doc2])
     clusters = {Cluster({Seed(doc1.sents(include_common=True)[0], doc2.sents(include_common=True)[0], 1, 1)}),
                 Cluster({Seed(doc1.sents(include_common=True)[3], doc2.sents(include_common=True)[3], 1, 1)})}
@@ -78,8 +85,9 @@ def test_verbatim_matches(preprocessor, config):
 
 
 def test_find_matches_with_verbatim_case(config):
-    doc1 = Document('doc1', 'Some identical text. This is a sentence. This as well. More similar text.')
-    doc2 = Document('doc2', 'Some identical text. Totally different words. These are too. More similar text.')
+    doc1 = Document('doc1', 'path/to/doc1', 'Some identical text. This is a sentence. This as well. More similar text.')
+    doc2 = Document('doc2', 'path/to/doc2',
+                    'Some identical text. Totally different words. These are too. More similar text.')
     config['min_verbatim_match_char_len'] = 5
     doc_matcher = DocumentMatcher(config)
     doc_pair_matches = doc_matcher.find_matches('eng', [doc1, doc2])
@@ -87,11 +95,13 @@ def test_find_matches_with_verbatim_case(config):
 
 
 def test_find_matches_with_intelligent_case(config):
-    doc1 = Document('doc1', 'Some identical text. This is a sentence. This as well. And another one. Here is more '
-                            'similar text.')
-    doc2 = Document('doc2', 'Some almost identical text. Totally different words. These are too. Absolutely not '
-                            'equal, not a bit.'
-                            ' Here is more fairly similar text.')
+    doc1 = Document('doc1', 'path/to/doc1',
+                    'Some identical text. This is a sentence. This as well. And another one. Here is more '
+                    'similar text.')
+    doc2 = Document('doc2', 'path/to/doc2',
+                    'Some almost identical text. Totally different words. These are too. Absolutely not '
+                    'equal, not a bit.'
+                    ' Here is more fairly similar text.')
     config['min_verbatim_match_char_len'] = 15
     doc_matcher = DocumentMatcher(config)
     doc_pair_matches = doc_matcher.find_matches('eng', [doc1, doc2])
@@ -99,7 +109,7 @@ def test_find_matches_with_intelligent_case(config):
 
 
 def test_find_matches_with_summary_case(config):
-    doc1 = Document('doc1',
+    doc1 = Document('doc1', 'path/to/doc1',
                     "Plagiarism is the representation of another author's language, words, thoughts, ideas, "
                     "or expressions as one's own original work. Plagiarism is considered a severe violation of "
                     "academic integrity and a severe breach of journalistic ethics. Plagiarism might not be the same "
@@ -117,7 +127,7 @@ def test_find_matches_with_summary_case(config):
                     "become the norm within academic submissions. In the academic world, plagiarism by students is "
                     "usually considered a very serious offense that can result in punishments such as a failing grade "
                     "on the particular assignments, the entire course, or even being expelled from the institution.")
-    doc2 = Document('doc2',
+    doc2 = Document('doc2', 'path/to/doc2',
                     "Plagiarism are ideas of another passed of as original work. It is a breach of ethics. It is not "
                     "the same. India considers plagiarism a crime and people were imprisoned. Plagiarism is sometimes "
                     "theft but in a legal sense fraud.Plagiarism by students is dishonesty and offenders are subject "
@@ -137,8 +147,8 @@ def test_find_matches_without_documents_returns_empty_list(config):
 
 
 def test_find_matches_returns_a_match(config):
-    docs = [Document('doc1', 'This is an awesome document. And some text in it.\n'),
-            Document('doc2', 'It\'s a great one. This is an awesome document.\n')]
+    docs = [Document('doc1', 'path/to/doc1', 'This is an awesome document. And some text in it.\n'),
+            Document('doc2', 'path/to/doc2', 'It\'s a great one. This is an awesome document.\n')]
     doc_matcher = DocumentMatcher(config)
     matches = doc_matcher.find_matches('eng', docs)
     assert len(matches) == 1

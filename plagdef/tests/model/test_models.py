@@ -10,14 +10,14 @@ from plagdef.tests.model.test_extension import _create_seeds
 
 
 def test_document_sents():
-    doc = Document('doc', 'Some text.')
+    doc = Document('doc', 'path/to/doc', 'Some text.')
     doc.add_sent(Sentence(0, 10, Counter(), doc))
     assert len(list(doc.sents(include_common=True))) == 1
     assert list(doc.sents(include_common=True))[0].text == 'Some text.'
 
 
 def test_document_remove_sent():
-    doc = Document('doc', 'Some text.')
+    doc = Document('doc', 'path/to/doc', 'Some text.')
     sent = Sentence(0, 10, Counter(), doc)
     doc.add_sent(sent)
     doc.remove_sent(sent)
@@ -25,7 +25,7 @@ def test_document_remove_sent():
 
 
 def test_document_sents_exclude_common():
-    doc = Document('doc', 'Some text. A common sent.')
+    doc = Document('doc', 'path/to/doc', 'Some text. A common sent.')
     doc.add_sent(Sentence(0, 10, Counter(), doc))
     common_sent = Sentence(11, 25, Counter(), doc)
     common_sent.common = True
@@ -37,20 +37,20 @@ def test_document_sents_exclude_common():
 
 
 def test_documents_are_equal():
-    doc1 = Document('doc', 'Some text.')
-    doc2 = Document('doc', 'Some text.')
+    doc1 = Document('doc', 'path/to/doc', 'Some text.')
+    doc2 = Document('doc', 'path/to/doc', 'Some text.')
     assert doc1 == doc2
 
 
-def test_documents_are_the_same_if_same_name_and_text():
+def test_documents_are_the_same_if_same_name_and_path():
     docs = set()
-    docs.add(Document('doc', 'abc'))
-    docs.add(Document('doc', 'abc'))
+    docs.add(Document('doc', 'path/to/doc', 'abc'))
+    docs.add(Document('doc', 'path/to/doc', 'abc'))
     assert len(docs) == 1
 
 
 def test_document_sents_are_ordered_by_start_char():
-    doc = Document('doc', '')
+    doc = Document('doc', 'path/to/doc', '')
     doc.add_sent(Sentence(5, -1, Counter(), doc))
     doc.add_sent(Sentence(3, -1, Counter(), doc))
     doc.add_sent(Sentence(7, -1, Counter(), doc))
@@ -58,26 +58,26 @@ def test_document_sents_are_ordered_by_start_char():
 
 
 def test_fragment_length():
-    frag = Fragment(0, 15, Document('doc', ''))
+    frag = Fragment(0, 15, Document('doc', 'path/to/doc', ''))
     assert len(frag) == 15
 
 
 def test_fragment_overlaps():
-    doc = Document('doc', '')
+    doc = Document('doc', 'path/to/doc', '')
     frag1 = Fragment(0, 15, doc)
     frag2 = Fragment(4, 8, doc)
     assert frag1.overlaps_with(frag2) and frag2.overlaps_with(frag1)
 
 
 def test_fragment_overlaps_with_different_docs():
-    doc1, doc2 = Document('doc1', ''), Document('doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
     frag1 = Fragment(0, 15, doc1)
     frag2 = Fragment(14, 16, doc2)
     assert not frag1.overlaps_with(frag2) and not frag2.overlaps_with(frag1)
 
 
 def test_sentence_idx():
-    doc = Document('doc', '')
+    doc = Document('doc', 'path/to/doc', '')
     sent = Sentence(3, -1, Counter(), doc)
     doc.sents(include_common=True).add(Sentence(4, -1, Counter(), doc))
     doc.sents(include_common=True).add(sent)
@@ -86,7 +86,7 @@ def test_sentence_idx():
 
 
 def test_sentences_are_equal():
-    doc = Document('doc', '')
+    doc = Document('doc', 'path/to/doc', '')
     sent1 = Sentence(3, 17, Counter(), doc)
     sent2 = Sentence(3, 17, Counter({'xyz': 2}), doc)  # unrealistic
     sent3 = Sentence(4, 17, Counter(), doc)
@@ -94,7 +94,7 @@ def test_sentences_are_equal():
 
 
 def test_sentences_are_the_same_if_doc_and_start_char_are_equal():
-    doc = Document('doc', '')
+    doc = Document('doc', 'path/to/doc', '')
     sents = set()
     sents.add(Sentence(3, 17, Counter(), doc))
     sents.add(Sentence(3, 17, Counter({'xyz': 2}), doc))  # unrealistic
@@ -117,7 +117,7 @@ def test_sentence_adjacent_to_with_gap_over_th():
 
 
 def test_word_equals():
-    sent = Sentence(0, 15, Counter(), Document('doc', ''))
+    sent = Sentence(0, 15, Counter(), Document('doc', 'path/to/doc', ''))
     word1, word2, word3 = Word(0, 6, sent), Word(0, 6, sent), Word(6, 15, sent)
     assert word1 == word2
     assert word1 != word3 and word2 != word3
@@ -321,7 +321,7 @@ def test_rated_cluster_equality_with_high_quality():
 
 
 def test_match_init_with_fragments_of_same_doc_fails():
-    doc = Document('doc', '')
+    doc = Document('doc', 'path/to/doc', '')
     with pytest.raises(SameDocumentError):
         Match(Fragment(0, 7, doc), Fragment(13, 15, doc))
 
@@ -333,14 +333,14 @@ def test_match_from_cluster():
 
 
 def test_match_overlaps_with():
-    doc1, doc2 = Document('doc1', ''), Document('doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
     match1 = Match(Fragment(0, 7, doc1), Fragment(13, 15, doc2))
     match2 = Match(Fragment(10, 15, doc2), Fragment(6, 9, doc1))
     assert match1.overlaps_with(match2) and match2.overlaps_with(match1)
 
 
 def test_match_frag_from_doc():
-    doc1, doc2 = Document('doc1', ''), Document('doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
     match = Match(Fragment(0, 7, doc1), Fragment(13, 15, doc2))
     frag1, frag2 = match.frag_from_doc(doc1), match.frag_from_doc(doc2)
     assert frag1.doc == doc1
@@ -348,21 +348,22 @@ def test_match_frag_from_doc():
 
 
 def test_match_frag_from_doc_with_other_doc():
-    doc1, doc2, doc3 = Document('doc1', ''), Document('doc2', ''), Document('doc3', '')
+    doc1, doc2, doc3 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', ''), \
+                       Document('doc3', 'path/to/doc3', '')
     match = Match(Fragment(0, 7, doc1), Fragment(13, 15, doc2))
     frag = match.frag_from_doc(doc3)
     assert frag is None
 
 
 def test_matches_do_not_overlap_if_overlap_only_in_one_frag():
-    doc1, doc2 = Document('doc1', ''), Document('doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
     match1 = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))
     match2 = Match(Fragment(10, 15, doc2), Fragment(6, 9, doc1))
     assert not match1.overlaps_with(match2) and not match2.overlaps_with(match1)
 
 
 def test_match_len():
-    doc1, doc2 = Document('doc1', ''), Document('doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
     match = Match(Fragment(0, 5, doc1), Fragment(0, 30, doc2))
     assert len(match) == 35
 
@@ -373,7 +374,7 @@ def test_doc_pair_matches_init():
 
 
 def test_doc_pair_matches_init_with_matches():
-    doc1, doc2 = Document('doc1', ''), Document('doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
     match1 = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))
     match2 = Match(Fragment(10, 15, doc2), Fragment(6, 9, doc1))
     doc_pair_matches = DocumentPairMatches({match1, match2})
@@ -381,7 +382,7 @@ def test_doc_pair_matches_init_with_matches():
 
 
 def test_doc_pair_matches_add():
-    doc1, doc2 = Document('doc1', ''), Document('doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
     match1 = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))
     match2 = Match(Fragment(10, 15, doc2), Fragment(6, 9, doc1))
     doc_pair_matches = DocumentPairMatches()
@@ -392,7 +393,7 @@ def test_doc_pair_matches_add():
 
 
 def test_doc_pair_matches_add_same_match_twice():
-    doc1, doc2 = Document('doc1', ''), Document('doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
     match = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))
     doc_pair_matches = DocumentPairMatches()
     doc_pair_matches.add(match)
@@ -402,7 +403,8 @@ def test_doc_pair_matches_add_same_match_twice():
 
 
 def test_doc_pair_matches_add_match_from_other_pair_fails():
-    doc1, doc2, doc3 = Document('doc1', ''), Document('doc2', ''), Document('doc3', '')
+    doc1, doc2, doc3 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', ''), \
+                       Document('doc3', 'path/to/doc3', '')
     match1 = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))
     match2 = Match(Fragment(10, 15, doc2), Fragment(6, 9, doc3))
     doc_pair_matches = DocumentPairMatches()
@@ -414,7 +416,7 @@ def test_doc_pair_matches_add_match_from_other_pair_fails():
 
 
 def test_doc_pair_matches_list():
-    doc1, doc2 = Document('doc1', ''), Document('doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
     match1 = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))
     match2 = Match(Fragment(10, 15, doc1), Fragment(6, 9, doc2))
     doc_pair_matches = DocumentPairMatches({match1, match2})
@@ -423,7 +425,7 @@ def test_doc_pair_matches_list():
 
 
 def test_doc_pair_matches_len():
-    doc1, doc2 = Document('doc1', ''), Document('doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
     match1 = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))
     match2 = Match(Fragment(10, 15, doc1), Fragment(6, 9, doc2))
     doc_pair_matches = DocumentPairMatches({match1, match2})
@@ -431,6 +433,6 @@ def test_doc_pair_matches_len():
 
 
 def _create_sent(doc_name: str, sent_idx: int):
-    doc = Document(doc_name, '')
+    doc = Document(doc_name, 'path/to/doc', '')
     [doc.sents(include_common=True).add(Sentence(idx, -1, Counter(), doc)) for idx in range(sent_idx + 1)]
     return doc.sents(include_common=True)[sent_idx]

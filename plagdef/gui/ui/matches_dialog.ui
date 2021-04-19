@@ -58,6 +58,21 @@
             </item>
             <item>
                 <layout class="QGridLayout" name="doc_layout">
+                    <item row="2" column="1">
+                        <widget class="QTextBrowser" name="doc2_text">
+                            <property name="sizePolicy">
+                                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                                    <horstretch>0</horstretch>
+                                    <verstretch>0</verstretch>
+                                </sizepolicy>
+                            </property>
+                            <property name="styleSheet">
+                                <string notr="true">color: rgb(186, 33, 33);
+                                    background-color: rgb(253, 243, 229);
+                                </string>
+                            </property>
+                        </widget>
+                    </item>
                     <item row="0" column="1" alignment="Qt::AlignHCenter">
                         <widget class="QLabel" name="doc2_label">
                             <property name="styleSheet">
@@ -82,8 +97,8 @@
                             </property>
                         </widget>
                     </item>
-                    <item row="1" column="1">
-                        <widget class="QTextBrowser" name="doc2_text">
+                    <item row="2" column="0">
+                        <widget class="QTextBrowser" name="doc1_text">
                             <property name="sizePolicy">
                                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                                     <horstretch>0</horstretch>
@@ -97,18 +112,23 @@
                             </property>
                         </widget>
                     </item>
-                    <item row="1" column="0">
-                        <widget class="QTextBrowser" name="doc1_text">
-                            <property name="sizePolicy">
-                                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                                    <horstretch>0</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
+                    <item row="1" column="0" alignment="Qt::AlignHCenter">
+                        <widget class="QLabel" name="doc1_path">
                             <property name="styleSheet">
-                                <string notr="true">color: rgb(186, 33, 33);
-                                    background-color: rgb(253, 243, 229);
-                                </string>
+                                <string notr="true">color: rgb(255, 255, 255);</string>
+                            </property>
+                            <property name="text">
+                                <string>(path/to/doc1)</string>
+                            </property>
+                        </widget>
+                    </item>
+                    <item row="1" column="1" alignment="Qt::AlignHCenter">
+                        <widget class="QLabel" name="doc2_path">
+                            <property name="styleSheet">
+                                <string notr="true">color: rgb(255, 255, 255);</string>
+                            </property>
+                            <property name="text">
+                                <string>(path/to/doc2)</string>
                             </property>
                         </widget>
                     </item>

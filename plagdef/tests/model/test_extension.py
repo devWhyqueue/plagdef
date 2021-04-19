@@ -143,7 +143,7 @@ def test_validate_with_cluster_which_is_reduced():
 
 
 def _create_seeds(seed_tpls: list[tuple]):
-    doc1, doc2 = Document('doc1', ''), Document('doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
     max_idx_doc1, max_idx_doc2 = max(seed_tpls, key=lambda seed: seed[0]), \
                                  max(seed_tpls, key=lambda seed: seed[1])
     [doc1.add_sent(Sentence(idx, idx + 1, Counter(), doc1)) for idx in range(max_idx_doc1[0] + 1)]

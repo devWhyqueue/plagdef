@@ -42,13 +42,13 @@ class DocumentFileRepository:
         if file.suffix == '.pdf':
             with pdfplumber.open(file) as pdf:
                 text = ' '.join(filter(None, (page.extract_text() for page in pdf.pages)))
-                return Document(file.stem, str(text))
+                return Document(file.stem, str(file), str(text))
         else:
             try:
                 detect_enc = magic.Magic(mime_encoding=True)
                 enc = detect_enc.from_buffer(open(str(file), 'rb').read(2048))
                 text = file.read_text(encoding=enc)
-                return Document(file.stem, str(text))
+                return Document(file.stem, str(file), str(text))
             except (UnicodeDecodeError, LookupError, MagicException):
                 log.error(f"The file '{file.name}' has an unsupported encoding and cannot be read.")
                 log.debug('Following error occurred:', exc_info=True)

@@ -31,7 +31,9 @@ class ResultsTableModel(QAbstractTableModel):
         self._doc_pair_matches = []
         for matches in doc_pair_matches:
             doc1, doc2 = matches.doc_pair
-            self._rows.append(ResultRow(doc1.name, doc2.name))
+            doc1_path = doc1.path if len(doc1.path) < 50 else f'...{doc1.path[len(doc1.path) - 50:]}'
+            doc2_path = doc2.path if len(doc2.path) < 50 else f'...{doc1.path[len(doc2.path) - 50:]}'
+            self._rows.append(ResultRow(doc1_path, doc2_path))
             self._doc_pair_matches.append(
                 DocumentPairMatches(doc1, doc2, sorted(matches.list(), key=lambda m: m.frag_from_doc(doc1).start_char)))
 

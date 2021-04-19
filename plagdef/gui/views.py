@@ -236,7 +236,9 @@ class MatchesDialog:
     def open(self, doc_pair_matches: DocumentPairMatches):
         self._doc_pair_matches = doc_pair_matches
         self.widget.doc1_label.setText(self._doc_pair_matches.doc1.name)
+        self.widget.doc1_path.setText(f'({self._doc_pair_matches.doc1.path})')
         self.widget.doc2_label.setText(self._doc_pair_matches.doc2.name)
+        self.widget.doc2_path.setText(f'({self._doc_pair_matches.doc2.path})')
         self._selected = 0
         self._show_match()
         self.widget.exec_()
