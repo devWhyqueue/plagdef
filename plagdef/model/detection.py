@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from itertools import combinations
+from pprint import pformat
 
 from tqdm import tqdm
 
@@ -29,11 +30,15 @@ class DocumentMatcher:
         matches = list()
         doc_combs = list(combinations(docs, 2))
         for doc1, doc2 in tqdm(doc_combs, desc='Matching', unit='pair'):
+            log.debug(f'Examining pair ({doc1}, {doc2}).')
             seeds = self._seeder.seed(doc1, doc2)
+            log.debug(f'Found the following seeds:\n{pformat(sorted(seeds, key=lambda s: s.sent1.idx))}')
             clusters = self._extender.extend(seeds)
             clusters = self._cluster_filter.filter(clusters)
+            log.debug(f'Seeds were extended to the following clusters:\n{pformat(clusters)}')
             verbatim_matches = self._verbatim_matches(clusters)
             if len(verbatim_matches):  # Plagiarism type: verbatim
+                log.debug(f'Plagiarism type is verbatim. Found these matches:\n{pformat(verbatim_matches)}')
                 matches.append(DocumentPairMatches(verbatim_matches))
             else:
                 summary_clusters = self._extender.extend(seeds, self._adjacent_sents_gap_summary)
@@ -44,10 +49,14 @@ class DocumentMatcher:
 
                     if sum_cluster_len_doc1 >= 3 * sum_cluster_len_doc2 \
                         or sum_cluster_len_doc2 >= 3 * sum_cluster_len_doc1:  # Plagiarism type: summary
-                        matches.append(
-                            DocumentPairMatches({Match.from_cluster(cluster) for cluster in summary_clusters}))
+                        summary_matches = {Match.from_cluster(cluster) for cluster in summary_clusters}
+                        log.debug(f'Plagiarism type is summary. Found these matches:\n{pformat(summary_matches)}')
+                        matches.append(DocumentPairMatches(summary_matches))
                     elif len(clusters):  # Plagiarism type: intelligent
-                        matches.append(DocumentPairMatches({Match.from_cluster(cluster) for cluster in clusters}))
+                        intelligent_matches = {Match.from_cluster(cluster) for cluster in clusters}
+                        log.debug(
+                            f'Plagiarism type is intelligent. Found these matches:\n{pformat(intelligent_matches)}')
+                        matches.append(DocumentPairMatches(intelligent_matches))
         return matches
 
     def _verbatim_matches(self, clusters: set[Cluster]) -> set[Match]:

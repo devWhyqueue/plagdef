@@ -66,6 +66,9 @@ class Fragment:
     def __len__(self):
         return self.end_char - self.start_char
 
+    def __repr__(self):
+        return f'Fragment({self.doc.name}, {self.start_char}, {self.end_char})'
+
 
 class Sentence(Fragment):
     def __init__(self, start_char: int, end_char: int, bow: Counter, doc: Document):
@@ -198,12 +201,7 @@ class Cluster:
         return hash(self.seeds)
 
     def __repr__(self):
-        if not len(self.seeds):
-            return 'Cluster()'
-        string = 'Cluster('
-        for seed in self.seeds:
-            string = string + f'{repr(seed)}, '
-        return f'{string[:-2]})'
+        return f'Cluster({len(self.seeds)}, {self.cos_sim})'
 
 
 @total_ordering
@@ -257,6 +255,12 @@ class Match:
     def __len__(self):
         return sum([len(frag) for frag in self.frag_pair])
 
+    def __repr__(self):
+        if len(self.frag_pair) < 2:
+            return 'Match()'
+        frag1, frag2 = self.frag_pair
+        return f'Match({frag1}, {frag2})'
+
 
 class DocumentPairMatches:
     def __init__(self, matches=None):
@@ -279,6 +283,12 @@ class DocumentPairMatches:
 
     def __len__(self):
         return len(self._matches)
+
+    def __repr__(self):
+        if len(self.doc_pair) < 2:
+            return 'DocPairMatches()'
+        doc1, doc2 = self.doc_pair
+        return f'DocPairMatches({doc1}, {doc2}, {len(self)})'
 
 
 class DifferentDocumentPairError(Exception):
