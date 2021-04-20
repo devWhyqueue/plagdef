@@ -294,21 +294,21 @@ class DocumentPairMatches:
         return f'DocPairMatches({doc1}, {doc2}, {len(self)})'
 
 
-class DifferentDocumentPairError(Exception):
-    pass
-
-
-class SameDocumentError(Exception):
-    pass
-
-
 @total_ordering
 class PlagiarismType(Enum):
-    VERBATIM = 1,
-    INTELLIGENT = 2,
+    VERBATIM = 1
+    INTELLIGENT = 2
     SUMMARY = 3
 
     def __lt__(self, other):
         if self.__class__ is other.__class__:
             return self.value < other.value
         return NotImplemented
+
+
+class DifferentDocumentPairError(Exception):
+    pass
+
+
+class SameDocumentError(Exception):
+    pass

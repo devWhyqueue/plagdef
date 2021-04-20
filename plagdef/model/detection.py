@@ -46,7 +46,6 @@ class DocumentMatcher:
                 if len(summary_clusters):
                     sum_cluster_len_doc1, sum_cluster_len_doc2 = \
                         tuple(map(sum, zip(*(cluster.char_lengths() for cluster in summary_clusters))))
-
                     if sum_cluster_len_doc1 >= 3 * sum_cluster_len_doc2 \
                         or sum_cluster_len_doc2 >= 3 * sum_cluster_len_doc1:
                         summary_matches = {Match.from_cluster(cluster) for cluster in summary_clusters}
