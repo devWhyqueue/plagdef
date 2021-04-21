@@ -7,45 +7,45 @@ from plagdef.model.models import DocumentPairMatches
 class HomeController:
     def __init__(self):
         self.view = HomeView()
-        self.doc_dir_dialog = FileDialog()
-        self.common_doc_dir_dialog = FileDialog()
+        self.archive_dir_dialog = FileDialog()
+        self.docs_dir_dialog = FileDialog()
+        self.common_dir_dialog = FileDialog()
         self._connect_slots()
 
     def _connect_slots(self):
-        self.view.register_for_signals(open_folder=self._on_open_folder, exclude_common=self.on_exclude_common,
-                                       remove_folder=self._on_remove_folder, select_lang=self._on_select_lang,
-                                       reset_lang_sel=self._on_reset_lang, detect=self._on_detect)
+        self.view.register_for_signals(select_archive_dir=self._on_select_archive_dir,
+                                       rm_archive_dir=self._on_remove_archive_dir,
+                                       select_docs_dir=self._on_select_docs_dir,
+                                       rm_docs_dir=self._on_remove_docs_dir,
+                                       select_common_dir=self._on_select_common_dir,
+                                       rm_common_dir=self._on_remove_common_dir)
 
-    def _on_open_folder(self):
-        if self.doc_dir_dialog.open():
-            folder_name = self.doc_dir_dialog.selected_dir[self.doc_dir_dialog.selected_dir.rfind("/"):]
-            self.view.folder_selected(folder_name)
+    def _on_select_archive_dir(self):
+        if self.archive_dir_dialog.open():
+            folder_name = self.archive_dir_dialog.selected_dir[self.archive_dir_dialog.selected_dir.rfind("/"):]
+            self.view.archive_dir_selected(folder_name)
 
-    def on_exclude_common(self, checked: bool):
-        if checked:
-            if self.common_doc_dir_dialog.open():
-                folder_name = self.common_doc_dir_dialog.selected_dir[
-                              self.common_doc_dir_dialog.selected_dir.rfind("/"):]
-                self.view.common_folder_selected(folder_name)
-            else:
-                self.view.reset_exclude_common()
-        else:
-            self.view.reset_exclude_common()
+    def _on_remove_archive_dir(self):
+        self.view.archive_dir_removed()
 
-    def _on_remove_folder(self):
-        self.view.reset_folder_selection()
+    def _on_select_docs_dir(self):
+        if self.docs_dir_dialog.open():
+            folder_name = self.docs_dir_dialog.selected_dir[self.docs_dir_dialog.selected_dir.rfind("/"):]
+            self.view.docs_dir_selected(folder_name)
 
-    def _on_select_lang(self):
-        self.view.language_selected()
+    def _on_remove_docs_dir(self):
+        self.view.docs_dir_removed()
 
-    def _on_reset_lang(self):
-        self.view.reset_language_selection()
+    def _on_select_common_dir(self):
+        if self.common_dir_dialog.open():
+            folder_name = self.common_dir_dialog.selected_dir[self.common_dir_dialog.selected_dir.rfind("/"):]
+            self.view.common_dir_selected(folder_name)
 
     def _on_detect(self):
-        main.app.find_matches(self.view.lang, self.doc_dir_dialog.selected_dir, self.view.recursive,
-                              self.common_doc_dir_dialog.selected_dir)
+        main.app.find_matches(self.view.lang, self.docs_dir_dialog.selected_dir, self.view.docs_rec,
+                              self.common_dir_dialog.selected_dir)
         main.app.window.switch_to(LoadingView)
-        self.common_doc_dir_dialog.selected_dir = None
+        self.common_dir_dialog.selected_dir = None
 
 
 class LoadingController:

@@ -1,5 +1,8 @@
 <RCC>
     <qresource prefix="/">
+        <file>common_white.png</file>
+        <file>add_circle_orange.png</file>
+        <file>inbox_white.png</file>
         <file>before_white.png</file>
         <file>next_white.png</file>
         <file>error_white.png</file>
