@@ -5,6 +5,7 @@ from ast import literal_eval
 from configparser import ConfigParser
 from itertools import islice
 from pathlib import Path
+from unicodedata import normalize
 
 import magic
 import pdfplumber
@@ -42,13 +43,15 @@ class DocumentFileRepository:
         if file.suffix == '.pdf':
             with pdfplumber.open(file) as pdf:
                 text = ' '.join(filter(None, (page.extract_text() for page in pdf.pages)))
-                return Document(file.stem, str(file), str(text))
+                normalized_text = normalize('NFC', text)
+                return Document(file.stem, str(file), normalized_text)
         else:
             try:
                 detect_enc = magic.Magic(mime_encoding=True)
                 enc = detect_enc.from_buffer(open(str(file), 'rb').read(2048))
                 text = file.read_text(encoding=enc)
-                return Document(file.stem, str(file), str(text))
+                normalized_text = normalize('NFC', text)
+                return Document(file.stem, str(file), normalized_text)
             except (UnicodeDecodeError, LookupError, MagicException):
                 log.error(f"The file '{file.name}' has an unsupported encoding and cannot be read.")
                 log.debug('Following error occurred:', exc_info=True)

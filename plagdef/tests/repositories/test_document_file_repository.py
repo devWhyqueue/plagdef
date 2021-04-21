@@ -1,4 +1,5 @@
 from pathlib import Path
+from unicodedata import normalize
 
 import pytest
 from fpdf import FPDF
@@ -60,6 +61,17 @@ def test_list_documents(tmp_path):
     assert len(docs) == 2
 
 
+def test_list_documents_normalizes_texts(tmp_path):
+    with (tmp_path / 'doc1.txt').open('w', encoding='utf-8') as f:
+        # The 'ä' consists of a small letter a and a combining diaeresis
+        f.write('Nicht nur ähnlich, sondern gleich.')
+    with (tmp_path / 'doc2.txt').open('w', encoding='utf-8') as f:
+        f.write('Nicht nur ähnlich, sondern gleich.')
+    repo = DocumentFileRepository(tmp_path, 'eng')
+    doc1, doc2 = repo.list()
+    assert doc1.text == doc2.text
+
+
 def test_list_with_file_containing_special_characters(tmp_path):
     with (tmp_path / 'doc1.txt').open('w', encoding='utf-8') as f:
         f.write('These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n')
@@ -92,7 +104,7 @@ def test_list_with_doc_dir_containing_iso_8559_1_file_creates_documents(tmp_path
     docs = repo.list()
     assert len(docs) == 2
     assert 'These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n' in [doc.text for doc in docs]
-    assert 'Hello world, Καλημέρα κόσμε, コンニチハ' in [doc.text for doc in docs]
+    assert normalize('NFC', 'Hello world, Καλημέρα κόσμε, コンニチハ') in [doc.text for doc in docs]
 
 
 def test_list_recursive_creates_documents(tmp_path):
