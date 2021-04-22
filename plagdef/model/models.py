@@ -228,7 +228,8 @@ class RatedCluster:
 class Match:
     def __init__(self, frag1: Fragment, frag2: Fragment):
         if frag1.doc == frag2.doc:
-            raise SameDocumentError('Each fragment must belong to its own distinct document.')
+            raise SameDocumentError(f"Cannot match the document {frag1.doc} with itself. Please check whether your "
+                                    f"archive and document files overlap.")
         self.frag_pair = frozenset({frag1, frag2})
 
     @classmethod

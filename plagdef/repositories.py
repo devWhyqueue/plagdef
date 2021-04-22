@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from ast import literal_eval
 from configparser import ConfigParser
 from itertools import islice
@@ -36,7 +37,7 @@ class DocumentFileRepository:
     def list(self) -> set[Document]:
         files = list(self._list_files())
         docs = thread_map(self._read_file, files, desc=f"Reading documents in '{self._dir_path}'",
-                          unit='doc', total=len(files))
+                          unit='doc', total=len(files), max_workers=os.cpu_count())
         return set(filter(None, docs))
 
     def _read_file(self, file):
