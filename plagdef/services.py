@@ -11,13 +11,14 @@ from plagdef.model.reporting import generate_xml_reports
 from plagdef.repositories import UnsupportedFileFormatError
 
 
-def find_matches(doc_repo, config_repo, common_doc_repo=None) -> list[DocumentPairMatches]:
+def find_matches(doc_repo, config_repo, archive_repo=None, common_doc_repo=None) -> list[DocumentPairMatches]:
     try:
         docs = list(doc_repo.list())
+        archive_docs = list(archive_repo.list()) if archive_repo else None
         common_docs = list(common_doc_repo.list()) if common_doc_repo else None
         config = config_repo.get()
         doc_matcher = DocumentMatcher(config)
-        doc_pair_matches = doc_matcher.find_matches(doc_repo.lang, docs, common_docs)
+        doc_pair_matches = doc_matcher.find_matches(doc_repo.lang, docs, archive_docs, common_docs)
         return doc_pair_matches
     except (ParsingError, UnsupportedFileFormatError, UnsupportedLanguageError) as e:
         raise UsageError(str(e)) from e

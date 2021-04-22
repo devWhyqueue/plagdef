@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from itertools import combinations
+from itertools import combinations, product
 from pprint import pformat
 
 from tqdm import tqdm
@@ -25,10 +25,14 @@ class DocumentMatcher:
         self._adjacent_sents_gap_summary = config['adjacent_sents_gap_summary']
         self._min_verbatim_match_char_len = config['min_verbatim_match_char_len']
 
-    def find_matches(self, lang: str, docs: list[Document], common_docs=None) -> list[DocumentPairMatches]:
+    def find_matches(self, lang: str, docs: list[Document], archive_docs=None, common_docs=None) \
+        -> list[DocumentPairMatches]:
         self._preprocessor.preprocess(lang, docs, common_docs)
         matches = list()
-        doc_combs = list(combinations(docs, 2))
+        doc_combs = set(combinations(docs, 2))
+        if archive_docs:
+            self._preprocessor.preprocess(lang, archive_docs, common_docs)
+            doc_combs.update(product(docs, archive_docs))
         for doc1, doc2 in tqdm(doc_combs, desc='Matching', unit='pair'):
             log.debug(f'Examining pair ({doc1}, {doc2}).')
             seeds = self._seeder.seed(doc1, doc2)

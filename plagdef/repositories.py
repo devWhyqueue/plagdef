@@ -25,7 +25,7 @@ class DocumentFileRepository:
         if not dir_path.is_dir():
             raise NotADirectoryError(f'The given path {dir_path} does not point to an existing directory!')
         if at_least_two and (not any(self._list_files()) or not next(islice(self._list_files(), 1, None), None)):
-            raise NoDocumentFilePairFoundError(f'The directory {dir_path} must contain at least two documents.')
+            raise NoDocumentFilePairFoundError(f"The directory '{dir_path}' must contain at least two documents.")
 
     def _list_files(self):
         if self._recursive:
@@ -60,7 +60,7 @@ class DocumentFileRepository:
 class DocumentPairReportFileRepository:
     def __init__(self, out_path: Path):
         if not out_path.is_dir():
-            raise NotADirectoryError(f'The given path {out_path} does not point to an existing directory!')
+            raise NotADirectoryError(f"The given path '{out_path}' does not point to an existing directory!")
         self._out_path = out_path
 
     def add(self, doc_pair_report):

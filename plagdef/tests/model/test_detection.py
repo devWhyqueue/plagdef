@@ -152,3 +152,19 @@ def test_find_matches_returns_a_match(config):
     doc_matcher = DocumentMatcher(config)
     matches = doc_matcher.find_matches('eng', docs)
     assert len(matches) == 1
+
+
+def test_find_matches_with_archive_docs(config):
+    docs = [Document('doc1', 'path/to/doc1', 'This is an awesome document. And some text in it.\n'),
+            Document('doc2', 'path/to/doc2', 'It\'s a great one. This is an awesome document.\n')]
+    archive_docs = [Document('doc3', 'path/to/doc3',
+                             'This is an awesome document. This sentence is equal. But it does not matter.'),
+                    Document('doc4', 'path/to/doc4',
+                             'Similarity of next sentence is ignored. This sentence is equal. And '
+                             'some text in it.'),
+                    Document('doc5', 'path/to/doc5',
+                             'This sentence is equal. And this is fantastic.')
+                    ]
+    doc_matcher = DocumentMatcher(config)
+    matches = doc_matcher.find_matches('eng', docs, archive_docs)
+    assert len(matches) == 4

@@ -10,6 +10,7 @@ from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QButtonGroup, QMainWindow, QFileDialog, QDialog
 
 from plagdef.gui.model import ResultsTableModel, DocumentPairMatches
+from plagdef.model.util import version
 
 UI_FILES = {
     'main_window': pkg_resources.resource_filename(__name__, 'ui/main_window.ui'),
@@ -29,6 +30,7 @@ class MainWindow:
         self._configure()
 
     def _configure(self):
+        self._window.setWindowTitle(f'PlagDef v{version()}')
         for view in self._views:
             self._window.stacked_widget.addWidget(view.widget)
 
@@ -54,8 +56,6 @@ class View:
 
 class HomeView(View):
     def __init__(self):
-        self.lang = 'ger'
-        self.archive_rec = self.docs_rec = self.common_rec = False
         self.widget = _load_ui_file(Path(UI_FILES['home_widget']))
         self._configure()
 
@@ -72,14 +72,31 @@ class HomeView(View):
                         self.widget.archive_rmdir_button, self.widget.docs_rmdir_button,
                         self.widget.common_rmdir_button)]
 
+    @property
+    def archive_rec(self):
+        return self.widget.archive_rec_check_box.isChecked()
+
+    @property
+    def docs_rec(self):
+        return self.widget.docs_rec_check_box.isChecked()
+
+    @property
+    def common_rec(self):
+        return self.widget.common_rec_check_box.isChecked()
+
+    @property
+    def lang(self):
+        return 'ger' if self.widget.lang_button_group.checkedButton() == self.widget.ger_button else 'eng'
+
     def register_for_signals(self, select_archive_dir=None, rm_archive_dir=None, select_docs_dir=None,
-                             rm_docs_dir=None, select_common_dir=None, rm_common_dir=None):
+                             rm_docs_dir=None, select_common_dir=None, rm_common_dir=None, detect=None):
         self.widget.archive_dir_button.clicked.connect(lambda: select_archive_dir())
         self.widget.archive_rmdir_button.clicked.connect(lambda: rm_archive_dir())
         self.widget.docs_dir_button.clicked.connect(lambda: select_docs_dir())
         self.widget.docs_rmdir_button.clicked.connect(lambda: rm_docs_dir())
         self.widget.common_dir_button.clicked.connect(lambda: select_common_dir())
         self.widget.common_rmdir_button.clicked.connect(lambda: rm_common_dir())
+        self.widget.detect_button.clicked.connect(lambda: detect())
 
     def archive_dir_selected(self, folder_name: str):
         self._dir_selected(folder_name, self.widget.archive_dir_button, self.widget.archive_rmdir_button,

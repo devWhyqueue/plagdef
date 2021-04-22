@@ -18,7 +18,8 @@ class HomeController:
                                        select_docs_dir=self._on_select_docs_dir,
                                        rm_docs_dir=self._on_remove_docs_dir,
                                        select_common_dir=self._on_select_common_dir,
-                                       rm_common_dir=self._on_remove_common_dir)
+                                       rm_common_dir=self._on_remove_common_dir,
+                                       detect=self._on_detect)
 
     def _on_select_archive_dir(self):
         if self.archive_dir_dialog.open():
@@ -41,11 +42,19 @@ class HomeController:
             folder_name = self.common_dir_dialog.selected_dir[self.common_dir_dialog.selected_dir.rfind("/"):]
             self.view.common_dir_selected(folder_name)
 
+    def _on_remove_common_dir(self):
+        self.view.common_dir_removed()
+
     def _on_detect(self):
-        main.app.find_matches(self.view.lang, self.docs_dir_dialog.selected_dir, self.view.docs_rec,
-                              self.common_dir_dialog.selected_dir)
+        doc_dir = (self.docs_dir_dialog.selected_dir, self.view.docs_rec) if self.docs_dir_dialog.selected_dir else None
+        archive_dir = (self.archive_dir_dialog.selected_dir, self.view.archive_rec) \
+            if self.archive_dir_dialog.selected_dir else None
+        common_dir = (self.common_dir_dialog.selected_dir, self.view.common_rec) \
+            if self.common_dir_dialog.selected_dir else None
+        main.app.find_matches(self.view.lang, doc_dir, archive_dir, common_dir)
         main.app.window.switch_to(LoadingView)
-        self.common_dir_dialog.selected_dir = None
+        self.archive_dir_dialog.selected_dir = self.common_dir_dialog.selected_dir \
+            = self.docs_dir_dialog.selected_dir = None
 
 
 class LoadingController:

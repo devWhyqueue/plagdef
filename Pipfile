@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-click = "~=7.0"
+click = "==8.0.0rc1"
 lxml = "~=4.6"
 networkx = "~=2.5"
 numpy = "~=1.20"

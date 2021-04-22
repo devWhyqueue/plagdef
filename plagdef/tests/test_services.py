@@ -23,7 +23,7 @@ def test_find_matches(config):
         alg_fm.return_value = [doc_pair_matches]
         matches = find_matches(doc_repo, config_repo)
     assert matches == [doc_pair_matches]
-    alg_fm.assert_called_with(doc_repo.lang, doc_repo.list(), None)
+    alg_fm.assert_called_with(doc_repo.lang, doc_repo.list(), None, None)
 
 
 def test_find_matches_catches_parsing_error():
