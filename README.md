@@ -20,7 +20,7 @@ Or build it yourself:
 
 ```
 $ git clone git://github.com/devWhyqueue/plagdef
-$ pip install -e .
+$ python -m pip install -e .
 ````
 
 # Requirements
