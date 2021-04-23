@@ -27,6 +27,7 @@ class HomeController:
             self.view.archive_dir_selected(folder_name)
 
     def _on_remove_archive_dir(self):
+        self.archive_dir_dialog.selected_dir = None
         self.view.archive_dir_removed()
 
     def _on_select_docs_dir(self):
@@ -35,6 +36,7 @@ class HomeController:
             self.view.docs_dir_selected(folder_name)
 
     def _on_remove_docs_dir(self):
+        self.docs_dir_dialog.selected_dir = None
         self.view.docs_dir_removed()
 
     def _on_select_common_dir(self):
@@ -43,6 +45,7 @@ class HomeController:
             self.view.common_dir_selected(folder_name)
 
     def _on_remove_common_dir(self):
+        self.common_dir_dialog.selected_dir = None
         self.view.common_dir_removed()
 
     def _on_detect(self):
