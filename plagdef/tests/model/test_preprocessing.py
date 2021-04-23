@@ -104,6 +104,13 @@ def test_preprocessed_words(preprocessor):
     assert sent2_word_texts == ['it', 'consists', 'of', 'two', 'sentences', 'one', 'and', 'two']
 
 
+def test_preprocessed_words_are_alphanumeric(preprocessor):
+    doc = Document('doc', 'path/to/doc', 'This is a n3xt l€v€l document.')
+    preprocessor.preprocess('eng', [doc])
+    sent_word_texts = [word.text.lower() for word in doc.sents(include_common=True)[0].words]
+    assert sent_word_texts == ['this', 'is', 'n3xt', 'document']
+
+
 def test_preprocessed_sent_start_end_chars(preprocessed_docs):
     doc = preprocessed_docs[1]
     assert [(sent.start_char, sent.end_char) for sent in doc.sents(include_common=True)] == [(0, 177), (178, 231),
