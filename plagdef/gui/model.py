@@ -43,7 +43,8 @@ class ResultsTableModel(QAbstractTableModel):
     def data(self, index: QModelIndex, role: int = Qt.DisplayRole):
         doc_pair = self._doc_pair_matches[index.row()].doc1, self._doc_pair_matches[index.row()].doc2
         if role == Qt.DisplayRole:
-            return doc_pair[index.column()].name
+            name = doc_pair[index.column()].name
+            return name if len(name) < 50 else f'{name[:50]}...'
         elif role == Qt.ForegroundRole:
             plag_type = self._doc_pair_matches[index.row()].plag_type
             if plag_type == models.PlagiarismType.VERBATIM:
