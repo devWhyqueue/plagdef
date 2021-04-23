@@ -50,7 +50,8 @@ class DocumentFileRepository:
             try:
                 detect_enc = magic.Magic(mime_encoding=True)
                 enc = detect_enc.from_buffer(open(str(file), 'rb').read(2048))
-                text = file.read_text(encoding=enc if not 'utf-8' else 'utf-8-sig')
+                enc_str = enc if enc != 'utf-8' else 'utf-8-sig'
+                text = file.read_text(encoding=enc_str)
                 normalized_text = normalize('NFC', text)
                 return Document(file.stem, str(file), normalized_text)
             except (UnicodeDecodeError, LookupError, MagicException):
