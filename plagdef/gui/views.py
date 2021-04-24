@@ -250,8 +250,13 @@ class ResultView(View):
 class MatchesDialog:
     def __init__(self):
         self.widget = _load_ui_file(Path(UI_FILES['matches_dialog']))
+        self._configure()
         self._doc_pair_matches = None
         self._selected = 0
+
+    def _configure(self):
+        self.widget.doc1_label.setCursor(QCursor(Qt.PointingHandCursor))
+        self.widget.doc2_label.setCursor(QCursor(Qt.PointingHandCursor))
 
     def open(self, doc_pair_matches: DocumentPairMatches):
         self._doc_pair_matches = doc_pair_matches
@@ -275,9 +280,11 @@ class MatchesDialog:
         if self._selected + 1 == len(self._doc_pair_matches):
             self.widget.next_button.setVisible(False)
 
-    def register_for_signals(self, prev_match=None, next_match=None):
+    def register_for_signals(self, prev_match=None, next_match=None, open_doc=None):
         self.widget.prev_button.clicked.connect(lambda: prev_match())
         self.widget.next_button.clicked.connect(lambda: next_match())
+        self.widget.doc1_label.clicked.connect(lambda: open_doc(self._doc_pair_matches.doc1.path))
+        self.widget.doc2_label.clicked.connect(lambda: open_doc(self._doc_pair_matches.doc2.path))
 
     def prev_match(self):
         self._selected -= 1

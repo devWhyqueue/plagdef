@@ -73,36 +73,6 @@
                             </property>
                         </widget>
                     </item>
-                    <item row="0" column="1" alignment="Qt::AlignHCenter">
-                        <widget class="QLabel" name="doc2_label">
-                            <property name="styleSheet">
-                                <string notr="true">color: rgb(255, 255, 255);
-                                    font-size: 12pt;
-                                </string>
-                            </property>
-                            <property name="text">
-                                <string>doc2</string>
-                            </property>
-                            <property name="wordWrap">
-                                <bool>false</bool>
-                            </property>
-                        </widget>
-                    </item>
-                    <item row="0" column="0" alignment="Qt::AlignHCenter">
-                        <widget class="QLabel" name="doc1_label">
-                            <property name="styleSheet">
-                                <string notr="true">color: rgb(255, 255, 255);
-                                    font-size: 12pt;
-                                </string>
-                            </property>
-                            <property name="text">
-                                <string>doc1</string>
-                            </property>
-                            <property name="wordWrap">
-                                <bool>false</bool>
-                            </property>
-                        </widget>
-                    </item>
                     <item row="2" column="0">
                         <widget class="QTextBrowser" name="doc1_text">
                             <property name="sizePolicy">
@@ -141,6 +111,48 @@
                             </property>
                             <property name="wordWrap">
                                 <bool>false</bool>
+                            </property>
+                        </widget>
+                    </item>
+                    <item row="0" column="0" alignment="Qt::AlignHCenter">
+                        <widget class="QPushButton" name="doc1_label">
+                            <property name="minimumSize">
+                                <size>
+                                    <width>0</width>
+                                    <height>0</height>
+                                </size>
+                            </property>
+                            <property name="styleSheet">
+                                <string notr="true">QPushButton{
+                                    color: rgb(255, 255, 255);
+                                    font-size: 12pt;
+                                    border-style: inset;
+                                    }
+                                    :hover{
+                                    font-weight: bold;
+                                    }
+                                </string>
+                            </property>
+                            <property name="text">
+                                <string>doc1</string>
+                            </property>
+                        </widget>
+                    </item>
+                    <item row="0" column="1" alignment="Qt::AlignHCenter">
+                        <widget class="QPushButton" name="doc2_label">
+                            <property name="styleSheet">
+                                <string notr="true">QPushButton{
+                                    color: rgb(255, 255, 255);
+                                    font-size: 12pt;
+                                    border-style: inset;
+                                    }
+                                    :hover{
+                                    font-weight: bold;
+                                    }
+                                </string>
+                            </property>
+                            <property name="text">
+                                <string>doc2</string>
                             </property>
                         </widget>
                     </item>
