@@ -2,7 +2,7 @@ from plagdef.model.reporting import generate_text_report, generate_xml_reports
 
 
 def test_generate_text_report_with_no_matches_returns_msg():
-    report = generate_text_report([])
+    report = generate_text_report({})
     assert report == 'There are no matching text sections in given documents.'
 
 
@@ -11,6 +11,11 @@ def test_generate_text_report_starts_with_intro(matches):
     assert report.startswith(
         'Reporting matches for each pair like this:\n'
         f'  Match(Fragment(start_char, end_char), Fragment(start_char, end_char))\n\n')
+
+
+def test_generate_text_report_contains_plag_type(matches):
+    report = generate_text_report(matches)
+    assert 'Verbatim matches:\n' in report
 
 
 def test_generate_text_report_contains_matches(matches):
@@ -24,7 +29,7 @@ def test_generate_text_report_contains_matches(matches):
 
 
 def test_generate_xml_reports_with_no_matches_produces_no_report():
-    reports = generate_xml_reports([])
+    reports = generate_xml_reports({})
     assert len(reports) == 0
 
 

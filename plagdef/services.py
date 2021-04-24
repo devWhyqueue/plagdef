@@ -5,13 +5,14 @@ from configparser import ParsingError
 from click import UsageError
 
 from plagdef.model.detection import DocumentMatcher
-from plagdef.model.models import DocumentPairMatches
+from plagdef.model.models import DocumentPairMatches, PlagiarismType
 from plagdef.model.preprocessing import UnsupportedLanguageError
 from plagdef.model.reporting import generate_xml_reports
 from plagdef.repositories import UnsupportedFileFormatError
 
 
-def find_matches(doc_repo, config_repo, archive_repo=None, common_doc_repo=None) -> list[DocumentPairMatches]:
+def find_matches(doc_repo, config_repo, archive_repo=None, common_doc_repo=None) \
+    -> dict[PlagiarismType, list[DocumentPairMatches]]:
     try:
         docs = list(doc_repo.list())
         archive_docs = list(archive_repo.list()) if archive_repo else None
@@ -24,7 +25,7 @@ def find_matches(doc_repo, config_repo, archive_repo=None, common_doc_repo=None)
         raise UsageError(str(e)) from e
 
 
-def write_xml_reports(matches: list[DocumentPairMatches], doc_pair_report_repo):
+def write_xml_reports(matches: dict[PlagiarismType, list[DocumentPairMatches]], doc_pair_report_repo):
     doc_pair_reports = generate_xml_reports(matches)
     for report in doc_pair_reports:
         doc_pair_report_repo.add(report)

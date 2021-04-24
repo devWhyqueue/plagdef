@@ -1,4 +1,16 @@
-from plagdef.model.util import cos_sim, dice_sim
+from plagdef.model.util import cos_sim, dice_sim, truncate
+
+
+def test_truncate():
+    long_string = 'This string has to be truncated.'
+    trunc_string = truncate(long_string, 18)
+    assert trunc_string == 'This string has to...'
+
+
+def test_truncate_returns_input_if_length_fits():
+    long_string = 'This string has to be truncated.'
+    trunc_string = truncate(long_string, 50)
+    assert trunc_string == 'This string has to be truncated.'
 
 
 def test_cosine_measure():

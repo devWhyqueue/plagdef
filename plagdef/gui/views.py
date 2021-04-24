@@ -10,7 +10,8 @@ from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QButtonGroup, QMainWindow, QFileDialog, QDialog
 
 from plagdef.gui.model import ResultsTableModel, DocumentPairMatches
-from plagdef.model.util import version
+from plagdef.model.models import PlagiarismType
+from plagdef.model.util import version, truncate
 
 UI_FILES = {
     'main_window': pkg_resources.resource_filename(__name__, 'ui/main_window.ui'),
@@ -203,21 +204,46 @@ class ResultView(View):
     def __init__(self):
         self.widget = _load_ui_file(Path(UI_FILES['results_widget']))
         self._configure()
+        self._doc_pair_matches = None
 
     def _configure(self):
         self.widget.again_button_res.setCursor(QCursor(Qt.PointingHandCursor))
+        self.widget.doc_pair_tabs.currentChanged.connect(lambda idx: self._update_label(idx))
+
+    def _update_label(self, idx):
+        self.widget.doc_pairs_label.setText(f"Found {len(self._doc_pair_matches[PlagiarismType(idx)])} "
+                                            f"suspicious document pair"
+                                            f"{'s' if len(self._doc_pair_matches[PlagiarismType(idx)]) > 1 else ''}.")
 
     def on_init(self, data=None):
-        self.widget.doc_pairs_label.setText(f"Found {len(data)} suspicious document pair"
-                                            f"{'s' if len(data) > 1 else ''}.")
-        model = ResultsTableModel(data)
-        self.widget.results_table.setModel(model)
-        self.widget.results_table.resizeRowsToContents()
-        self.widget.results_table.resizeColumnsToContents()
+        self._doc_pair_matches = data
+        self._set_table_model(self.widget.verbatim_results, self._doc_pair_matches[PlagiarismType.VERBATIM])
+        self._set_table_model(self.widget.intelligent_results, self._doc_pair_matches[PlagiarismType.INTELLIGENT])
+        self._set_table_model(self.widget.summary_results, self._doc_pair_matches[PlagiarismType.SUMMARY])
+        self._update_label(0)
+        self._hide_empty_tables()
+
+    def _set_table_model(self, table, pairs):
+        table.setModel(ResultsTableModel(pairs))
+        table.resizeRowsToContents()
+        table.resizeColumnsToContents()
+        table.parentWidget().adjustSize()
+
+    def _hide_empty_tables(self):
+        self.widget.doc_pair_tabs.setTabVisible(0, False) \
+            if not len(self._doc_pair_matches[PlagiarismType.VERBATIM]) else None
+        self.widget.doc_pair_tabs.setTabVisible(1, False) \
+            if not len(self._doc_pair_matches[PlagiarismType.INTELLIGENT]) else None
+        self.widget.doc_pair_tabs.setTabVisible(2, False) \
+            if not len(self._doc_pair_matches[PlagiarismType.SUMMARY]) else None
 
     def register_for_signals(self, again=None, select_pair=None):
         self.widget.again_button_res.clicked.connect(lambda: again())
-        self.widget.results_table.doubleClicked.connect(
+        self.widget.verbatim_results.doubleClicked.connect(
+            lambda index: select_pair(index.model().doc_pair_matches(index)))
+        self.widget.intelligent_results.doubleClicked.connect(
+            lambda index: select_pair(index.model().doc_pair_matches(index)))
+        self.widget.summary_results.doubleClicked.connect(
             lambda index: select_pair(index.model().doc_pair_matches(index)))
 
 
@@ -229,10 +255,10 @@ class MatchesDialog:
 
     def open(self, doc_pair_matches: DocumentPairMatches):
         self._doc_pair_matches = doc_pair_matches
-        self.widget.doc1_label.setText(self._doc_pair_matches.doc1.name)
-        self.widget.doc1_path.setText(f'({self._doc_pair_matches.doc1.path})')
-        self.widget.doc2_label.setText(self._doc_pair_matches.doc2.name)
-        self.widget.doc2_path.setText(f'({self._doc_pair_matches.doc2.path})')
+        self.widget.doc1_label.setText(truncate(self._doc_pair_matches.doc1.name, 50))
+        self.widget.doc1_path.setText(f'({truncate(self._doc_pair_matches.doc1.path, 65)})')
+        self.widget.doc2_label.setText(truncate(self._doc_pair_matches.doc2.name, 50))
+        self.widget.doc2_path.setText(f'({truncate(self._doc_pair_matches.doc2.path, 65)})')
         self._selected = 0
         self._show_match()
         self.widget.exec_()

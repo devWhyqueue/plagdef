@@ -1,5 +1,5 @@
 from plagdef.model.detection import DocumentMatcher, _resolve_match_overlaps
-from plagdef.model.models import Document, Cluster, Seed
+from plagdef.model.models import Document, Cluster, Seed, PlagiarismType
 
 
 def test_common_words(preprocessor, config):
@@ -17,8 +17,8 @@ def test_common_words(preprocessor, config):
     doc_matcher = DocumentMatcher(config)
     match = doc_matcher._common_words(cluster).pop()
     assert len(doc_matcher._common_words(cluster)) == 1
-    # Punctuation in the end is NOT included
-    assert {(frag.start_char, frag.end_char) for frag in match.frag_pair} == {(19, 107), (19, 106)}
+    # Punctuation included
+    assert {(frag.start_char, frag.end_char) for frag in match.frag_pair} == {(19, 107), (19, 108)}
 
 
 def test_common_words_with_two_substrings(preprocessor, config):
@@ -35,15 +35,15 @@ def test_common_words_with_two_substrings(preprocessor, config):
     config['min_verbatim_match_char_len'] = 25
     doc_matcher = DocumentMatcher(config)
     matches = doc_matcher._common_words(cluster)
-    # 1: There must be identical sentences
+    # 1: There must be identical sentences.
     # 2: But case or punctuation like this ';:' OR "..,"
     # 3:              ""                                 do
     # 4:              ""                                    not
-    # 5:              ""                                        matter
+    # 5:              ""                                        matter.
     assert len(doc_matcher._common_words(cluster)) == 5
-    # Punctuation in the end is NOT included
+    # Punctuation included
     assert all(f in {(frag.start_char, frag.end_char) for frag_pair in {match.frag_pair for match in matches}
-                     for frag in frag_pair} for f in {(19, 52), (54, 87), (54, 95), (54, 99), (54, 106)})
+                     for frag in frag_pair} for f in {(19, 53), (54, 87), (54, 95), (54, 99), (54, 107)})
 
 
 def test_resolve_overlaps(preprocessor, config):
@@ -65,8 +65,8 @@ def test_resolve_overlaps(preprocessor, config):
     # 2: But case or punctuation like this ';:' OR "..," do not matter
     assert len(res_matches) == 2
     assert {frag.text for frag_pair in {match.frag_pair for match in res_matches} for frag in frag_pair} \
-           == {'There must be identical sentences', "But Case or punctuation like this ';:' do not matter",
-               'But case or punctuation like this "..," do not matter'}
+           == {'There must be identical sentences.', "But Case or punctuation like this ';:' do not matter.",
+               'But case or punctuation like this "..," do not matter.'}
 
 
 def test_verbatim_matches(preprocessor, config):
@@ -81,7 +81,7 @@ def test_verbatim_matches(preprocessor, config):
     matches = doc_matcher._verbatim_matches(clusters)
     assert len(matches) == 2
     assert {frag.text for frag_pair in {match.frag_pair for match in matches} for frag in frag_pair} \
-           == {'Some identical text', "More similar text"}
+           == {'Some identical text.', "More similar text."}
 
 
 def test_find_matches_with_verbatim_case(config):
@@ -91,7 +91,17 @@ def test_find_matches_with_verbatim_case(config):
     config['min_verbatim_match_char_len'] = 5
     doc_matcher = DocumentMatcher(config)
     doc_pair_matches = doc_matcher.find_matches('eng', [doc1, doc2])
-    assert len(doc_pair_matches.pop().list()) == 2
+    assert len(doc_pair_matches[PlagiarismType.VERBATIM].pop().list()) == 2
+
+
+def test_find_matches_with_verbatim_case_removes_identical_intelligent_case(config):
+    doc1 = Document('doc1', 'path/to/doc1', 'Some absolutely identical text. An awesome sentence.')
+    doc2 = Document('doc2', 'path/to/doc2', 'Some absolutely identical text. This is nothing alike.')
+    config['min_verbatim_match_char_len'] = 5
+    doc_matcher = DocumentMatcher(config)
+    doc_pair_matches = doc_matcher.find_matches('eng', [doc1, doc2])
+    assert len(doc_pair_matches) == 1
+    assert len(doc_pair_matches[PlagiarismType.VERBATIM].pop().list()) == 1
 
 
 def test_find_matches_with_intelligent_case(config):
@@ -105,7 +115,7 @@ def test_find_matches_with_intelligent_case(config):
     config['min_verbatim_match_char_len'] = 15
     doc_matcher = DocumentMatcher(config)
     doc_pair_matches = doc_matcher.find_matches('eng', [doc1, doc2])
-    assert len(doc_pair_matches.pop().list()) == 2
+    assert len(doc_pair_matches[PlagiarismType.INTELLIGENT].pop().list()) == 2
 
 
 def test_find_matches_with_summary_case(config):
@@ -137,7 +147,8 @@ def test_find_matches_with_summary_case(config):
     config['min_verbatim_match_char_len'] = 256
     doc_matcher = DocumentMatcher(config)
     doc_pair_matches = doc_matcher.find_matches('eng', [doc1, doc2])
-    assert len(doc_pair_matches.pop().list()) == 1
+    assert len(doc_pair_matches[PlagiarismType.INTELLIGENT].pop().list()) == 1
+    assert len(doc_pair_matches[PlagiarismType.SUMMARY].pop().list()) == 1
 
 
 def test_find_matches_without_documents_returns_empty_list(config):
@@ -167,4 +178,4 @@ def test_find_matches_with_archive_docs(config):
                     ]
     doc_matcher = DocumentMatcher(config)
     matches = doc_matcher.find_matches('eng', docs, archive_docs)
-    assert len(matches) == 4
+    assert len([m for m_list in matches.values() for m in m_list]) == 4

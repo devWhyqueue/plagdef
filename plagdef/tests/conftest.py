@@ -65,4 +65,4 @@ def matches():
                  Document('doc4', 'path/to/doc4', 'This also is another document.\n')
     doc3_doc4_matches = DocumentPairMatches(PlagiarismType.VERBATIM)
     doc3_doc4_matches.add(Match(Fragment(2, 6, doc3), Fragment(2, 8, doc4)))
-    return [doc1_doc2_matches, doc3_doc4_matches]
+    return {PlagiarismType.VERBATIM: [doc1_doc2_matches, doc3_doc4_matches]}

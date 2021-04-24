@@ -11,6 +11,7 @@ from click import UsageError
 
 from plagdef import services
 from plagdef.gui.model import DocumentPairMatches
+from plagdef.model.models import PlagiarismType
 from plagdef.model.reporting import generate_text_report
 from plagdef.repositories import ConfigFileRepository, DocumentFileRepository, NoDocumentFilePairFoundError, \
     DocumentPairReportFileRepository
@@ -77,7 +78,7 @@ def gui():
 
 
 def find_matches(lang: str, docdir: tuple[str, bool], archive_docdir: [str, bool], common_docdir: [str, bool]) \
-    -> list[DocumentPairMatches]:
+    -> dict[PlagiarismType, list[DocumentPairMatches]]:
     try:
         doc_repo = DocumentFileRepository(Path(str(docdir[0])), lang, docdir[1])
         archive_repo = common_repo = None

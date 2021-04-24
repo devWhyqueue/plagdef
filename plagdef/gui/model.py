@@ -6,6 +6,7 @@ from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 from PySide6.QtGui import QColor
 
 from plagdef.model import models
+from plagdef.model.util import truncate
 
 
 @dataclass(frozen=True)
@@ -23,7 +24,7 @@ class ResultsTableModel(QAbstractTableModel):
     def __init__(self, doc_pair_matches: list[models.DocumentPairMatches]):
         super().__init__()
         self._doc_pair_matches = []
-        for matches in sorted(doc_pair_matches, key=lambda m: m.plag_type):
+        for matches in doc_pair_matches:
             doc1, doc2 = matches.doc_pair
             self._doc_pair_matches.append(
                 DocumentPairMatches(doc1, doc2, matches.plag_type,
@@ -44,15 +45,9 @@ class ResultsTableModel(QAbstractTableModel):
         doc_pair = self._doc_pair_matches[index.row()].doc1, self._doc_pair_matches[index.row()].doc2
         if role == Qt.DisplayRole:
             name = doc_pair[index.column()].name
-            return name if len(name) < 50 else f'{name[:50]}...'
+            return truncate(name, 50)
         elif role == Qt.ForegroundRole:
-            plag_type = self._doc_pair_matches[index.row()].plag_type
-            if plag_type == models.PlagiarismType.VERBATIM:
-                return QColor(242, 141, 1)
-            elif plag_type == models.PlagiarismType.INTELLIGENT:
-                return QColor(242, 191, 121)
-            elif plag_type == models.PlagiarismType.SUMMARY:
-                return QColor(255, 255, 255)
+            return QColor(255, 255, 255)
         elif role == Qt.ToolTipRole:
             return doc_pair[index.column()].path
 

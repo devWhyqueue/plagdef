@@ -16,6 +16,7 @@ from plagdef.gui.controllers import HomeController, LoadingController, ErrorCont
     ResultController
 from plagdef.gui.model import DocumentPairMatches
 from plagdef.gui.views import MainWindow, ResultView, NoResultsView, ErrorView
+from plagdef.model.models import PlagiarismType
 
 app = None
 
@@ -40,7 +41,7 @@ class MyQtApp(QApplication):
         pool = QThreadPool.globalInstance()
         pool.start(worker)
 
-    def _on_success(self, matches: set[DocumentPairMatches]):
+    def _on_success(self, matches: dict[PlagiarismType, list[DocumentPairMatches]]):
         if matches:
             self.window.switch_to(ResultView, matches)
         else:

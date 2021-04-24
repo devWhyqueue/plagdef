@@ -7,6 +7,10 @@ def version():
     return get_distribution('plagdef').version
 
 
+def truncate(string: str, length: int):
+    return f'{string}' if len(string) < length else f'{string[:length]}...'
+
+
 def cos_sim(bow1: dict, bow2: dict):
     """
     Compute the cosine similarity cos-sim = sum_i=1_n{a_i * b_i} / sqrt{sum_i=1_n{(a_i)^2}} * sqrt{sum_i=1_n{(

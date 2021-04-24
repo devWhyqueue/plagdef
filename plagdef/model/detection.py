@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from collections import defaultdict
 from itertools import combinations, product
 from pprint import pformat
 
@@ -26,9 +27,9 @@ class DocumentMatcher:
         self._min_verbatim_match_char_len = config['min_verbatim_match_char_len']
 
     def find_matches(self, lang: str, docs: list[Document], archive_docs=None, common_docs=None) \
-        -> list[DocumentPairMatches]:
+        -> dict[PlagiarismType, list[DocumentPairMatches]]:
         self._preprocessor.preprocess(lang, docs, common_docs)
-        matches = list()
+        matches = defaultdict(list)
         doc_combs = set(combinations(docs, 2))
         if archive_docs:
             self._preprocessor.preprocess(lang, archive_docs, common_docs)
@@ -43,23 +44,28 @@ class DocumentMatcher:
             verbatim_matches = self._verbatim_matches(clusters)
             if len(verbatim_matches):
                 log.debug(f'Plagiarism type is verbatim. Found these matches:\n{pformat(verbatim_matches)}')
-                matches.append(DocumentPairMatches(PlagiarismType.VERBATIM, verbatim_matches))
-            else:
-                summary_clusters = self._extender.extend(seeds, self._adjacent_sents_gap_summary)
-                summary_clusters = self._cluster_filter.filter(summary_clusters)
-                if len(summary_clusters):
-                    sum_cluster_len_doc1, sum_cluster_len_doc2 = \
-                        tuple(map(sum, zip(*(cluster.char_lengths() for cluster in summary_clusters))))
-                    if sum_cluster_len_doc1 >= 3 * sum_cluster_len_doc2 \
-                        or sum_cluster_len_doc2 >= 3 * sum_cluster_len_doc1:
-                        summary_matches = {Match.from_cluster(cluster) for cluster in summary_clusters}
+                matches[PlagiarismType.VERBATIM].append(DocumentPairMatches(PlagiarismType.VERBATIM, verbatim_matches))
+            if len(clusters):
+                intelligent_matches = {Match.from_cluster(cluster) for cluster in clusters}.difference(verbatim_matches)
+                if len(intelligent_matches):
+                    log.debug(
+                        f'Plagiarism type is intelligent. Found these matches:\n{pformat(intelligent_matches)}')
+                    matches[PlagiarismType.INTELLIGENT].append(DocumentPairMatches(PlagiarismType.INTELLIGENT,
+                                                                                   intelligent_matches))
+            summary_clusters = self._extender.extend(seeds, self._adjacent_sents_gap_summary)
+            summary_clusters = self._cluster_filter.filter(summary_clusters)
+            if len(summary_clusters):
+                sum_cluster_len_doc1, sum_cluster_len_doc2 = \
+                    tuple(map(sum, zip(*(cluster.char_lengths() for cluster in summary_clusters))))
+                if sum_cluster_len_doc1 >= 3 * sum_cluster_len_doc2 \
+                    or sum_cluster_len_doc2 >= 3 * sum_cluster_len_doc1:
+                    summary_matches = {Match.from_cluster(cluster) for cluster in summary_clusters}.difference(
+                        verbatim_matches)
+                    if len(summary_matches):
                         log.debug(f'Plagiarism type is summary. Found these matches:\n{pformat(summary_matches)}')
-                        matches.append(DocumentPairMatches(PlagiarismType.SUMMARY, summary_matches))
-                    elif len(clusters):
-                        intelligent_matches = {Match.from_cluster(cluster) for cluster in clusters}
-                        log.debug(
-                            f'Plagiarism type is intelligent. Found these matches:\n{pformat(intelligent_matches)}')
-                        matches.append(DocumentPairMatches(PlagiarismType.INTELLIGENT, intelligent_matches))
+                        matches[PlagiarismType.SUMMARY].append(DocumentPairMatches(PlagiarismType.SUMMARY,
+                                                                                   summary_matches))
+
         return matches
 
     def _verbatim_matches(self, clusters: set[Cluster]) -> set[Match]:
@@ -81,8 +87,12 @@ class DocumentMatcher:
                     match_char_len = sum([len(word) for word in frag1_words[i - lookup[i][j]:i]])
                     if match_char_len >= self._min_verbatim_match_char_len:
                         frag1_first, frag2_first = i - lookup[i][j], j - lookup[i][j]
-                        frag1 = Fragment(frag1_words[frag1_first].start_char, frag1_words[i - 1].end_char, cluster.doc1)
-                        frag2 = Fragment(frag2_words[frag2_first].start_char, frag2_words[j - 1].end_char, cluster.doc2)
+                        # Include punctuation (mostly periods) if exists
+                        punct = _include_punct(cluster, frag1_words[i - 1].end_char, frag2_words[j - 1].end_char)
+                        frag1 = Fragment(frag1_words[frag1_first].start_char, frag1_words[i - 1].end_char + punct,
+                                         cluster.doc1)
+                        frag2 = Fragment(frag2_words[frag2_first].start_char, frag2_words[j - 1].end_char + punct,
+                                         cluster.doc2)
                         verbatim_matches.add(Match(frag1, frag2))
         return verbatim_matches
 
@@ -93,3 +103,10 @@ def _resolve_match_overlaps(matches: set[Match]) -> set[Match]:
         if not any(match.overlaps_with(non_ol_match) for non_ol_match in non_ol_matches):
             non_ol_matches.add(match)
     return non_ol_matches
+
+
+def _include_punct(cluster: Cluster, frag1_end_char: int, frag2_end_char: int) -> int:
+    if cluster.doc1.text[frag1_end_char] == cluster.doc2.text[frag2_end_char] \
+        and not cluster.doc1.text[frag1_end_char].isspace():
+        return 1
+    return 0

@@ -432,10 +432,6 @@ def test_doc_pair_matches_len():
     assert len(doc_pair_matches) == 2
 
 
-def test_plagiarism_type_ordering():
-    assert PlagiarismType.VERBATIM < PlagiarismType.INTELLIGENT < PlagiarismType.SUMMARY
-
-
 def _create_sent(doc_name: str, sent_idx: int):
     doc = Document(doc_name, 'path/to/doc', '')
     [doc.sents(include_common=True).add(Sentence(idx, -1, Counter(), doc)) for idx in range(sent_idx + 1)]
