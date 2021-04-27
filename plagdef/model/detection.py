@@ -5,6 +5,7 @@ import os
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from itertools import combinations, product
+from multiprocessing import RLock
 from pprint import pformat
 
 from numpy import array_split
@@ -41,10 +42,10 @@ class DocumentMatcher:
     def _parallelized_search(self, doc_combs, threshold=4000):
         if len(doc_combs) > threshold:
             doc_comb_chunks = array_split(doc_combs, os.cpu_count())
-            with ProcessPoolExecutor(max_workers=os.cpu_count()) as p:
+            with ProcessPoolExecutor(initargs=(RLock(),), initializer=tqdm.set_lock, max_workers=os.cpu_count()) as p:
                 futures = []
-                for chunk in doc_comb_chunks:
-                    futures.append(p.submit(self._find_matches, chunk))
+                for i, chunk in enumerate(doc_comb_chunks):
+                    futures.append(p.submit(self._find_matches, chunk, i))
                 match_chunks = [f.result() for f in as_completed(futures)]
             return self._merge(match_chunks)
         else:
@@ -57,11 +58,11 @@ class DocumentMatcher:
                 matches[plag_type] += doc_pair_matches
         return matches
 
-    def _find_matches(self, doc_combs) \
+    def _find_matches(self, doc_combs, pos=0) \
         -> dict[PlagiarismType, list[DocumentPairMatches]]:
         matches = defaultdict(list)
-        for doc1, doc2 in tqdm(doc_combs, desc='Matching', bar_format='{l_bar}{bar}| [{elapsed}<{remaining}{postfix}]',
-                               leave=False, mininterval=1):
+        for doc1, doc2 in tqdm(doc_combs, desc='Matching', unit='pair', total=len(doc_combs), position=pos,
+                               leave=False):
             log.debug(f'Examining pair ({doc1}, {doc2}).')
             seeds = self._seeder.seed(doc1, doc2)
             log.debug(f'Found the following seeds:\n{pformat(sorted(seeds, key=lambda s: s.sent1.idx))}')
@@ -92,7 +93,6 @@ class DocumentMatcher:
                         log.debug(f'Plagiarism type is summary. Found these matches:\n{pformat(summary_matches)}')
                         matches[PlagiarismType.SUMMARY].append(DocumentPairMatches(PlagiarismType.SUMMARY,
                                                                                    summary_matches))
-
         return matches
 
     def _verbatim_matches(self, clusters: set[Cluster]) -> set[Match]:
