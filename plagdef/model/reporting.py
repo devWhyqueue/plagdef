@@ -18,9 +18,9 @@ class DocumentPairReport:
 
 
 def generate_text_report(matches: dict[PlagiarismType, list[DocumentPairMatches]]) -> str:
-    doc_pair_reports = []
+    report = ''
     for plag_type, match_list in matches.items():
-        report = f'{str(plag_type).capitalize()} matches:\n'
+        report += f'{str(plag_type).capitalize()} matches:\n'
         for doc_pair_matches in match_list:
             doc1, doc2 = doc_pair_matches.doc_pair
             report += f"  Pair('{doc1.path}', '{doc2.path}'):\n"
@@ -28,13 +28,14 @@ def generate_text_report(matches: dict[PlagiarismType, list[DocumentPairMatches]
                 frag1, frag2 = match.frag_from_doc(doc1), match.frag_from_doc(doc2)
                 report += f'    Match(Fragment({frag1.start_char}, {frag1.end_char}), Fragment({frag2.start_char},' \
                           f' {frag2.end_char}))\n'
-
-            doc_pair_reports.append(DocumentPairReport(doc1, doc2, report, 'txt'))
     intro = 'There are no matching text sections in given documents.'
-    if doc_pair_reports:
-        intro = 'Reporting matches for each pair like this:\n' \
+    if report:
+        doc_pair_count = sum(len(m) for m in matches.values())
+        intro = f'Found {doc_pair_count if len(matches) else "no"} match' \
+                f'{"es" if doc_pair_count > 1 else ""}.\n' \
+                'Reporting matches for each pair like this:\n' \
                 f'  Match(Fragment(start_char, end_char), Fragment(start_char, end_char))\n\n'
-    return intro + ''.join(f'{doc_pair_report.content}' for doc_pair_report in doc_pair_reports)
+    return intro + report
 
 
 def generate_xml_reports(matches: dict[PlagiarismType, list[DocumentPairMatches]]) -> list[DocumentPairReport]:

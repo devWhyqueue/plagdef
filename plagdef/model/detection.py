@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import logging
+import os
 from collections import defaultdict
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from itertools import combinations, product
 from pprint import pformat
 
+from numpy import array_split
 from tqdm import tqdm
 
 from plagdef.model.extension import ClusterBuilder
@@ -26,15 +29,39 @@ class DocumentMatcher:
         self._adjacent_sents_gap_summary = config['adjacent_sents_gap_summary']
         self._min_verbatim_match_char_len = config['min_verbatim_match_char_len']
 
-    def find_matches(self, lang: str, docs: list[Document], archive_docs=None, common_docs=None) \
-        -> dict[PlagiarismType, list[DocumentPairMatches]]:
+    def preprocess(self, lang: str, docs: set[Document], common_docs=None):
         self._preprocessor.preprocess(lang, docs, common_docs)
-        matches = defaultdict(list)
-        doc_combs = set(combinations(docs, 2))
+
+    def find_matches(self, docs: set[Document], archive_docs=None) -> dict[PlagiarismType, list[DocumentPairMatches]]:
+        doc_combs = list(combinations(docs, 2))
         if archive_docs:
-            self._preprocessor.preprocess(lang, archive_docs, common_docs)
             doc_combs.update(product(docs, archive_docs))
-        for doc1, doc2 in tqdm(doc_combs, desc='Matching', unit='pair'):
+        return self._parallelized_search(doc_combs)
+
+    def _parallelized_search(self, doc_combs, threshold=4000):
+        if len(doc_combs) > threshold:
+            doc_comb_chunks = array_split(doc_combs, os.cpu_count())
+            with ProcessPoolExecutor(max_workers=os.cpu_count()) as p:
+                futures = []
+                for chunk in doc_comb_chunks:
+                    futures.append(p.submit(self._find_matches, chunk))
+                match_chunks = [f.result() for f in as_completed(futures)]
+            return self._merge(match_chunks)
+        else:
+            return self._find_matches(doc_combs)
+
+    def _merge(self, match_chunks):
+        matches = defaultdict(list)
+        for chunk in match_chunks:
+            for plag_type, doc_pair_matches in chunk.items():
+                matches[plag_type] += doc_pair_matches
+        return matches
+
+    def _find_matches(self, doc_combs) \
+        -> dict[PlagiarismType, list[DocumentPairMatches]]:
+        matches = defaultdict(list)
+        for doc1, doc2 in tqdm(doc_combs, desc='Matching', bar_format='{l_bar}{bar}| [{elapsed}<{remaining}{postfix}]',
+                               leave=False, mininterval=1):
             log.debug(f'Examining pair ({doc1}, {doc2}).')
             seeds = self._seeder.seed(doc1, doc2)
             log.debug(f'Found the following seeds:\n{pformat(sorted(seeds, key=lambda s: s.sent1.idx))}')

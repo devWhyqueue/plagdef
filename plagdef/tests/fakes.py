@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from plagdef.model.models import Document
 from plagdef.model.reporting import DocumentPairReport
 
@@ -16,12 +18,13 @@ class DocumentPairReportFakeRepository:
 
 
 class DocumentFakeRepository:
-    def __init__(self, documents: [Document], lang: str):
+    def __init__(self, documents: [Document], lang: str, dir_path: Path):
         self.lang = lang
+        self.dir_path = dir_path
         self._documents = documents
 
-    def list(self) -> [Document]:
-        return self._documents
+    def list(self) -> set[Document]:
+        return set(self._documents)
 
 
 class ConfigFakeRepository:

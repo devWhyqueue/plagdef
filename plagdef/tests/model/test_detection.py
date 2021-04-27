@@ -90,7 +90,8 @@ def test_find_matches_with_verbatim_case(config):
                     'Some identical text. Totally different words. These are too. More similar text.')
     config['min_verbatim_match_char_len'] = 5
     doc_matcher = DocumentMatcher(config)
-    doc_pair_matches = doc_matcher.find_matches('eng', [doc1, doc2])
+    doc_matcher.preprocess('eng', [doc1, doc2])
+    doc_pair_matches = doc_matcher.find_matches({doc1, doc2})
     assert len(doc_pair_matches[PlagiarismType.VERBATIM].pop().list()) == 2
 
 
@@ -99,7 +100,8 @@ def test_find_matches_with_verbatim_case_removes_identical_intelligent_case(conf
     doc2 = Document('doc2', 'path/to/doc2', 'Some absolutely identical text. This is nothing alike.')
     config['min_verbatim_match_char_len'] = 5
     doc_matcher = DocumentMatcher(config)
-    doc_pair_matches = doc_matcher.find_matches('eng', [doc1, doc2])
+    doc_matcher.preprocess('eng', [doc1, doc2])
+    doc_pair_matches = doc_matcher.find_matches({doc1, doc2})
     assert len(doc_pair_matches) == 1
     assert len(doc_pair_matches[PlagiarismType.VERBATIM].pop().list()) == 1
 
@@ -114,7 +116,8 @@ def test_find_matches_with_intelligent_case(config):
                     ' Here is more fairly similar text.')
     config['min_verbatim_match_char_len'] = 15
     doc_matcher = DocumentMatcher(config)
-    doc_pair_matches = doc_matcher.find_matches('eng', [doc1, doc2])
+    doc_matcher.preprocess('eng', [doc1, doc2])
+    doc_pair_matches = doc_matcher.find_matches({doc1, doc2})
     assert len(doc_pair_matches[PlagiarismType.INTELLIGENT].pop().list()) == 2
 
 
@@ -146,14 +149,15 @@ def test_find_matches_with_summary_case(config):
                     "considered a offense that can result in being expelled.")
     config['min_verbatim_match_char_len'] = 256
     doc_matcher = DocumentMatcher(config)
-    doc_pair_matches = doc_matcher.find_matches('eng', [doc1, doc2])
+    doc_matcher.preprocess('eng', [doc1, doc2])
+    doc_pair_matches = doc_matcher.find_matches({doc1, doc2})
     assert len(doc_pair_matches[PlagiarismType.INTELLIGENT].pop().list()) == 1
     assert len(doc_pair_matches[PlagiarismType.SUMMARY].pop().list()) == 1
 
 
 def test_find_matches_without_documents_returns_empty_list(config):
     doc_matcher = DocumentMatcher(config)
-    matches = doc_matcher.find_matches('eng', [])
+    matches = doc_matcher.find_matches(set())
     assert len(matches) == 0
 
 
@@ -161,7 +165,8 @@ def test_find_matches_returns_a_match(config):
     docs = [Document('doc1', 'path/to/doc1', 'This is an awesome document. And some text in it.\n'),
             Document('doc2', 'path/to/doc2', 'It\'s a great one. This is an awesome document.\n')]
     doc_matcher = DocumentMatcher(config)
-    matches = doc_matcher.find_matches('eng', docs)
+    doc_matcher.preprocess('eng', docs)
+    matches = doc_matcher.find_matches(set(docs))
     assert len(matches) == 1
 
 
@@ -177,5 +182,7 @@ def test_find_matches_with_archive_docs(config):
                              'This sentence is equal. And this is fantastic.')
                     ]
     doc_matcher = DocumentMatcher(config)
-    matches = doc_matcher.find_matches('eng', docs, archive_docs)
+    doc_matcher.preprocess('eng', docs)
+    doc_matcher.preprocess('eng', archive_docs)
+    matches = doc_matcher.find_matches(set(docs), archive_docs=archive_docs)
     assert len([m for m_list in matches.values() for m in m_list]) == 4

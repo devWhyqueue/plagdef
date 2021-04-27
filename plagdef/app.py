@@ -10,8 +10,7 @@ import pkg_resources
 from click import UsageError
 
 from plagdef import services
-from plagdef.gui.model import DocumentPairMatches
-from plagdef.model.models import PlagiarismType
+from plagdef.model.models import PlagiarismType, DocumentPairMatches
 from plagdef.model.reporting import generate_text_report
 from plagdef.repositories import ConfigFileRepository, DocumentFileRepository, NoDocumentFilePairFoundError, \
     DocumentPairReportFileRepository
@@ -46,8 +45,6 @@ def cli(docdir: tuple[click.Path, bool], lang: str, common_docdir: [click.Path, 
     archive_doc_dir = (str(archive_docdir[0]), archive_docdir[1]) if archive_docdir else None
     common_doc_dir = (str(common_docdir[0]), common_docdir[1]) if common_docdir else None
     matches = find_matches(lang, (str(docdir[0]), docdir[1]), archive_doc_dir, common_doc_dir)
-    click.echo(f'Found {len(matches) if len(matches) else "no"} suspicious document pair'
-               f'{"s" if len(matches) > 1 else ""}.\n')
     if matches:
         if xmldir:
             try:

@@ -8,9 +8,8 @@ def test_generate_text_report_with_no_matches_returns_msg():
 
 def test_generate_text_report_starts_with_intro(matches):
     report = generate_text_report(matches)
-    assert report.startswith(
-        'Reporting matches for each pair like this:\n'
-        f'  Match(Fragment(start_char, end_char), Fragment(start_char, end_char))\n\n')
+    assert 'Reporting matches for each pair like this:\n' \
+           f'  Match(Fragment(start_char, end_char), Fragment(start_char, end_char))\n\n' in report
 
 
 def test_generate_text_report_contains_plag_type(matches):

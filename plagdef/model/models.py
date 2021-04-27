@@ -17,7 +17,7 @@ class Document:
         self.path = path
         self.text = text
         self.vocab = Counter()  # <lemma, sent_freq>
-        self._sents = SortedSet(key=lambda sent: sent.start_char)
+        self._sents = SortedSet()
 
     def add_sent(self, sent: Sentence):
         self._sents.add(sent)
@@ -42,7 +42,18 @@ class Document:
     def __repr__(self):
         return f"Document('{self.name}')"
 
+    def __getstate__(self):
+        return self.name, self.path, self.text, self.vocab, tuple(self._sents)
 
+    def __setstate__(self, state):
+        self.name, self.path, self.text, self.vocab, sents = state
+        self._sents = SortedSet()
+        for sent in sents:
+            sent.doc = self
+            self._sents.add(sent)
+
+
+@total_ordering
 class Fragment:
     def __init__(self, start_char: int, end_char: int, doc: Document):
         self.start_char = start_char
@@ -62,6 +73,9 @@ class Fragment:
             return self.start_char == other.start_char and self.end_char == other.end_char and self.doc == other.doc
         return False
 
+    def __lt__(self, other) -> bool:
+        return self.start_char < other.start_char
+
     def __hash__(self):
         return hash((self.start_char, self.doc))
 
@@ -75,7 +89,7 @@ class Fragment:
 class Sentence(Fragment):
     def __init__(self, start_char: int, end_char: int, bow: Counter, doc: Document):
         super().__init__(start_char, end_char, doc)
-        self.words = SortedList(key=lambda word: word.start_char)
+        self.words = SortedList()
         self.bow = bow
         self.tf_isf_bow = {}
         self.common = False

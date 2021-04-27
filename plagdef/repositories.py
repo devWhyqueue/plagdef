@@ -6,6 +6,7 @@ from ast import literal_eval
 from configparser import ConfigParser
 from itertools import islice
 from pathlib import Path
+from pickle import dump, load, UnpicklingError
 from unicodedata import normalize
 
 import magic
@@ -21,7 +22,7 @@ log = logging.getLogger(__name__)
 class DocumentFileRepository:
     def __init__(self, dir_path: Path, lang: str, recursive=False, at_least_two=True):
         self.lang = lang
-        self._dir_path = dir_path
+        self.dir_path = dir_path
         self._recursive = recursive
         if not dir_path.is_dir():
             raise NotADirectoryError(f'The given path {dir_path} does not point to an existing directory!')
@@ -30,13 +31,13 @@ class DocumentFileRepository:
 
     def _list_files(self):
         if self._recursive:
-            return (file_path for file_path in self._dir_path.rglob('*') if file_path.is_file())
+            return (file_path for file_path in self.dir_path.rglob('*') if file_path.is_file())
         else:
-            return (file_path for file_path in self._dir_path.iterdir() if file_path.is_file())
+            return (file_path for file_path in self.dir_path.iterdir() if file_path.is_file())
 
     def list(self) -> set[Document]:
         files = list(self._list_files())
-        docs = thread_map(self._read_file, files, desc=f"Reading documents in '{self._dir_path}'",
+        docs = thread_map(self._read_file, files, desc=f"Reading documents in '{self.dir_path}'",
                           unit='doc', total=len(files), max_workers=os.cpu_count())
         return set(filter(None, docs))
 
@@ -88,6 +89,32 @@ class ConfigFileRepository:
             typed_config = [(key, literal_eval(val)) for key, val in parser.items(section)]
             config.update(dict(typed_config))
         return config
+
+
+class DocumentSerializer:
+    FILE_NAME = '_prep_docs.pdef'
+
+    def __init__(self, dir_path: Path):
+        if not dir_path.is_dir():
+            raise NotADirectoryError(f"The given path '{dir_path}' does not point to an existing directory!")
+        self.file_path = dir_path / DocumentSerializer.FILE_NAME
+
+    def serialize(self, docs: set[Document]):
+        existing_docs = self.deserialize()
+        docs.update(existing_docs)
+        with self.file_path.open('wb') as file:
+            dump(docs, file)
+
+    def deserialize(self) -> set[Document]:
+        if self.file_path.exists():
+            log.info('Found preprocessing file. Deserializing...')
+            try:
+                with self.file_path.open('rb') as file:
+                    return load(file)
+            except (UnpicklingError, EOFError):
+                log.warning(f"Could not deserialize preprocessing file, '{self.file_path.name}' seems to be corrupted.")
+                log.debug('Following error occurred:', exc_info=True)
+        return set()
 
 
 class NoDocumentFilePairFoundError(Exception):
