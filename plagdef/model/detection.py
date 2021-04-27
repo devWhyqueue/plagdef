@@ -33,10 +33,10 @@ class DocumentMatcher:
         self._preprocessor.preprocess(lang, docs, common_docs)
 
     def find_matches(self, docs: set[Document], archive_docs=None) -> dict[PlagiarismType, list[DocumentPairMatches]]:
-        doc_combs = list(combinations(docs, 2))
+        doc_combs = set(combinations(docs, 2))
         if archive_docs:
             doc_combs.update(product(docs, archive_docs))
-        return self._parallelized_search(doc_combs)
+        return self._parallelized_search(list(doc_combs))
 
     def _parallelized_search(self, doc_combs, threshold=4000):
         if len(doc_combs) > threshold:
