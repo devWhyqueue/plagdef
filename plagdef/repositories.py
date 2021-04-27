@@ -46,7 +46,7 @@ class DocumentFileRepository:
             with pdfplumber.open(file) as pdf:
                 text = ' '.join(filter(None, (page.extract_text() for page in pdf.pages)))
                 normalized_text = normalize('NFC', text)
-                return Document(file.stem, str(file), normalized_text)
+                return Document(file.stem, str(file.resolve()), normalized_text)
         else:
             try:
                 detect_enc = magic.Magic(mime_encoding=True)
@@ -54,7 +54,7 @@ class DocumentFileRepository:
                 enc_str = enc if enc != 'utf-8' else 'utf-8-sig'
                 text = file.read_text(encoding=enc_str)
                 normalized_text = normalize('NFC', text)
-                return Document(file.stem, str(file), normalized_text)
+                return Document(file.stem, str(file.resolve()), normalized_text)
             except (UnicodeDecodeError, LookupError, MagicException):
                 log.error(f"The file '{file.name}' has an unsupported encoding and cannot be read.")
                 log.debug('Following error occurred:', exc_info=True)

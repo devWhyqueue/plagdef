@@ -42,9 +42,7 @@ def cli(docdir: tuple[click.Path, bool], lang: str, common_docdir: [click.Path, 
     For instance if you would like to recursively search <DOCDIR> the correct command looks like this:
     `plagdef <DOCDIR> True`
     """
-    archive_doc_dir = (str(archive_docdir[0]), archive_docdir[1]) if archive_docdir else None
-    common_doc_dir = (str(common_docdir[0]), common_docdir[1]) if common_docdir else None
-    matches = find_matches(lang, (str(docdir[0]), docdir[1]), archive_doc_dir, common_doc_dir)
+    matches = find_matches(lang, docdir, archive_docdir, common_docdir)
     if matches:
         if xmldir:
             try:
@@ -74,10 +72,10 @@ def gui():
     sys.exit(app.exec_())
 
 
-def find_matches(lang: str, docdir: tuple[str, bool], archive_docdir: [str, bool], common_docdir: [str, bool]) \
+def find_matches(lang: str, docdir: tuple, archive_docdir: tuple, common_docdir: tuple) \
     -> dict[PlagiarismType, list[DocumentPairMatches]]:
     try:
-        doc_repo = DocumentFileRepository(Path(str(docdir[0])), lang, docdir[1])
+        doc_repo = DocumentFileRepository(Path(str(docdir[0])), lang, recursive=docdir[1])
         archive_repo = common_repo = None
         if archive_docdir:
             archive_repo = DocumentFileRepository(
