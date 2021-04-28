@@ -3,20 +3,26 @@ from __future__ import annotations
 import logging
 import os
 from ast import literal_eval
+from collections import Counter
 from configparser import ConfigParser
+from copy import deepcopy
 from itertools import islice
+from json import JSONDecodeError
 from pathlib import Path
 from pickle import dump, load, UnpicklingError
 from unicodedata import normalize
 
+import jsonpickle
 import magic
 import pdfplumber
 from magic import MagicException
+from sortedcontainers import SortedSet
 from tqdm.contrib.concurrent import thread_map
 
-from plagdef.model.models import Document
+from plagdef.model import models
 
 log = logging.getLogger(__name__)
+jsonpickle.set_encoder_options('json', indent=4)
 
 
 class DocumentFileRepository:
@@ -35,7 +41,7 @@ class DocumentFileRepository:
         else:
             return (file_path for file_path in self.dir_path.iterdir() if file_path.is_file())
 
-    def list(self) -> set[Document]:
+    def list(self) -> set[models.Document]:
         files = list(self._list_files())
         docs = thread_map(self._read_file, files, desc=f"Reading documents in '{self.dir_path}'",
                           unit='doc', total=len(files), max_workers=os.cpu_count())
@@ -46,7 +52,7 @@ class DocumentFileRepository:
             with pdfplumber.open(file) as pdf:
                 text = ' '.join(filter(None, (page.extract_text() for page in pdf.pages)))
                 normalized_text = normalize('NFC', text)
-                return Document(file.stem, str(file.resolve()), normalized_text)
+                return models.Document(file.stem, str(file.resolve()), normalized_text)
         else:
             try:
                 detect_enc = magic.Magic(mime_encoding=True)
@@ -54,23 +60,40 @@ class DocumentFileRepository:
                 enc_str = enc if enc != 'utf-8' else 'utf-8-sig'
                 text = file.read_text(encoding=enc_str)
                 normalized_text = normalize('NFC', text)
-                return Document(file.stem, str(file.resolve()), normalized_text)
+                return models.Document(file.stem, str(file.resolve()), normalized_text)
             except (UnicodeDecodeError, LookupError, MagicException):
                 log.error(f"The file '{file.name}' has an unsupported encoding and cannot be read.")
                 log.debug('Following error occurred:', exc_info=True)
 
 
-class DocumentPairReportFileRepository:
+class DocumentPairMatchesJsonRepository:
     def __init__(self, out_path: Path):
         if not out_path.is_dir():
             raise NotADirectoryError(f"The given path '{out_path}' does not point to an existing directory!")
         self._out_path = out_path
 
-    def add(self, doc_pair_report):
-        file_name = Path(f'{doc_pair_report.doc1.name}-{doc_pair_report.doc2.name}.{doc_pair_report.format}')
+    def save(self, doc_pair_matches):
+        clone = deepcopy(doc_pair_matches)
+        clone.doc1.vocab, clone.doc2.vocab = Counter(), Counter()
+        clone.doc1._sents, clone.doc2._sents = SortedSet(), SortedSet()
+        file_name = Path(f'{clone.doc1.name}-{clone.doc2.name}.json')
         file_path = self._out_path / file_name
         with file_path.open('w', encoding='utf-8') as f:
-            f.write(doc_pair_report.content)
+            text = jsonpickle.encode(clone)
+            f.write(text)
+
+    def list(self) -> set[models.DocumentPairMatches]:
+        doc_pair_matches_list = set()
+        for file in self._out_path.iterdir():
+            if file.is_file() and file.suffix == '.json':
+                try:
+                    text = file.read_text(encoding='utf-8')
+                    doc_pair_matches = jsonpickle.decode(text)
+                    doc_pair_matches_list.add(doc_pair_matches)
+                except (UnicodeDecodeError, JSONDecodeError):
+                    log.error(f"The file '{file.name}' could not be read.")
+                    log.debug('Following error occurred:', exc_info=True)
+        return doc_pair_matches_list
 
 
 class ConfigFileRepository:
@@ -91,21 +114,21 @@ class ConfigFileRepository:
         return config
 
 
-class DocumentSerializer:
+class DocumentPickleRepository:
     FILE_NAME = '_prep_docs.pdef'
 
     def __init__(self, dir_path: Path):
         if not dir_path.is_dir():
             raise NotADirectoryError(f"The given path '{dir_path}' does not point to an existing directory!")
-        self.file_path = dir_path / DocumentSerializer.FILE_NAME
+        self.file_path = dir_path / DocumentPickleRepository.FILE_NAME
 
-    def serialize(self, docs: set[Document]):
-        existing_docs = self.deserialize()
+    def save(self, docs: set[models.Document]):
+        existing_docs = self.list()
         docs.update(existing_docs)
         with self.file_path.open('wb') as file:
             dump(docs, file)
 
-    def deserialize(self) -> set[Document]:
+    def list(self) -> set[models.Document]:
         if self.file_path.exists():
             log.info('Found preprocessing file. Deserializing...')
             try:

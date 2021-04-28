@@ -4,30 +4,30 @@ from pickle import dump, load
 import pytest
 
 from plagdef.model.models import Document, Fragment, Sentence
-from plagdef.repositories import DocumentSerializer
+from plagdef.repositories import DocumentPickleRepository
 
 
 def test_serialize_docs(tmp_path):
     docs = {Document('doc1', 'path/to/doc1', 'Some text.'), Document('doc2', 'path/to/doc2', 'Different text.')}
-    serializer = DocumentSerializer(tmp_path)
-    serializer.serialize(docs)
-    deserialized_docs = serializer.deserialize()
+    serializer = DocumentPickleRepository(tmp_path)
+    serializer.save(docs)
+    deserialized_docs = serializer.list()
     assert deserialized_docs == docs
 
 
 def test_serialize_docs_if_file_exists(tmp_path):
     docs = {Document('doc1', 'path/to/doc1', 'Some text.'), Document('doc2', 'path/to/doc2', 'Different text.')}
-    serializer = DocumentSerializer(tmp_path)
-    serializer.serialize(docs)
+    serializer = DocumentPickleRepository(tmp_path)
+    serializer.save(docs)
     doc3 = Document('doc3', 'path/to/doc3', 'Another document.')
-    serializer.serialize({doc3})
-    deserialized_docs = serializer.deserialize()
+    serializer.save({doc3})
+    deserialized_docs = serializer.list()
     assert deserialized_docs == {*docs, doc3}
 
 
 def test_deserialize_if_no_file_exists(tmp_path):
-    serializer = DocumentSerializer(tmp_path)
-    deserialized_docs = serializer.deserialize()
+    serializer = DocumentPickleRepository(tmp_path)
+    deserialized_docs = serializer.list()
     assert deserialized_docs == set()
 
 
@@ -36,23 +36,23 @@ def test_init_with_file_fails(tmp_path):
     with file_path.open('w', encoding='utf-8') as f:
         f.write('Content.')
     with pytest.raises(NotADirectoryError):
-        DocumentSerializer(file_path)
+        DocumentPickleRepository(file_path)
 
 
 def test_file_exists_with_corrupt_content(tmp_path):
-    file_path = tmp_path / DocumentSerializer.FILE_NAME
+    file_path = tmp_path / DocumentPickleRepository.FILE_NAME
     with file_path.open('w', encoding='utf-8') as f:
         f.write('Invalid content.')
-    ser = DocumentSerializer(tmp_path)
-    docs = ser.deserialize()
+    ser = DocumentPickleRepository(tmp_path)
+    docs = ser.list()
     assert docs == set()
 
 
 def test_file_exists_with_no_content(tmp_path):
-    file_path = tmp_path / DocumentSerializer.FILE_NAME
+    file_path = tmp_path / DocumentPickleRepository.FILE_NAME
     file_path.touch()
-    ser = DocumentSerializer(tmp_path)
-    docs = ser.deserialize()
+    ser = DocumentPickleRepository(tmp_path)
+    docs = ser.list()
     assert docs == set()
 
 

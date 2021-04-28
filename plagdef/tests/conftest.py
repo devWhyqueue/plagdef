@@ -1,7 +1,7 @@
 import stanza
 from pytest import fixture
 
-from plagdef.model.models import DocumentPairMatches, Match, Fragment, PlagiarismType
+from plagdef.model.models import DocumentPairMatches, Match, Fragment, MatchType
 from plagdef.model.preprocessing import Preprocessor, Document
 from plagdef.model.seeding import SeedFinder
 
@@ -58,11 +58,11 @@ def preprocessed_docs(preprocessor):
 def matches():
     doc1, doc2 = Document('doc1', 'path/to/doc1', 'This is a document.\n'), \
                  Document('doc2', 'path/to/doc2', 'This also is a document.\n')
-    doc1_doc2_matches = DocumentPairMatches(PlagiarismType.VERBATIM)
-    doc1_doc2_matches.add(Match(Fragment(0, 5, doc1), Fragment(0, 5, doc2)))
-    doc1_doc2_matches.add(Match(Fragment(5, 10, doc1), Fragment(5, 10, doc2)))
+    doc1_doc2_matches = DocumentPairMatches(doc1, doc2)
+    doc1_doc2_matches.add(Match(MatchType.VERBATIM, Fragment(0, 5, doc1), Fragment(0, 5, doc2)))
+    doc1_doc2_matches.add(Match(MatchType.INTELLIGENT, Fragment(5, 10, doc1), Fragment(5, 10, doc2)))
     doc3, doc4 = Document('doc3', 'path/to/doc3', 'This is another document.\n'), \
                  Document('doc4', 'path/to/doc4', 'This also is another document.\n')
-    doc3_doc4_matches = DocumentPairMatches(PlagiarismType.VERBATIM)
-    doc3_doc4_matches.add(Match(Fragment(2, 6, doc3), Fragment(2, 8, doc4)))
-    return {PlagiarismType.VERBATIM: [doc1_doc2_matches, doc3_doc4_matches]}
+    doc3_doc4_matches = DocumentPairMatches(doc3, doc4)
+    doc3_doc4_matches.add(Match(MatchType.SUMMARY, Fragment(2, 6, doc3), Fragment(2, 8, doc4)))
+    return {doc1_doc2_matches, doc3_doc4_matches}

@@ -1,4 +1,4 @@
-from plagdef.model.reporting import generate_text_report, generate_xml_reports
+from plagdef.model.reporting import generate_text_report
 
 
 def test_generate_text_report_with_no_matches_returns_msg():
@@ -25,16 +25,3 @@ def test_generate_text_report_contains_matches(matches):
     assert "Pair('path/to/doc3', 'path/to/doc4'):\n" in report or "Pair('path/to/doc4', 'path/to/doc3'):\n" in report
     assert 'Match(Fragment(2, 6), Fragment(2, 8))\n' in report \
            or 'Match(Fragment(2, 8), Fragment(2, 6))\n' in report
-
-
-def test_generate_xml_reports_with_no_matches_produces_no_report():
-    reports = generate_xml_reports({})
-    assert len(reports) == 0
-
-
-def test_generate_xml_reports(matches):
-    reports = generate_xml_reports(matches)
-    assert len(reports) == 2
-    assert reports[0].format, reports[1].format == 'xml'
-    assert reports[0].content.startswith('<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n') \
-           and reports[1].content.startswith('<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n')

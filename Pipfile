@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 click = "==8.0.0rc1"
-lxml = "~=4.6"
+jsonpickle = "~=2.0"
 networkx = "~=2.5"
 numpy = "~=1.20"
 pdfplumber = "~=0.5"

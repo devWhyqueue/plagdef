@@ -4,7 +4,6 @@ import os
 import signal
 import sys
 import traceback
-from collections import Callable
 
 from PySide6.QtCore import QRunnable, Slot, QObject, Signal, QThreadPool
 from PySide6.QtWidgets import QApplication
@@ -12,36 +11,35 @@ from click import UsageError
 
 # noinspection PyUnresolvedReferences
 import plagdef.gui.resources
+from plagdef.app import find_matches
 from plagdef.gui.controllers import HomeController, LoadingController, ErrorController, NoResultsController, \
     ResultController
 from plagdef.gui.model import DocumentPairMatches
 from plagdef.gui.views import MainWindow, ResultView, NoResultsView, ErrorView
-from plagdef.model.models import PlagiarismType
 
 app = None
 
 
 class MyQtApp(QApplication):
-    def __init__(self, find_matches: Callable):
+    def __init__(self):
         super().__init__()
         self.aboutToQuit.connect(lambda: os.kill(os.getpid(), signal.SIGINT))
         self._ctrls = [HomeController(), LoadingController(), ErrorController(), NoResultsController(),
                        ResultController()]
         self._views = [ctrl.view for ctrl in self._ctrls]
         self.window = MainWindow(self._views)
-        self._find_matches = find_matches
         global app
         app = self
 
     def find_matches(self, lang: str, docdir: tuple[str, bool], archive_docdir: [str, bool],
                      common_docdir: [str, bool]):
-        worker = Worker(self._find_matches, lang, docdir, archive_docdir, common_docdir)
+        worker = Worker(find_matches, lang, docdir, archive_docdir, common_docdir)
         worker.signals.result.connect(self._on_success)
         worker.signals.error.connect(self._on_error)
         pool = QThreadPool.globalInstance()
         pool.start(worker)
 
-    def _on_success(self, matches: dict[PlagiarismType, list[DocumentPairMatches]]):
+    def _on_success(self, matches: list[DocumentPairMatches]):
         if matches:
             self.window.switch_to(ResultView, matches)
         else:

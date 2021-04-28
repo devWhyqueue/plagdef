@@ -1,5 +1,5 @@
 from plagdef.model.detection import DocumentMatcher, _resolve_match_overlaps
-from plagdef.model.models import Document, Cluster, Seed, PlagiarismType
+from plagdef.model.models import Document, Cluster, Seed, MatchType
 
 
 def test_common_words(preprocessor, config):
@@ -92,7 +92,7 @@ def test_find_matches_with_verbatim_case(config):
     doc_matcher = DocumentMatcher(config)
     doc_matcher.preprocess('eng', [doc1, doc2])
     doc_pair_matches = doc_matcher.find_matches({doc1, doc2})
-    assert len(doc_pair_matches[PlagiarismType.VERBATIM].pop().list()) == 2
+    assert len(doc_pair_matches.pop().list(MatchType.VERBATIM)) == 2
 
 
 def test_find_matches_with_verbatim_case_removes_identical_intelligent_case(config):
@@ -103,7 +103,7 @@ def test_find_matches_with_verbatim_case_removes_identical_intelligent_case(conf
     doc_matcher.preprocess('eng', [doc1, doc2])
     doc_pair_matches = doc_matcher.find_matches({doc1, doc2})
     assert len(doc_pair_matches) == 1
-    assert len(doc_pair_matches[PlagiarismType.VERBATIM].pop().list()) == 1
+    assert len(doc_pair_matches.pop().list(MatchType.VERBATIM)) == 1
 
 
 def test_find_matches_with_intelligent_case(config):
@@ -118,7 +118,7 @@ def test_find_matches_with_intelligent_case(config):
     doc_matcher = DocumentMatcher(config)
     doc_matcher.preprocess('eng', [doc1, doc2])
     doc_pair_matches = doc_matcher.find_matches({doc1, doc2})
-    assert len(doc_pair_matches[PlagiarismType.INTELLIGENT].pop().list()) == 2
+    assert len(doc_pair_matches.pop().list(MatchType.INTELLIGENT)) == 2
 
 
 def test_find_matches_with_summary_case(config):
@@ -151,8 +151,8 @@ def test_find_matches_with_summary_case(config):
     doc_matcher = DocumentMatcher(config)
     doc_matcher.preprocess('eng', [doc1, doc2])
     doc_pair_matches = doc_matcher.find_matches({doc1, doc2})
-    assert len(doc_pair_matches[PlagiarismType.INTELLIGENT].pop().list()) == 1
-    assert len(doc_pair_matches[PlagiarismType.SUMMARY].pop().list()) == 1
+    assert len(doc_pair_matches[0].list(MatchType.INTELLIGENT)) == 1
+    assert len(doc_pair_matches[0].list(MatchType.SUMMARY)) == 1
 
 
 def test_find_matches_without_documents_returns_empty_list(config):
@@ -185,4 +185,4 @@ def test_find_matches_with_archive_docs(config):
     doc_matcher.preprocess('eng', docs)
     doc_matcher.preprocess('eng', archive_docs)
     matches = doc_matcher.find_matches(set(docs), archive_docs=archive_docs)
-    assert len([m for m_list in matches.values() for m in m_list]) == 4
+    assert len(matches) == 4

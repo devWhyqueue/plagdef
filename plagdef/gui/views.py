@@ -10,7 +10,7 @@ from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QButtonGroup, QMainWindow, QFileDialog, QDialog
 
 from plagdef.gui.model import ResultsTableModel, DocumentPairMatches
-from plagdef.model.models import PlagiarismType
+from plagdef.model.models import MatchType
 from plagdef.model.util import version, truncate
 
 UI_FILES = {
@@ -21,6 +21,7 @@ UI_FILES = {
     'no_results_widget': pkg_resources.resource_filename(__name__, 'ui/no_results_widget.ui'),
     'results_widget': pkg_resources.resource_filename(__name__, 'ui/results_widget.ui'),
     'matches_dialog': pkg_resources.resource_filename(__name__, 'ui/matches_dialog.ui'),
+    'msg_dialog': pkg_resources.resource_filename(__name__, 'ui/msg_dialog.ui'),
 }
 
 
@@ -71,7 +72,7 @@ class HomeView(View):
          for button in (self.widget.ger_button, self.widget.eng_button, self.widget.archive_dir_button,
                         self.widget.docs_dir_button, self.widget.common_dir_button, self.widget.detect_button,
                         self.widget.archive_rmdir_button, self.widget.docs_rmdir_button,
-                        self.widget.common_rmdir_button)]
+                        self.widget.common_rmdir_button, self.widget.open_button)]
 
     @property
     def archive_rec(self):
@@ -89,8 +90,10 @@ class HomeView(View):
     def lang(self):
         return 'ger' if self.widget.lang_button_group.checkedButton() == self.widget.ger_button else 'eng'
 
-    def register_for_signals(self, select_archive_dir=None, rm_archive_dir=None, select_docs_dir=None,
-                             rm_docs_dir=None, select_common_dir=None, rm_common_dir=None, detect=None):
+    def register_for_signals(self, open_report_dir=None, select_archive_dir=None, rm_archive_dir=None,
+                             select_docs_dir=None, rm_docs_dir=None, select_common_dir=None, rm_common_dir=None,
+                             detect=None):
+        self.widget.open_button.clicked.connect(lambda: open_report_dir())
         self.widget.archive_dir_button.clicked.connect(lambda: select_archive_dir())
         self.widget.archive_rmdir_button.clicked.connect(lambda: rm_archive_dir())
         self.widget.docs_dir_button.clicked.connect(lambda: select_docs_dir())
@@ -145,6 +148,7 @@ class HomeView(View):
 class FileDialog(QFileDialog):
     def __init__(self):
         super().__init__()
+        self.setDirectory(str(Path.home().absolute()))
         self.setFileMode(QFileDialog.Directory)
         self.selected_dir = None
 
@@ -204,40 +208,34 @@ class ResultView(View):
     def __init__(self):
         self.widget = _load_ui_file(Path(UI_FILES['results_widget']))
         self._configure()
-        self._doc_pair_matches = None
+        self.doc_pair_matches = None
 
     def _configure(self):
+        self.widget.export_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.widget.again_button_res.setCursor(QCursor(Qt.PointingHandCursor))
-        self.widget.doc_pair_tabs.currentChanged.connect(lambda idx: self._update_label(idx))
-
-    def _update_label(self, idx):
-        self.widget.doc_pairs_label.setText(f"Found {len(self._doc_pair_matches[PlagiarismType(idx)])} "
-                                            f"suspicious document pair"
-                                            f"{'s' if len(self._doc_pair_matches[PlagiarismType(idx)]) > 1 else ''}.")
 
     def on_init(self, data=None):
-        self._doc_pair_matches = data
-        self._set_table_model(self.widget.verbatim_results, self._doc_pair_matches[PlagiarismType.VERBATIM])
-        self._set_table_model(self.widget.intelligent_results, self._doc_pair_matches[PlagiarismType.INTELLIGENT])
-        self._set_table_model(self.widget.summary_results, self._doc_pair_matches[PlagiarismType.SUMMARY])
-        self._update_label(0)
+        self.doc_pair_matches = data
+        self.widget.doc_pairs_label.setText(f"Found {len(data) if len(data) else 'no'} suspicious document pair"
+                                            f"{'s' if len(data) > 1 else ''}.")
+        self._set_table_model(self.widget.verbatim_results, MatchType.VERBATIM, data)
+        self._set_table_model(self.widget.intelligent_results, MatchType.INTELLIGENT, data)
+        self._set_table_model(self.widget.summary_results, MatchType.SUMMARY, data)
         self._hide_empty_tables()
 
-    def _set_table_model(self, table, pairs):
-        table.setModel(ResultsTableModel(pairs))
+    def _set_table_model(self, table, match_type, pairs):
+        table.setModel(ResultsTableModel(match_type, pairs))
         table.resizeRowsToContents()
         table.resizeColumnsToContents()
         table.parentWidget().adjustSize()
 
     def _hide_empty_tables(self):
-        self.widget.doc_pair_tabs.setTabVisible(0, False) \
-            if not len(self._doc_pair_matches[PlagiarismType.VERBATIM]) else None
-        self.widget.doc_pair_tabs.setTabVisible(1, False) \
-            if not len(self._doc_pair_matches[PlagiarismType.INTELLIGENT]) else None
-        self.widget.doc_pair_tabs.setTabVisible(2, False) \
-            if not len(self._doc_pair_matches[PlagiarismType.SUMMARY]) else None
+        self.widget.doc_pair_tabs.setTabVisible(0, bool(self.widget.verbatim_results.model().rowCount()))
+        self.widget.doc_pair_tabs.setTabVisible(1, bool(self.widget.intelligent_results.model().rowCount()))
+        self.widget.doc_pair_tabs.setTabVisible(2, bool(self.widget.summary_results.model().rowCount()))
 
-    def register_for_signals(self, again=None, select_pair=None):
+    def register_for_signals(self, export=None, again=None, select_pair=None):
+        self.widget.export_button.clicked.connect(lambda: export())
         self.widget.again_button_res.clicked.connect(lambda: again())
         self.widget.verbatim_results.doubleClicked.connect(
             lambda index: select_pair(index.model().doc_pair_matches(index)))
@@ -293,6 +291,13 @@ class MatchesDialog:
     def next_match(self):
         self._selected += 1
         self._show_match()
+
+
+class MessageDialog:
+    def __init__(self, text):
+        self.widget = _load_ui_file(Path(UI_FILES['msg_dialog']))
+        self.widget.msg_label.setText(text)
+        self.widget.exec_()
 
 
 def _load_ui_file(path: Path) -> QMainWindow:

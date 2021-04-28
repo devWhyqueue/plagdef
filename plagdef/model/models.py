@@ -240,17 +240,18 @@ class RatedCluster:
 
 
 class Match:
-    def __init__(self, frag1: Fragment, frag2: Fragment):
+    def __init__(self, match_type: MatchType, frag1: Fragment, frag2: Fragment):
+        self.type = match_type
         if frag1.doc == frag2.doc:
             raise SameDocumentError(f"Cannot match the document {frag1.doc} with itself. Please check whether your "
                                     f"archive and document files overlap.")
         self.frag_pair = frozenset({frag1, frag2})
 
     @classmethod
-    def from_cluster(cls, cluster: Cluster) -> Match:
+    def from_cluster(cls, match_type: MatchType, cluster: Cluster) -> Match:
         text_doc1_start, text_doc1_end = cluster.sents_doc1[0].start_char, cluster.sents_doc1[-1].end_char
         text_doc2_start, text_doc2_end = cluster.sents_doc2[0].start_char, cluster.sents_doc2[-1].end_char
-        return Match(Fragment(text_doc1_start, text_doc1_end, cluster.doc1),
+        return Match(match_type, Fragment(text_doc1_start, text_doc1_end, cluster.doc1),
                      Fragment(text_doc2_start, text_doc2_end, cluster.doc2))
 
     def overlaps_with(self, other: Match) -> bool:
@@ -270,7 +271,7 @@ class Match:
         return hash(self.frag_pair)
 
     def __len__(self):
-        return sum([len(frag) for frag in self.frag_pair])
+        return sum(len(frag) for frag in self.frag_pair)
 
     def __repr__(self):
         if len(self.frag_pair) < 2:
@@ -280,36 +281,43 @@ class Match:
 
 
 class DocumentPairMatches:
-    def __init__(self, plag_type: PlagiarismType, matches=None):
-        self.plag_type = plag_type
-        self.doc_pair = set()
-        self._matches = set()
+    def __init__(self, doc1: Document, doc2: Document, matches: Iterable = None):
+        self.doc1 = doc1
+        self.doc2 = doc2
+        self._matches = defaultdict(set)
         if matches:
-            [self.add(match) for match in matches]
+            self.update(matches)
+
+    def update(self, matches: Iterable):
+        [self.add(match) for match in matches]
 
     def add(self, match: Match):
         frag1, frag2 = match.frag_pair
-        if len(self):
-            if not self.doc_pair == {frag1.doc, frag2.doc}:
-                raise DifferentDocumentPairError(f'Only matches of document pair {self.doc_pair} can be added.')
-        else:
-            self.doc_pair.update({frag1.doc, frag2.doc})
-        self._matches.add(match)
+        if not {self.doc1, self.doc2} == {frag1.doc, frag2.doc}:
+            raise DifferentDocumentPairError(f'Only matches of document pair ({self.doc1}, {self.doc2})'
+                                             f'can be added.')
+        self._matches[str(match.type)].add(match)
 
-    def list(self) -> set[Match]:
-        return self._matches
+    def list(self, match_type: MatchType) -> set[Match]:
+        if str(match_type) in self._matches:
+            return self._matches[str(match_type)]
+        return set()
 
     def __len__(self):
-        return len(self._matches)
+        return sum(len(m) for m in self._matches.values())
 
     def __repr__(self):
-        if len(self.doc_pair) < 2:
-            return 'DocPairMatches()'
-        doc1, doc2 = self.doc_pair
-        return f'DocPairMatches({doc1}, {doc2}, {len(self)})'
+        return f'DocPairMatches({self.doc1}, {self.doc2}, {len(self)})'
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.doc1 == other.doc1 and self.doc2 == other.doc2
+
+    def __hash__(self):
+        return hash((self.doc1, self.doc2))
 
 
-class PlagiarismType(Enum):
+class MatchType(Enum):
     VERBATIM = 0
     INTELLIGENT = 1
     SUMMARY = 2

@@ -10,10 +10,10 @@ import pkg_resources
 from click import UsageError
 
 from plagdef import services
-from plagdef.model.models import PlagiarismType, DocumentPairMatches
+from plagdef.model.models import DocumentPairMatches
 from plagdef.model.reporting import generate_text_report
 from plagdef.repositories import ConfigFileRepository, DocumentFileRepository, NoDocumentFilePairFoundError, \
-    DocumentPairReportFileRepository
+    DocumentPairMatchesJsonRepository
 
 # Load configs
 LOGGING_CONFIG = pkg_resources.resource_filename(__name__, str(Path('config/logging.ini')))
@@ -31,9 +31,9 @@ config_repo = ConfigFileRepository(Path(ALG_CONFIG_PATH))
                    'the documents in <DOCDIR>.')
 @click.option('common_docdir', '--common-docs', '-c', type=(click.Path(exists=True), bool),
               help='Directory containing documents with sentences which should be excluded from detection.')
-@click.option('xmldir', '--xml', '-x', type=click.Path(), help='Output directory for XML reports.')
+@click.option('jsondir', '--json', '-j', type=click.Path(), help='Output directory for JSON reports.')
 def cli(docdir: tuple[click.Path, bool], lang: str, common_docdir: [click.Path, bool],
-        archive_docdir: [click.Path, bool], xmldir: click.Path):
+        archive_docdir: [click.Path, bool], jsondir: click.Path):
     """
     \b
     PlagDef supports plagiarism detection for student assignments.
@@ -44,11 +44,10 @@ def cli(docdir: tuple[click.Path, bool], lang: str, common_docdir: [click.Path, 
     """
     matches = find_matches(lang, docdir, archive_docdir, common_docdir)
     if matches:
-        if xmldir:
+        if jsondir:
             try:
-                doc_pair_report_repo = DocumentPairReportFileRepository(Path(str(xmldir)))
-                services.write_xml_reports(matches, doc_pair_report_repo)
-                click.echo(f'Successfully wrote XML reports to {xmldir}.')
+                write_doc_pair_matches_to_json(matches, jsondir)
+                click.echo(f'Successfully wrote JSON reports to {jsondir}.')
             except NotADirectoryError as e:
                 raise UsageError(str(e)) from e
         else:
@@ -67,13 +66,12 @@ def gui():
     """
     from plagdef.gui.main import MyQtApp
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-    app = MyQtApp(find_matches)
+    app = MyQtApp()
     app.window.show()
     sys.exit(app.exec_())
 
 
-def find_matches(lang: str, docdir: tuple, archive_docdir: tuple, common_docdir: tuple) \
-    -> dict[PlagiarismType, list[DocumentPairMatches]]:
+def find_matches(lang: str, docdir: tuple, archive_docdir: tuple, common_docdir: tuple) -> list[DocumentPairMatches]:
     try:
         doc_repo = DocumentFileRepository(Path(str(docdir[0])), lang, recursive=docdir[1])
         archive_repo = common_repo = None
@@ -86,6 +84,16 @@ def find_matches(lang: str, docdir: tuple, archive_docdir: tuple, common_docdir:
         return services.find_matches(doc_repo, config_repo, archive_repo=archive_repo, common_doc_repo=common_repo)
     except (NotADirectoryError, NoDocumentFilePairFoundError) as e:
         raise UsageError(str(e)) from e
+
+
+def write_doc_pair_matches_to_json(matches, jsondir):
+    repo = DocumentPairMatchesJsonRepository(Path(str(jsondir)))
+    services.write_json_reports(matches, repo)
+
+
+def read_doc_pair_matches_from_json(jsondir) -> set[DocumentPairMatches]:
+    repo = DocumentPairMatchesJsonRepository(Path(str(jsondir)))
+    return repo.list()
 
 
 if __name__ == "__main__":

@@ -5,14 +5,12 @@ from configparser import ParsingError
 from click import UsageError
 
 from plagdef.model.detection import DocumentMatcher
-from plagdef.model.models import DocumentPairMatches, PlagiarismType, Document
+from plagdef.model.models import DocumentPairMatches, Document
 from plagdef.model.preprocessing import UnsupportedLanguageError
-from plagdef.model.reporting import generate_xml_reports
-from plagdef.repositories import UnsupportedFileFormatError, DocumentSerializer
+from plagdef.repositories import UnsupportedFileFormatError, DocumentPickleRepository
 
 
-def find_matches(doc_repo, config_repo, archive_repo=None, common_doc_repo=None) \
-    -> dict[PlagiarismType, list[DocumentPairMatches]]:
+def find_matches(doc_repo, config_repo, archive_repo=None, common_doc_repo=None) -> list[DocumentPairMatches]:
     try:
         config = config_repo.get()
         doc_matcher = DocumentMatcher(config)
@@ -28,16 +26,14 @@ def find_matches(doc_repo, config_repo, archive_repo=None, common_doc_repo=None)
 
 
 def _preprocess_docs(doc_matcher, doc_repo, common_docs=None) -> set[Document]:
-    doc_ser = DocumentSerializer(doc_repo.dir_path)
-    prep_docs = doc_ser.deserialize()
+    doc_ser = DocumentPickleRepository(doc_repo.dir_path)
+    prep_docs = doc_ser.list()
     unprep_docs = doc_repo.list().difference(prep_docs)
     doc_matcher.preprocess(doc_repo.lang, unprep_docs, common_docs)
     docs = prep_docs.union(unprep_docs)
-    doc_ser.serialize(docs)
+    doc_ser.save(docs)
     return docs
 
 
-def write_xml_reports(matches: dict[PlagiarismType, list[DocumentPairMatches]], doc_pair_report_repo):
-    doc_pair_reports = generate_xml_reports(matches)
-    for report in doc_pair_reports:
-        doc_pair_report_repo.add(report)
+def write_json_reports(matches: list[DocumentPairMatches], repo):
+    [repo.save(m) for m in matches]

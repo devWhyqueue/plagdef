@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+    <class>Dialog</class>
+    <widget class="QDialog" name="Dialog">
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>280</width>
+                <height>118</height>
+            </rect>
+        </property>
+        <property name="windowTitle">
+            <string>PlagDef</string>
+        </property>
+        <property name="windowIcon">
+            <iconset resource="../res/resources.qrc">
+                <normaloff>:/icon.ico</normaloff>:/icon.ico
+            </iconset>
+        </property>
+        <property name="styleSheet">
+            <string notr="true">background-color: rgb(77, 80, 87);</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+            <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+                <widget class="QLabel" name="msg_label">
+                    <property name="styleSheet">
+                        <string notr="true">color: rgb(255, 255, 255);
+                            font-size: 12pt;
+                        </string>
+                    </property>
+                    <property name="text">
+                        <string>{This is a message.}</string>
+                    </property>
+                </widget>
+            </item>
+            <item alignment="Qt::AlignHCenter">
+                <widget class="QDialogButtonBox" name="ok_button_box">
+                    <property name="minimumSize">
+                        <size>
+                            <width>75</width>
+                            <height>25</height>
+                        </size>
+                    </property>
+                    <property name="maximumSize">
+                        <size>
+                            <width>75</width>
+                            <height>25</height>
+                        </size>
+                    </property>
+                    <property name="styleSheet">
+                        <string notr="true">color: rgb(255, 255, 255);</string>
+                    </property>
+                    <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="standardButtons">
+                        <set>QDialogButtonBox::Ok</set>
+                    </property>
+                </widget>
+            </item>
+        </layout>
+    </widget>
+    <resources>
+        <include location="../res/resources.qrc"/>
+    </resources>
+    <connections>
+        <connection>
+            <sender>ok_button_box</sender>
+            <signal>accepted()</signal>
+            <receiver>Dialog</receiver>
+            <slot>accept()</slot>
+            <hints>
+                <hint type="sourcelabel">
+                    <x>248</x>
+                    <y>254</y>
+                </hint>
+                <hint type="destinationlabel">
+                    <x>157</x>
+                    <y>274</y>
+                </hint>
+            </hints>
+        </connection>
+        <connection>
+            <sender>ok_button_box</sender>
+            <signal>rejected()</signal>
+            <receiver>Dialog</receiver>
+            <slot>reject()</slot>
+            <hints>
+                <hint type="sourcelabel">
+                    <x>316</x>
+                    <y>260</y>
+                </hint>
+                <hint type="destinationlabel">
+                    <x>286</x>
+                    <y>274</y>
+                </hint>
+            </hints>
+        </connection>
+    </connections>
+</ui>

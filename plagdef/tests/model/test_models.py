@@ -5,7 +5,7 @@ import pytest
 
 from plagdef.model.models import Document, Sentence, Cluster, Fragment, Word, RatedCluster, Match, \
     DocumentPairMatches, \
-    DifferentDocumentPairError, SameDocumentError, PlagiarismType
+    DifferentDocumentPairError, SameDocumentError, MatchType
 from plagdef.tests.model.test_extension import _create_seeds
 
 
@@ -323,25 +323,25 @@ def test_rated_cluster_equality_with_high_quality():
 def test_match_init_with_fragments_of_same_doc_fails():
     doc = Document('doc', 'path/to/doc', '')
     with pytest.raises(SameDocumentError):
-        Match(Fragment(0, 7, doc), Fragment(13, 15, doc))
+        Match(MatchType.VERBATIM, Fragment(0, 7, doc), Fragment(13, 15, doc))
 
 
 def test_match_from_cluster():
     cluster = Cluster(_create_seeds([(0, 4), (3, 2), (6, 0)]))
-    match = Match.from_cluster(cluster)
-    assert match == Match(Fragment(0, 7, cluster.doc1), Fragment(0, 5, cluster.doc2))
+    match = Match.from_cluster(MatchType.VERBATIM, cluster)
+    assert match == Match(MatchType.VERBATIM, Fragment(0, 7, cluster.doc1), Fragment(0, 5, cluster.doc2))
 
 
 def test_match_overlaps_with():
     doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
-    match1 = Match(Fragment(0, 7, doc1), Fragment(13, 15, doc2))
-    match2 = Match(Fragment(10, 15, doc2), Fragment(6, 9, doc1))
+    match1 = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(13, 15, doc2))
+    match2 = Match(MatchType.VERBATIM, Fragment(10, 15, doc2), Fragment(6, 9, doc1))
     assert match1.overlaps_with(match2) and match2.overlaps_with(match1)
 
 
 def test_match_frag_from_doc():
     doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
-    match = Match(Fragment(0, 7, doc1), Fragment(13, 15, doc2))
+    match = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(13, 15, doc2))
     frag1, frag2 = match.frag_from_doc(doc1), match.frag_from_doc(doc2)
     assert frag1.doc == doc1
     assert frag2.doc == doc2
@@ -350,85 +350,103 @@ def test_match_frag_from_doc():
 def test_match_frag_from_doc_with_other_doc():
     doc1, doc2, doc3 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', ''), \
                        Document('doc3', 'path/to/doc3', '')
-    match = Match(Fragment(0, 7, doc1), Fragment(13, 15, doc2))
+    match = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(13, 15, doc2))
     frag = match.frag_from_doc(doc3)
     assert frag is None
 
 
 def test_matches_do_not_overlap_if_overlap_only_in_one_frag():
     doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
-    match1 = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))
-    match2 = Match(Fragment(10, 15, doc2), Fragment(6, 9, doc1))
+    match1 = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(0, 4, doc2))
+    match2 = Match(MatchType.VERBATIM, Fragment(10, 15, doc2), Fragment(6, 9, doc1))
     assert not match1.overlaps_with(match2) and not match2.overlaps_with(match1)
 
 
 def test_match_len():
     doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
-    match = Match(Fragment(0, 5, doc1), Fragment(0, 30, doc2))
+    match = Match(MatchType.VERBATIM, Fragment(0, 5, doc1), Fragment(0, 30, doc2))
     assert len(match) == 35
 
 
 def test_doc_pair_matches_init():
-    doc_pair_matches = DocumentPairMatches(PlagiarismType.VERBATIM)
-    assert doc_pair_matches._matches == set()
+    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
+    doc_pair_matches = DocumentPairMatches(doc1, doc2)
+    assert doc_pair_matches._matches == {}
 
 
 def test_doc_pair_matches_init_with_matches():
     doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
-    match1 = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))
-    match2 = Match(Fragment(10, 15, doc2), Fragment(6, 9, doc1))
-    doc_pair_matches = DocumentPairMatches(PlagiarismType.VERBATIM, {match1, match2})
-    assert doc_pair_matches._matches == {match1, match2}
+    match1 = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(0, 4, doc2))
+    match2 = Match(MatchType.INTELLIGENT, Fragment(10, 15, doc2), Fragment(6, 9, doc1))
+    doc_pair_matches = DocumentPairMatches(doc1, doc2, {match1, match2})
+    assert doc_pair_matches._matches == {str(MatchType.VERBATIM): {match1}, str(MatchType.INTELLIGENT): {match2}}
+
+
+def test_doc_pair_matches_equal_if_docs_are_the_same():
+    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
+    match = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(0, 4, doc2))
+    doc_pair_matches1 = DocumentPairMatches(doc1, doc2)
+    doc_pair_matches2 = DocumentPairMatches(doc1, doc2, {match})
+    assert doc_pair_matches1 == doc_pair_matches2
 
 
 def test_doc_pair_matches_add():
     doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
-    match1 = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))
-    match2 = Match(Fragment(10, 15, doc2), Fragment(6, 9, doc1))
-    doc_pair_matches = DocumentPairMatches(PlagiarismType.VERBATIM)
+    match1 = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(0, 4, doc2))
+    match2 = Match(MatchType.VERBATIM, Fragment(10, 15, doc2), Fragment(6, 9, doc1))
+    doc_pair_matches = DocumentPairMatches(doc1, doc2)
     doc_pair_matches.add(match1)
     doc_pair_matches.add(match2)
-    assert len(doc_pair_matches._matches) == 2
-    assert match1, match2 in doc_pair_matches._matches
+    assert len(doc_pair_matches.list(MatchType.VERBATIM)) == 2
+    assert match1, match2 in doc_pair_matches.list(MatchType.VERBATIM)
 
 
 def test_doc_pair_matches_add_same_match_twice():
     doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
-    match = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))
-    doc_pair_matches = DocumentPairMatches(PlagiarismType.VERBATIM)
+    match = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(0, 4, doc2))
+    doc_pair_matches = DocumentPairMatches(doc1, doc2)
     doc_pair_matches.add(match)
     doc_pair_matches.add(match)
-    assert len(doc_pair_matches._matches) == 1
-    assert match in doc_pair_matches._matches
+    assert len(doc_pair_matches.list(MatchType.VERBATIM)) == 1
+    assert match in doc_pair_matches.list(MatchType.VERBATIM)
 
 
 def test_doc_pair_matches_add_match_from_other_pair_fails():
     doc1, doc2, doc3 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', ''), \
                        Document('doc3', 'path/to/doc3', '')
-    match1 = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))
-    match2 = Match(Fragment(10, 15, doc2), Fragment(6, 9, doc3))
-    doc_pair_matches = DocumentPairMatches(PlagiarismType.VERBATIM)
+    match1 = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(0, 4, doc2))
+    match2 = Match(MatchType.VERBATIM, Fragment(10, 15, doc2), Fragment(6, 9, doc3))
+    doc_pair_matches = DocumentPairMatches(doc1, doc2)
     doc_pair_matches.add(match1)
     with pytest.raises(DifferentDocumentPairError):
         doc_pair_matches.add(match2)
-    assert len(doc_pair_matches._matches) == 1
-    assert doc_pair_matches.doc_pair == {doc2, doc1}
+    assert len(doc_pair_matches.list(MatchType.VERBATIM)) == 1
+    assert doc_pair_matches.doc1, doc_pair_matches.doc2 == (doc1, doc2)
+
+
+def test_doc_pair_matches_update():
+    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
+    matches = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(0, 4, doc2)), \
+              Match(MatchType.VERBATIM, Fragment(10, 15, doc2), Fragment(6, 9, doc1))
+    doc_pair_matches = DocumentPairMatches(doc1, doc2)
+    doc_pair_matches.update(matches)
+    assert len(doc_pair_matches.list(MatchType.VERBATIM)) == 2
 
 
 def test_doc_pair_matches_list():
     doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
-    match1 = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))
-    match2 = Match(Fragment(10, 15, doc1), Fragment(6, 9, doc2))
-    doc_pair_matches = DocumentPairMatches(PlagiarismType.VERBATIM, {match1, match2})
-    matches = doc_pair_matches.list()
+    match1 = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(0, 4, doc2))
+    match2 = Match(MatchType.VERBATIM, Fragment(10, 15, doc1), Fragment(6, 9, doc2))
+    doc_pair_matches = DocumentPairMatches(doc1, doc2, {match1, match2})
+    matches = doc_pair_matches.list(MatchType.VERBATIM)
     assert matches == {match1, match2}
 
 
 def test_doc_pair_matches_len():
     doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
-    match1 = Match(Fragment(0, 7, doc1), Fragment(0, 4, doc2))
-    match2 = Match(Fragment(10, 15, doc1), Fragment(6, 9, doc2))
-    doc_pair_matches = DocumentPairMatches(PlagiarismType.VERBATIM, {match1, match2})
+    match1 = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(0, 4, doc2))
+    match2 = Match(MatchType.VERBATIM, Fragment(10, 15, doc1), Fragment(6, 9, doc2))
+    doc_pair_matches = DocumentPairMatches(doc1, doc2, {match1, match2})
     assert len(doc_pair_matches) == 2
 
 

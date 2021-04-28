@@ -3,8 +3,9 @@ import platform
 import subprocess
 
 import plagdef.gui.main as main
+from plagdef.app import write_doc_pair_matches_to_json, read_doc_pair_matches_from_json
 from plagdef.gui.views import HomeView, LoadingView, NoResultsView, ErrorView, ResultView, \
-    FileDialog, MatchesDialog
+    FileDialog, MatchesDialog, MessageDialog
 from plagdef.model.models import DocumentPairMatches
 
 
@@ -17,13 +18,23 @@ class HomeController:
         self._connect_slots()
 
     def _connect_slots(self):
-        self.view.register_for_signals(select_archive_dir=self._on_select_archive_dir,
+        self.view.register_for_signals(open_report_dir=self.on_open_click,
+                                       select_archive_dir=self._on_select_archive_dir,
                                        rm_archive_dir=self._on_remove_archive_dir,
                                        select_docs_dir=self._on_select_docs_dir,
                                        rm_docs_dir=self._on_remove_docs_dir,
                                        select_common_dir=self._on_select_common_dir,
                                        rm_common_dir=self._on_remove_common_dir,
                                        detect=self._on_detect)
+
+    def on_open_click(self):
+        dialog = FileDialog()
+        if dialog.open():
+            matches = read_doc_pair_matches_from_json(dialog.selected_dir)
+            if len(matches):
+                main.app.window.switch_to(ResultView, matches)
+            else:
+                MessageDialog('The selected folder contains no match files.')
 
     def _on_select_archive_dir(self):
         if self.archive_dir_dialog.open():
@@ -100,8 +111,14 @@ class ResultController:
         self._connect_slots()
 
     def _connect_slots(self):
-        self.view.register_for_signals(self._on_again, self.on_select_pair)
+        self.view.register_for_signals(self.on_export, self._on_again, self.on_select_pair)
         self.matches_dialog.register_for_signals(self.on_prev_match, self.on_next_match, self.on_doc_name_click)
+
+    def on_export(self):
+        dialog = FileDialog()
+        if dialog.open():
+            write_doc_pair_matches_to_json(self.view.doc_pair_matches, dialog.selected_dir)
+            MessageDialog(f"Successfully generated JSON reports.")
 
     def _on_again(self):
         main.app.window.switch_to(HomeView)

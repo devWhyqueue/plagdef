@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import os
-from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from itertools import combinations, product
 from multiprocessing import RLock
@@ -13,7 +12,7 @@ from tqdm import tqdm
 
 from plagdef.model.extension import ClusterBuilder
 from plagdef.model.filtering import ClusterFilter
-from plagdef.model.models import Document, Match, DocumentPairMatches, Cluster, Fragment, PlagiarismType
+from plagdef.model.models import Document, Match, DocumentPairMatches, Cluster, Fragment, MatchType
 from plagdef.model.preprocessing import Preprocessor
 from plagdef.model.seeding import SeedFinder
 
@@ -33,7 +32,7 @@ class DocumentMatcher:
     def preprocess(self, lang: str, docs: set[Document], common_docs=None):
         self._preprocessor.preprocess(lang, docs, common_docs)
 
-    def find_matches(self, docs: set[Document], archive_docs=None) -> dict[PlagiarismType, list[DocumentPairMatches]]:
+    def find_matches(self, docs: set[Document], archive_docs=None) -> list[DocumentPairMatches]:
         doc_combs = set(combinations(docs, 2))
         if archive_docs:
             doc_combs.update(product(docs, archive_docs))
@@ -47,22 +46,15 @@ class DocumentMatcher:
                 for i, chunk in enumerate(doc_comb_chunks):
                     futures.append(p.submit(self._find_matches, chunk, i))
                 match_chunks = [f.result() for f in as_completed(futures)]
-            return self._merge(match_chunks)
+            return [match for chunk in match_chunks for match in chunk]
         else:
             return self._find_matches(doc_combs)
 
-    def _merge(self, match_chunks):
-        matches = defaultdict(list)
-        for chunk in match_chunks:
-            for plag_type, doc_pair_matches in chunk.items():
-                matches[plag_type] += doc_pair_matches
-        return matches
-
-    def _find_matches(self, doc_combs, pos=0) \
-        -> dict[PlagiarismType, list[DocumentPairMatches]]:
-        matches = defaultdict(list)
+    def _find_matches(self, doc_combs, pos=0) -> list[DocumentPairMatches]:
+        matches = []
         for doc1, doc2 in tqdm(doc_combs, desc='Matching', unit='pair', total=len(doc_combs), position=pos,
                                leave=False):
+            doc_pair_matches = DocumentPairMatches(doc1, doc2)
             log.debug(f'Examining pair ({doc1}, {doc2}).')
             seeds = self._seeder.seed(doc1, doc2)
             log.debug(f'Found the following seeds:\n{pformat(sorted(seeds, key=lambda s: s.sent1.idx))}')
@@ -72,14 +64,14 @@ class DocumentMatcher:
             verbatim_matches = self._verbatim_matches(clusters)
             if len(verbatim_matches):
                 log.debug(f'Plagiarism type is verbatim. Found these matches:\n{pformat(verbatim_matches)}')
-                matches[PlagiarismType.VERBATIM].append(DocumentPairMatches(PlagiarismType.VERBATIM, verbatim_matches))
+                doc_pair_matches.update(verbatim_matches)
             if len(clusters):
-                intelligent_matches = {Match.from_cluster(cluster) for cluster in clusters}.difference(verbatim_matches)
+                intelligent_matches = {Match.from_cluster(MatchType.INTELLIGENT, cluster) for cluster in
+                                       clusters}.difference(verbatim_matches)
                 if len(intelligent_matches):
                     log.debug(
                         f'Plagiarism type is intelligent. Found these matches:\n{pformat(intelligent_matches)}')
-                    matches[PlagiarismType.INTELLIGENT].append(DocumentPairMatches(PlagiarismType.INTELLIGENT,
-                                                                                   intelligent_matches))
+                    doc_pair_matches.update(intelligent_matches)
             summary_clusters = self._extender.extend(seeds, self._adjacent_sents_gap_summary)
             summary_clusters = self._cluster_filter.filter(summary_clusters)
             if len(summary_clusters):
@@ -87,12 +79,12 @@ class DocumentMatcher:
                     tuple(map(sum, zip(*(cluster.char_lengths() for cluster in summary_clusters))))
                 if sum_cluster_len_doc1 >= 3 * sum_cluster_len_doc2 \
                     or sum_cluster_len_doc2 >= 3 * sum_cluster_len_doc1:
-                    summary_matches = {Match.from_cluster(cluster) for cluster in summary_clusters}.difference(
-                        verbatim_matches)
+                    summary_matches = {Match.from_cluster(MatchType.SUMMARY, cluster) for cluster in
+                                       summary_clusters}.difference(verbatim_matches)
                     if len(summary_matches):
                         log.debug(f'Plagiarism type is summary. Found these matches:\n{pformat(summary_matches)}')
-                        matches[PlagiarismType.SUMMARY].append(DocumentPairMatches(PlagiarismType.SUMMARY,
-                                                                                   summary_matches))
+                        doc_pair_matches.update(summary_matches)
+            matches.append(doc_pair_matches) if len(doc_pair_matches) else None
         return matches
 
     def _verbatim_matches(self, clusters: set[Cluster]) -> set[Match]:
@@ -120,7 +112,7 @@ class DocumentMatcher:
                                          cluster.doc1)
                         frag2 = Fragment(frag2_words[frag2_first].start_char, frag2_words[j - 1].end_char + punct,
                                          cluster.doc2)
-                        verbatim_matches.add(Match(frag1, frag2))
+                        verbatim_matches.add(Match(MatchType.VERBATIM, frag1, frag2))
         return verbatim_matches
 
 
