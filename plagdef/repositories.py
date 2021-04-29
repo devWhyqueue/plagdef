@@ -6,7 +6,6 @@ from ast import literal_eval
 from collections import Counter
 from configparser import ConfigParser
 from copy import deepcopy
-from itertools import islice
 from json import JSONDecodeError
 from pathlib import Path
 from pickle import dump, load, UnpicklingError
@@ -26,14 +25,12 @@ jsonpickle.set_encoder_options('json', indent=4)
 
 
 class DocumentFileRepository:
-    def __init__(self, dir_path: Path, lang: str, recursive=False, at_least_two=True):
+    def __init__(self, dir_path: Path, lang: str, recursive=False):
         self.lang = lang
         self.dir_path = dir_path
         self._recursive = recursive
         if not dir_path.is_dir():
             raise NotADirectoryError(f'The given path {dir_path} does not point to an existing directory!')
-        if at_least_two and (not any(self._list_files()) or not next(islice(self._list_files(), 1, None), None)):
-            raise NoDocumentFilePairFoundError(f"The directory '{dir_path}' must contain at least two documents.")
 
     def _list_files(self):
         if self._recursive:
@@ -139,9 +136,6 @@ class DocumentPickleRepository:
                 log.debug('Following error occurred:', exc_info=True)
         return set()
 
-
-class NoDocumentFilePairFoundError(Exception):
-    pass
 
 
 class UnsupportedFileFormatError(Exception):

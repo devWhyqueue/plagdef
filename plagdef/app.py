@@ -12,8 +12,7 @@ from click import UsageError
 from plagdef import services
 from plagdef.model.models import DocumentPairMatches
 from plagdef.model.reporting import generate_text_report
-from plagdef.repositories import ConfigFileRepository, DocumentFileRepository, NoDocumentFilePairFoundError, \
-    DocumentPairMatchesJsonRepository
+from plagdef.repositories import ConfigFileRepository, DocumentFileRepository, DocumentPairMatchesJsonRepository
 
 # Load configs
 LOGGING_CONFIG = pkg_resources.resource_filename(__name__, str(Path('config/logging.ini')))
@@ -77,12 +76,12 @@ def find_matches(lang: str, docdir: tuple, archive_docdir: tuple, common_docdir:
         archive_repo = common_repo = None
         if archive_docdir:
             archive_repo = DocumentFileRepository(
-                Path(str(archive_docdir[0])), lang, at_least_two=False, recursive=archive_docdir[1])
+                Path(str(archive_docdir[0])), lang, recursive=archive_docdir[1])
         if common_docdir:
             common_repo = DocumentFileRepository(
-                Path(str(common_docdir[0])), lang, at_least_two=False, recursive=common_docdir[1])
+                Path(str(common_docdir[0])), lang, recursive=common_docdir[1])
         return services.find_matches(doc_repo, config_repo, archive_repo=archive_repo, common_doc_repo=common_repo)
-    except (NotADirectoryError, NoDocumentFilePairFoundError) as e:
+    except NotADirectoryError as e:
         raise UsageError(str(e)) from e
 
 
