@@ -148,7 +148,6 @@ class HomeView(View):
 class FileDialog(QFileDialog):
     def __init__(self):
         super().__init__()
-        self.setDirectory(str(Path.home().absolute()))
         self.setFileMode(QFileDialog.Directory)
         self.selected_dir = None
 
