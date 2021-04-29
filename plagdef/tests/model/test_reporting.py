@@ -2,8 +2,8 @@ from plagdef.model.reporting import generate_text_report
 
 
 def test_generate_text_report_with_no_matches_returns_msg():
-    report = generate_text_report({})
-    assert report == 'There are no matching text sections in given documents.'
+    report = generate_text_report([])
+    assert report == 'No matches found.'
 
 
 def test_generate_text_report_starts_with_intro(matches):

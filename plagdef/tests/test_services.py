@@ -71,7 +71,7 @@ def test_preprocess_removes_formerly_preprocessed_document(save_mock, list_mock,
 def test_find_matches(config, tmp_path):
     docs = [Document('doc1', 'path/to/doc1', 'This is a document.\n'),
             Document('doc2', 'path/to/doc2', 'This also is a document.\n')]
-    doc_repo = DocumentFakeRepository(docs, 'eng', tmp_path)
+    doc_repo = DocumentFakeRepository(set(docs), 'eng', tmp_path)
     config_repo = ConfigFakeRepository(config)
     doc_pair_matches = DocumentPairMatches(docs[0], docs[1])
     doc_pair_matches.add(Match(MatchType.VERBATIM, Fragment(0, 18, docs[0]), Fragment(0, 23, docs[1])))
@@ -95,7 +95,7 @@ def test_find_matches_catches_parsing_error(tmp_path):
 def test_find_matches_catches_unsupported_language_error(config, tmp_path):
     docs = [Document('doc1', 'path/to/doc1', 'This is a document.\n'),
             Document('doc2', 'path/to/doc2', 'This also is a document.\n')]
-    doc_repo = DocumentFakeRepository(docs, 'eng', tmp_path)
+    doc_repo = DocumentFakeRepository(set(docs), 'eng', tmp_path)
     config_repo = ConfigFakeRepository(config)
     with patch.object(DocumentMatcher, 'find_matches') as alg_fm:
         alg_fm.side_effect = UnsupportedLanguageError()
@@ -106,7 +106,7 @@ def test_find_matches_catches_unsupported_language_error(config, tmp_path):
 def test_find_matches_catches_unsupported_file_format_error(config, tmp_path):
     docs = [Document('doc1', 'path/to/doc1', 'This is a document.\n'),
             Document('doc2', 'path/to/doc2', 'This also is a document.\n')]
-    doc_repo = DocumentFakeRepository(docs, 'eng', tmp_path)
+    doc_repo = DocumentFakeRepository(set(docs), 'eng', tmp_path)
     config_repo = ConfigFakeRepository(config)
     with patch.object(DocumentFakeRepository, 'list', side_effect=UnsupportedFileFormatError()):
         with pytest.raises(UsageError):
@@ -116,7 +116,7 @@ def test_find_matches_catches_unsupported_file_format_error(config, tmp_path):
 def test_find_matches_fails_on_unexpected_error(config, tmp_path):
     docs = [Document('doc1', 'path/to/doc1', 'This is a document.\n'),
             Document('doc2', 'path/to/doc2', 'This also is a document.\n')]
-    doc_repo = DocumentFakeRepository(docs, 'eng', tmp_path)
+    doc_repo = DocumentFakeRepository(set(docs), 'eng', tmp_path)
     config_repo = ConfigFakeRepository(config)
     with patch.object(DocumentMatcher, 'find_matches') as alg_fm:
         alg_fm.side_effect = Exception()
