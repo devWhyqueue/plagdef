@@ -38,17 +38,14 @@ class DocumentMatcher:
             doc_combs.update(product(docs, archive_docs))
         return self._parallelized_search(list(doc_combs))
 
-    def _parallelized_search(self, doc_combs, threshold=4000):
-        if len(doc_combs) > threshold:
-            doc_comb_chunks = array_split(doc_combs, os.cpu_count())
-            with ProcessPoolExecutor(initargs=(RLock(),), initializer=tqdm.set_lock, max_workers=os.cpu_count()) as p:
-                futures = []
-                for i, chunk in enumerate(doc_comb_chunks):
-                    futures.append(p.submit(self._find_matches, chunk, i))
-                match_chunks = [f.result() for f in as_completed(futures)]
-            return [match for chunk in match_chunks for match in chunk]
-        else:
-            return self._find_matches(doc_combs)
+    def _parallelized_search(self, doc_combs):
+        doc_comb_chunks = array_split(doc_combs, os.cpu_count())
+        with ProcessPoolExecutor(initargs=(RLock(),), initializer=tqdm.set_lock, max_workers=os.cpu_count()) as p:
+            futures = []
+            for i, chunk in enumerate(doc_comb_chunks):
+                futures.append(p.submit(self._find_matches, chunk, i))
+            match_chunks = [f.result() for f in as_completed(futures)]
+        return [match for chunk in match_chunks for match in chunk]
 
     def _find_matches(self, doc_combs, pos=0) -> list[DocumentPairMatches]:
         matches = []
