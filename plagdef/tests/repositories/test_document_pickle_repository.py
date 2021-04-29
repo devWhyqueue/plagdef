@@ -15,6 +15,15 @@ def test_serialize_docs(tmp_path):
     assert deserialized_docs == docs
 
 
+def test_serialize_overrides_existing_file(tmp_path):
+    docs = {Document('doc1', 'path/to/doc1', 'Some text.'), Document('doc2', 'path/to/doc2', 'Different text.')}
+    serializer = DocumentPickleRepository(tmp_path)
+    serializer.save(docs)
+    serializer.save({docs.pop()})
+    deserialized_docs = serializer.list()
+    assert len(deserialized_docs) == 1
+
+
 def test_deserialize_if_no_file_exists(tmp_path):
     serializer = DocumentPickleRepository(tmp_path)
     deserialized_docs = serializer.list()

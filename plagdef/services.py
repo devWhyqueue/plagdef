@@ -27,10 +27,10 @@ def find_matches(doc_repo, config_repo, archive_repo=None, common_doc_repo=None)
 
 def _preprocess_docs(doc_matcher, doc_repo, common_docs=None) -> set[Document]:
     doc_ser = DocumentPickleRepository(doc_repo.dir_path)
-    prep_docs = doc_ser.list()
-    unprep_docs = doc_repo.list().difference(prep_docs)
+    docs = doc_repo.list()
+    prep_docs = docs.intersection(doc_ser.list())
+    unprep_docs = docs.difference(prep_docs)
     doc_matcher.preprocess(doc_repo.lang, unprep_docs, common_docs)
-    docs = prep_docs.union(unprep_docs)
     doc_ser.save(docs)
     return docs
 
