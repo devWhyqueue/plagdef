@@ -34,6 +34,18 @@ def test_get_returns_all_properties(tmp_path):
     assert config.get('param2') == 3
 
 
+def test_update(tmp_path):
+    file = tmp_path / 'config.ini'
+    with file.open('w', encoding='utf-8') as f:
+        f.write('[section1]\nparam1=5\n\n[section2]\nparam2=3\n')
+    repo = ConfigFileRepository(file)
+    repo.update({'param1': 10, 'param2': 6})
+    config = repo.get()
+    file_content = file.read_text(encoding='utf-8')
+    assert config.get('param1') == 10 and config.get('param2') == 6
+    assert 'param1=5' in file_content and 'param2=3' in file_content
+
+
 def test_get_with_invalid_config_fails(tmp_path):
     file = tmp_path / 'config.ini'
     with file.open('w', encoding='utf-8') as f:

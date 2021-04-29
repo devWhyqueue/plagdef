@@ -30,9 +30,12 @@ config_repo = ConfigFileRepository(Path(ALG_CONFIG_PATH))
                    'the documents in <DOCDIR>.')
 @click.option('common_docdir', '--common-docs', '-c', type=(click.Path(exists=True), bool),
               help='Directory containing documents with sentences which should be excluded from detection.')
+@click.option('sim_th', '--similarity-threshold', '-s', type=click.FloatRange(0, 1), default=0.6,
+              help='Similarity threshold for text matching, defaults to 0.6. Lower values may increase sensitivity, '
+                   'higher ones can improve precision.')
 @click.option('jsondir', '--json', '-j', type=click.Path(), help='Output directory for JSON reports.')
 def cli(docdir: tuple[click.Path, bool], lang: str, common_docdir: [click.Path, bool],
-        archive_docdir: [click.Path, bool], jsondir: click.Path):
+        archive_docdir: [click.Path, bool], sim_th: float, jsondir: click.Path):
     """
     \b
     PlagDef supports plagiarism detection for student assignments.
@@ -41,6 +44,7 @@ def cli(docdir: tuple[click.Path, bool], lang: str, common_docdir: [click.Path, 
     For instance if you would like to recursively search <DOCDIR> the correct command looks like this:
     `plagdef <DOCDIR> True`
     """
+    set_similarity_threshold(sim_th)
     matches = find_matches(lang, docdir, archive_docdir, common_docdir)
     if jsondir:
         if matches:
@@ -93,6 +97,14 @@ def write_doc_pair_matches_to_json(matches, jsondir):
 def read_doc_pair_matches_from_json(jsondir) -> set[DocumentPairMatches]:
     repo = DocumentPairMatchesJsonRepository(Path(str(jsondir)))
     return repo.list()
+
+
+def similarity_threshold() -> float:
+    return services.similarity_threshold(config_repo)
+
+
+def set_similarity_threshold(th: float):
+    services.set_similarity_threshold(config_repo, th)
 
 
 if __name__ == "__main__":

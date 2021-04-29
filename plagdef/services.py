@@ -38,3 +38,13 @@ def _preprocess_docs(doc_matcher, doc_repo, common_docs=None) -> set[Document]:
 
 def write_json_reports(matches: list[DocumentPairMatches], repo):
     [repo.save(m) for m in matches]
+
+
+def similarity_threshold(config_repo) -> float:
+    return config_repo.get()['min_cos_sim']
+
+
+def set_similarity_threshold(config_repo, th: float):
+    config_repo.update({'min_cos_sim': th,
+                        'min_dice_sim': th,
+                        'min_cluster_cos_sim': th})

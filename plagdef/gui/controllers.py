@@ -3,15 +3,17 @@ import platform
 import subprocess
 
 import plagdef.gui.main as main
-from plagdef.app import write_doc_pair_matches_to_json, read_doc_pair_matches_from_json
+from plagdef.app import write_doc_pair_matches_to_json, read_doc_pair_matches_from_json, similarity_threshold, \
+    set_similarity_threshold
 from plagdef.gui.views import HomeView, LoadingView, NoResultsView, ErrorView, ResultView, \
-    FileDialog, MatchesDialog, MessageDialog
+    FileDialog, MatchesDialog, MessageDialog, SettingsDialog
 from plagdef.model.models import DocumentPairMatches
 
 
 class HomeController:
     def __init__(self):
         self.view = HomeView()
+        self.settings_dialog = SettingsDialog()
         self.archive_dir_dialog = FileDialog()
         self.docs_dir_dialog = FileDialog()
         self.common_dir_dialog = FileDialog()
@@ -25,7 +27,8 @@ class HomeController:
                                        rm_docs_dir=self._on_remove_docs_dir,
                                        select_common_dir=self._on_select_common_dir,
                                        rm_common_dir=self._on_remove_common_dir,
-                                       detect=self._on_detect)
+                                       detect=self._on_detect,
+                                       settings=self._on_settings_click)
 
     def on_open_click(self):
         dialog = FileDialog()
@@ -35,6 +38,11 @@ class HomeController:
                 main.app.window.switch_to(ResultView, matches)
             else:
                 MessageDialog('The selected folder contains no match files.')
+
+    def _on_settings_click(self):
+        sim_threshold = similarity_threshold()
+        self.settings_dialog.open(sim_threshold)
+        set_similarity_threshold(self.settings_dialog.similarity_threshold)
 
     def _on_select_archive_dir(self):
         if self.archive_dir_dialog.open():

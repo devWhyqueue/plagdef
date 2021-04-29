@@ -22,6 +22,7 @@ UI_FILES = {
     'results_widget': pkg_resources.resource_filename(__name__, 'ui/results_widget.ui'),
     'matches_dialog': pkg_resources.resource_filename(__name__, 'ui/matches_dialog.ui'),
     'msg_dialog': pkg_resources.resource_filename(__name__, 'ui/msg_dialog.ui'),
+    'settings_dialog': pkg_resources.resource_filename(__name__, 'ui/settings_dialog.ui'),
 }
 
 
@@ -72,7 +73,7 @@ class HomeView(View):
          for button in (self.widget.ger_button, self.widget.eng_button, self.widget.archive_dir_button,
                         self.widget.docs_dir_button, self.widget.common_dir_button, self.widget.detect_button,
                         self.widget.archive_rmdir_button, self.widget.docs_rmdir_button,
-                        self.widget.common_rmdir_button, self.widget.open_button)]
+                        self.widget.common_rmdir_button, self.widget.open_button, self.widget.settings_button)]
 
     @property
     def archive_rec(self):
@@ -92,7 +93,8 @@ class HomeView(View):
 
     def register_for_signals(self, open_report_dir=None, select_archive_dir=None, rm_archive_dir=None,
                              select_docs_dir=None, rm_docs_dir=None, select_common_dir=None, rm_common_dir=None,
-                             detect=None):
+                             detect=None, settings=None):
+        self.widget.settings_button.clicked.connect(lambda: settings())
         self.widget.open_button.clicked.connect(lambda: open_report_dir())
         self.widget.archive_dir_button.clicked.connect(lambda: select_archive_dir())
         self.widget.archive_rmdir_button.clicked.connect(lambda: rm_archive_dir())
@@ -296,6 +298,24 @@ class MessageDialog:
     def __init__(self, text):
         self.widget = _load_ui_file(Path(UI_FILES['msg_dialog']))
         self.widget.msg_label.setText(text)
+        self.widget.exec_()
+
+
+class SettingsDialog:
+    def __init__(self):
+        self.widget = _load_ui_file(Path(UI_FILES['settings_dialog']))
+        self.widget.sim_slider.valueChanged.connect(lambda val: self._update_label(val))
+
+    def _update_label(self, sim):
+        self.widget.value_label.setText(str(sim / 10))
+
+    @property
+    def similarity_threshold(self) -> float:
+        return float(self.widget.value_label.text())
+
+    def open(self, sim: float):
+        self.widget.value_label.setText(str(sim))
+        self.widget.sim_slider.setValue(sim * 10)
         self.widget.exec_()
 
 

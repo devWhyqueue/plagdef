@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
+        <file>settings_white.png</file>
         <file>open_white.png</file>
         <file>common_white.png</file>
         <file>add_circle_orange.png</file>
