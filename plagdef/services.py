@@ -28,11 +28,12 @@ def find_matches(doc_repo, config_repo, archive_repo=None, common_doc_repo=None)
 def _preprocess_docs(doc_matcher, doc_repo, common_docs=None) -> set[Document]:
     doc_ser = DocumentPickleRepository(doc_repo.dir_path)
     docs = doc_repo.list()
-    prep_docs = docs.intersection(doc_ser.list())
+    prep_docs = {d for d in doc_ser.list() if d in docs}
     unprep_docs = docs.difference(prep_docs)
     doc_matcher.preprocess(doc_repo.lang, unprep_docs, common_docs)
-    doc_ser.save(docs)
-    return docs
+    preprocessed_docs = prep_docs.union(unprep_docs)
+    doc_ser.save(preprocessed_docs)
+    return preprocessed_docs
 
 
 def write_json_reports(matches: list[DocumentPairMatches], repo):

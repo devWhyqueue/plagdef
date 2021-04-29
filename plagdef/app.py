@@ -42,16 +42,16 @@ def cli(docdir: tuple[click.Path, bool], lang: str, common_docdir: [click.Path, 
     `plagdef <DOCDIR> True`
     """
     matches = find_matches(lang, docdir, archive_docdir, common_docdir)
-    if matches:
-        if jsondir:
+    if jsondir:
+        if matches:
             try:
                 write_doc_pair_matches_to_json(matches, jsondir)
                 click.echo(f'Successfully wrote JSON reports to {jsondir}.')
             except NotADirectoryError as e:
                 raise UsageError(str(e)) from e
-        else:
-            text_report = generate_text_report(matches)
-            click.echo(text_report)
+    else:
+        text_report = generate_text_report(matches)
+        click.echo(text_report)
     sys.exit(0)
 
 

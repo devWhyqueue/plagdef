@@ -19,7 +19,7 @@ def generate_text_report(matches: list[DocumentPairMatches]) -> str:
                         doc_pair_matches.doc2)
                     report += f'    Match(Fragment({frag1.start_char}, {frag1.end_char}), Fragment(' \
                               f'{frag2.start_char}, {frag2.end_char}))\n'
-    intro = 'There are no matching text sections in given documents.'
+    intro = 'No matches found.'
     if report:
         intro = f'Found {len(matches) if len(matches) else "no"} suspicious document pair' \
                 f'{"s" if len(matches) > 1 else ""}.\n' \
