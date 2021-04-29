@@ -33,6 +33,16 @@ def test_list_documents(tmp_path):
     assert len(docs) == 2
 
 
+def test_list_documents_ignores_pdef_files(tmp_path):
+    with (tmp_path / 'doc1.txt').open('w', encoding='utf-8') as f:
+        f.write('This is a document.\n')
+    with (tmp_path / 'prep.pdef').open('w', encoding='utf-8') as f:
+        f.write('This is a preprocessing file.')
+    repo = DocumentFileRepository(tmp_path, 'eng')
+    docs = repo.list()
+    assert len(docs) == 1
+
+
 def test_list_documents_normalizes_texts(tmp_path):
     with (tmp_path / 'doc1.txt').open('w', encoding='utf-8') as f:
         # The 'ä' consists of a small letter a and a combining diaeresis

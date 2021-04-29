@@ -34,9 +34,9 @@ class DocumentFileRepository:
 
     def _list_files(self):
         if self._recursive:
-            return (file_path for file_path in self.dir_path.rglob('*') if file_path.is_file())
+            return (file for file in self.dir_path.rglob('*') if file.is_file() and file.suffix != '.pdef')
         else:
-            return (file_path for file_path in self.dir_path.iterdir() if file_path.is_file())
+            return (file for file in self.dir_path.iterdir() if file.is_file() and file.suffix != '.pdef')
 
     def list(self) -> set[models.Document]:
         files = list(self._list_files())
@@ -100,6 +100,7 @@ class ConfigFileRepository:
         if not config_path.suffix == '.ini':
             raise UnsupportedFileFormatError(f'The config file format must be INI.')
         self.config_path = config_path
+        self._custom_config = {}
 
     def get(self) -> dict:
         parser = ConfigParser()
@@ -108,7 +109,10 @@ class ConfigFileRepository:
         for section in parser.sections():
             typed_config = [(key, literal_eval(val)) for key, val in parser.items(section)]
             config.update(dict(typed_config))
-        return config
+        return {**config, **self._custom_config}
+
+    def update(self, config: dict):
+        self._custom_config = config
 
 
 class DocumentPickleRepository:
@@ -120,8 +124,6 @@ class DocumentPickleRepository:
         self.file_path = dir_path / DocumentPickleRepository.FILE_NAME
 
     def save(self, docs: set[models.Document]):
-        existing_docs = self.list()
-        docs.update(existing_docs)
         with self.file_path.open('wb') as file:
             dump(docs, file)
 
@@ -135,7 +137,6 @@ class DocumentPickleRepository:
                 log.warning(f"Could not deserialize preprocessing file, '{self.file_path.name}' seems to be corrupted.")
                 log.debug('Following error occurred:', exc_info=True)
         return set()
-
 
 
 class UnsupportedFileFormatError(Exception):
