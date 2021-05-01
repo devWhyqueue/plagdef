@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from enum import Enum
 from functools import total_ordering
 
-from sortedcontainers import SortedSet, SortedList
+from sortedcontainers import SortedSet
 
 from plagdef.model import util
 
@@ -89,7 +89,7 @@ class Fragment:
 class Sentence(Fragment):
     def __init__(self, start_char: int, end_char: int, bow: Counter, doc: Document):
         super().__init__(start_char, end_char, doc)
-        self.words = SortedList()
+        self.words = []
         self.bow = bow
         self.tf_isf_bow = {}
         self.common = False

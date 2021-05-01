@@ -173,6 +173,8 @@ def test_join_multiple_small_sents(preprocessor):
     assert len(doc1.sents(include_common=True)) == 1
     assert [sent.bow for sent in doc1.sents(include_common=True)] == \
            [Counter({'short': 1, 'still': 1, 'but': 1, 'this': 1, 'be': 1, 'longer': 1, 'one': 1})]
+    assert [word.text.lower() for word in doc1.sents(include_common=True)[0].words] \
+           == ['short', 'still', 'but', 'this', 'is', 'longer', 'one']
     assert doc1.vocab == Counter(
         {'short': 1, 'still': 1, 'but': 1, 'this': 1, 'be': 1, 'longer': 1, 'one': 1})
 
