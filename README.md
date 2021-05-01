@@ -25,11 +25,22 @@ $ python -m pip install -e .
 
 # Requirements
 
+## Libmagic
+
 **After** (important!) you installed PlagDef, install the libmagic library.
 
 PlagDef uses it to detect character encodings.
 
 Further instructions can be found here: https://github.com/ahupp/python-magic#installation
+
+## Tesseract
+
+For improved PDF text extraction Tesseract is used as an OCR engine.
+
+To install the necessary binaries for your operating system take a look at: https://github.com/tesseract-ocr/tessdoc
+
+And don't forget to download the German language pack to your _tessdata_ folder from
+here: https://github.com/tesseract-ocr/tessdata
 
 # Usage
 

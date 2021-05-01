@@ -55,7 +55,7 @@ def cli(docdir: tuple[click.Path, bool], lang: str, common_docdir: [click.Path, 
                 raise UsageError(str(e)) from e
     else:
         text_report = generate_text_report(matches)
-        click.echo(text_report)
+        click.echo(f'\n{text_report}')
     sys.exit(0)
 
 

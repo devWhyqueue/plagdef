@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 from ast import literal_eval
 from collections import Counter
 from configparser import ConfigParser
@@ -15,6 +16,7 @@ import jsonpickle
 import magic
 import pdfplumber
 from magic import MagicException
+from ocrmypdf import ocr
 from sortedcontainers import SortedSet
 from tqdm.contrib.concurrent import thread_map
 
@@ -46,10 +48,9 @@ class DocumentFileRepository:
 
     def _read_file(self, file):
         if file.suffix == '.pdf':
-            with pdfplumber.open(file) as pdf:
-                text = ' '.join(filter(None, (page.extract_text() for page in pdf.pages)))
-                normalized_text = normalize('NFC', text)
-                return models.Document(file.stem, str(file.resolve()), normalized_text)
+            reader = PdfReader(self.lang, file)
+            text = reader.extract_text()
+            return models.Document(file.stem, str(file.resolve()), text)
         else:
             try:
                 detect_enc = magic.Magic(mime_encoding=True)
@@ -137,6 +138,31 @@ class DocumentPickleRepository:
                 log.warning(f"Could not deserialize preprocessing file, '{self.file_path.name}' seems to be corrupted.")
                 log.debug('Following error occurred:', exc_info=True)
         return set()
+
+
+class PdfReader:
+    ERROR_HEURISTIC = '¨[aou]|ﬀ|\(cid:\d+\)'
+
+    def __init__(self, lang, file):
+        self._lang = lang if lang == 'eng' else 'deu'
+        self._file = file
+
+    def extract_text(self):
+        text = self._extract()
+        if self._poor_extraction(text):
+            log.warning(f"Poor text extraction in '{self._file.name}' detected! Using OCR...")
+            ocr(self._file, self._file, language=self._lang, force_ocr=True, progress_bar=False)
+            text = self._extract()
+        return text
+
+    def _extract(self) -> str:
+        with pdfplumber.open(self._file) as pdf:
+            text = ' '.join(filter(None, (page.extract_text() for page in pdf.pages)))
+            normalized_text = normalize('NFC', text)
+            return re.sub('-\s?\n', '', normalized_text)  # Merge hyphenated words
+
+    def _poor_extraction(self, text: str) -> bool:
+        return bool(re.search(PdfReader.ERROR_HEURISTIC, text))
 
 
 class UnsupportedFileFormatError(Exception):
