@@ -1,5 +1,6 @@
 init: ## initialize environment and install requirements
 	sudo apt-get install libmagic1
+	sudo apt-get install tesseract-ocr tesseract-ocr-deu
 	pip install pipenv
 	pipenv install --dev
 
