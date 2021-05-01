@@ -35,12 +35,13 @@ Further instructions can be found here: https://github.com/ahupp/python-magic#in
 
 ## Tesseract
 
-For improved PDF text extraction Tesseract is used as an OCR engine.
+For improved PDF text extraction OCRMyPDF is used.
 
-To install the necessary binaries for your operating system take a look at: https://github.com/tesseract-ocr/tessdoc
+To install its necessary dependencies for your operating system take a look at:
+https://ocrmypdf.readthedocs.io/en/latest/installation.html
 
-And don't forget to download the German language pack to your _tessdata_ folder from
-here: https://github.com/tesseract-ocr/tessdata
+And don't forget to download the German language pack to your _tessdata_ folder from here:
+https://github.com/tesseract-ocr/tessdata
 
 # Usage
 

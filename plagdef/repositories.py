@@ -7,6 +7,7 @@ from ast import literal_eval
 from collections import Counter
 from configparser import ConfigParser
 from copy import deepcopy
+from io import BytesIO
 from json import JSONDecodeError
 from pathlib import Path
 from pickle import dump, load, UnpicklingError
@@ -151,12 +152,15 @@ class PdfReader:
         text = self._extract()
         if self._poor_extraction(text):
             log.warning(f"Poor text extraction in '{self._file.name}' detected! Using OCR...")
-            ocr(self._file, self._file, language=self._lang, force_ocr=True, progress_bar=False)
-            text = self._extract()
+            with BytesIO() as ocr_file:
+                ocr(self._file, ocr_file, language=self._lang, force_ocr=True, progress_bar=False)
+                text = self._extract(ocr_file)
         return text
 
-    def _extract(self) -> str:
-        with pdfplumber.open(self._file) as pdf:
+    def _extract(self, file=None) -> str:
+        if file is None:
+            file = self._file
+        with pdfplumber.open(file) as pdf:
             text = ' '.join(filter(None, (page.extract_text() for page in pdf.pages)))
             normalized_text = normalize('NFC', text)
             return re.sub('-\s?\n', '', normalized_text)  # Merge hyphenated words
