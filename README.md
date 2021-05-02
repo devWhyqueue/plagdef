@@ -33,9 +33,9 @@ PlagDef uses it to detect character encodings.
 
 Further instructions can be found here: https://github.com/ahupp/python-magic#installation
 
-## Tesseract
+## OCRMyPDF
 
-For improved PDF text extraction OCRMyPDF is used.
+This library is used for improved PDF text extraction.
 
 To install its necessary dependencies for your operating system take a look at:
 https://ocrmypdf.readthedocs.io/en/latest/installation.html

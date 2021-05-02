@@ -44,6 +44,9 @@
                                     <pointsize>10</pointsize>
                                 </font>
                             </property>
+                            <property name="toolTip">
+                                <string>Set the document's language to 'German'.</string>
+                            </property>
                             <property name="styleSheet">
                                 <string notr="true">:!checked:hover{
                                     background-color: #5f636c;
@@ -106,6 +109,9 @@
                                 <font>
                                     <pointsize>10</pointsize>
                                 </font>
+                            </property>
+                            <property name="toolTip">
+                                <string>Set the document's language to 'English'.</string>
                             </property>
                             <property name="styleSheet">
                                 <string notr="true">:!checked:hover{
@@ -183,6 +189,9 @@
                                     <pointsize>10</pointsize>
                                 </font>
                             </property>
+                            <property name="toolTip">
+                                <string>Open a directory with JSON reports to display the matches.</string>
+                            </property>
                             <property name="styleSheet">
                                 <string notr="true">:hover{
                                     background-color: #5f636c;
@@ -241,6 +250,11 @@
                                 <font>
                                     <pointsize>10</pointsize>
                                 </font>
+                            </property>
+                            <property name="toolTip">
+                                <string>Adjust the sensitivity of the text matching algorithm.
+                                    Higher values may increase precision, lower ones can improve sensitivity.
+                                </string>
                             </property>
                             <property name="styleSheet">
                                 <string notr="true">:hover{
@@ -397,6 +411,11 @@
                                         <font>
                                             <pointsize>10</pointsize>
                                         </font>
+                                    </property>
+                                    <property name="toolTip">
+                                        <string>Directory containing documents which should not be compared among
+                                            themselves but only with the other documents.
+                                        </string>
                                     </property>
                                     <property name="styleSheet">
                                         <string notr="true">QPushButton {
@@ -569,6 +588,9 @@
                                         <font>
                                             <pointsize>10</pointsize>
                                         </font>
+                                    </property>
+                                    <property name="toolTip">
+                                        <string>Select a folder containing documents which should be examined.</string>
                                     </property>
                                     <property name="styleSheet">
                                         <string notr="true">QPushButton {
@@ -746,6 +768,13 @@
                                         <font>
                                             <pointsize>10</pointsize>
                                         </font>
+                                    </property>
+                                    <property name="toolTip">
+                                        <string>Select a folder containing documents which consist of common text.
+                                            Files are read line by line.
+                                            If a sentence in a document contains all words in an arbitrary line it is
+                                            excluded.
+                                        </string>
                                     </property>
                                     <property name="styleSheet">
                                         <string notr="true">QPushButton {

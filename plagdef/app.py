@@ -26,7 +26,7 @@ config_repo = ConfigFileRepository(Path(ALG_CONFIG_PATH))
 @click.argument('docdir', type=(click.Path(exists=True), bool))
 @click.option('lang', '--lang', '-l', required=True, help='Bibliographical language code of the documents\' language.')
 @click.option('archive_docdir', '--archive-docs', '-a', type=(click.Path(exists=True), bool),
-              help='Directory containing older documents which should not be compared among themselves but only with '
+              help='Directory containing documents which should not be compared among themselves but only with '
                    'the documents in <DOCDIR>.')
 @click.option('common_docdir', '--common-docs', '-c', type=(click.Path(exists=True), bool),
               help='Directory containing documents with sentences which should be excluded from detection.')

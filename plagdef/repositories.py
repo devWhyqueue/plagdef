@@ -5,7 +5,6 @@ import os
 import re
 from ast import literal_eval
 from collections import Counter
-from concurrent.futures import ProcessPoolExecutor
 from configparser import ConfigParser
 from copy import deepcopy
 from io import BytesIO
@@ -20,7 +19,7 @@ import pdfplumber
 from magic import MagicException
 from ocrmypdf import ocr
 from sortedcontainers import SortedSet
-from tqdm.contrib.concurrent import thread_map
+from tqdm.contrib.concurrent import process_map
 
 from plagdef.model import models
 
@@ -44,8 +43,8 @@ class DocumentFileRepository:
 
     def list(self) -> set[models.Document]:
         files = list(self._list_files())
-        docs = thread_map(self._read_file, files, desc=f"Reading documents in '{self.dir_path}'",
-                          unit='doc', total=len(files), max_workers=os.cpu_count())
+        docs = process_map(self._read_file, files, desc=f"Reading documents in '{self.dir_path}'",
+                           unit='doc', total=len(files), max_workers=os.cpu_count())
         return set(filter(None, docs))
 
     def _read_file(self, file):
@@ -153,15 +152,10 @@ class PdfReader:
         text = self._extract()
         if self._poor_extraction(text):
             log.warning(f"Poor text extraction in '{self._file.name}' detected! Using OCR...")
-            with ProcessPoolExecutor(1) as p:
-                f = p.submit(self._ocr)
-                text = f.result()
+            with BytesIO() as ocr_file:
+                ocr(self._file, ocr_file, language=self._lang, force_ocr=True, progress_bar=False, deskew=True)
+                text = self._extract(ocr_file)
         return text
-
-    def _ocr(self) -> str:
-        with BytesIO() as ocr_file:
-            ocr(self._file, ocr_file, language=self._lang, force_ocr=True, progress_bar=False, jobs=1, deskew=True)
-            return self._extract(ocr_file)
 
     def _extract(self, file=None) -> str:
         if file is None:

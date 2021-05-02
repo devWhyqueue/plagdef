@@ -720,6 +720,9 @@
                             <height>50</height>
                         </size>
                     </property>
+                    <property name="toolTip">
+                        <string>Export all matches as JSON reports.</string>
+                    </property>
                     <property name="styleSheet">
                         <string notr="true">QPushButton {
                             font-size: 14pt;
