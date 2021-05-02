@@ -5,6 +5,7 @@ import os
 import re
 from ast import literal_eval
 from collections import Counter
+from concurrent.futures import ProcessPoolExecutor
 from configparser import ConfigParser
 from copy import deepcopy
 from io import BytesIO
@@ -152,10 +153,15 @@ class PdfReader:
         text = self._extract()
         if self._poor_extraction(text):
             log.warning(f"Poor text extraction in '{self._file.name}' detected! Using OCR...")
-            with BytesIO() as ocr_file:
-                ocr(self._file, ocr_file, language=self._lang, force_ocr=True, progress_bar=False)
-                text = self._extract(ocr_file)
+            with ProcessPoolExecutor(1) as p:
+                f = p.submit(self._ocr)
+                text = f.result()
         return text
+
+    def _ocr(self) -> str:
+        with BytesIO() as ocr_file:
+            ocr(self._file, ocr_file, language=self._lang, force_ocr=True, progress_bar=False, jobs=1, deskew=True)
+            return self._extract(ocr_file)
 
     def _extract(self, file=None) -> str:
         if file is None:
