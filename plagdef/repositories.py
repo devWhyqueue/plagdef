@@ -153,7 +153,8 @@ class PdfReader:
         if self._poor_extraction(text):
             log.warning(f"Poor text extraction in '{self._file.name}' detected! Using OCR...")
             with BytesIO() as ocr_file:
-                ocr(self._file, ocr_file, language=self._lang, force_ocr=True, progress_bar=False, deskew=True)
+                ocr(self._file, ocr_file, language=self._lang, force_ocr=True, progress_bar=False,
+                    max_image_mpixels=512)
                 text = self._extract(ocr_file)
         return text
 
