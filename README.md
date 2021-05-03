@@ -38,7 +38,7 @@ https://github.com/tesseract-ocr/tessdata
 
 Poppler helps converting PDFs to images for Tesseract.\
 Releases for Windows can be found here:\
-https://github.com/oschwartz10612/poppler-windows/releases
+https://github.com/oschwartz10612/poppler-windows/releases \
 After the installation add the _bin_ folder to your PATH.
 
 On Mac OS you can install Poppler via Homebrew:
