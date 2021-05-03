@@ -14,10 +14,11 @@ from unicodedata import normalize
 
 import jsonpickle
 import magic
+import numpy
 import pdfplumber
+from easyocr import easyocr
 from magic import MagicException
 from pdf2image import convert_from_path
-from pytesseract import image_to_string
 from sortedcontainers import SortedSet
 from tqdm.contrib.concurrent import thread_map
 
@@ -32,6 +33,7 @@ class DocumentFileRepository:
         self.lang = lang
         self.dir_path = dir_path
         self._recursive = recursive
+        self._ocr = easyocr.Reader(['de', 'en'])
         if not dir_path.is_dir():
             raise NotADirectoryError(f'The given path {dir_path} does not point to an existing directory!')
 
@@ -49,7 +51,7 @@ class DocumentFileRepository:
 
     def _read_file(self, file):
         if file.suffix == '.pdf':
-            reader = PdfReader(self.lang, file)
+            reader = PdfReader(file, self._ocr)
             text = reader.extract_text()
             return models.Document(file.stem, str(file.resolve()), text)
         else:
@@ -144,16 +146,20 @@ class DocumentPickleRepository:
 class PdfReader:
     ERROR_HEURISTIC = '¨[aou]|ﬀ|\(cid:\d+\)|\w{50}'
 
-    def __init__(self, lang, file):
-        self._lang = lang if lang == 'eng' else 'deu'
+    def __init__(self, file, ocr):
         self._file = file
+        self._ocr = ocr
 
     def extract_text(self):
         text = self._extract()
         if self._poor_extraction(text):
             log.warning(f"Poor text extraction in '{self._file.name}' detected! Using OCR...")
-            pages = convert_from_path(self._file, 400)
-            text = ' '.join(image_to_string(page, self._lang) for page in pages)
+            pages = convert_from_path(self._file, fmt='jpeg', jpegopt='optimize')
+            text = ''
+            for page in pages:
+                img = numpy.array(page)
+                page_text = ' '.join(self._ocr.readtext(img, detail=0, paragraph=True))
+                text += page_text
         return self._normalize_text(text)
 
     def _extract(self, file=None) -> str:

@@ -25,30 +25,11 @@ $ python -m pip install -e .
 
 # Requirements
 
-## Tesseract
+## EasyOCR
 
-For OCR on PDF files you need Tesseract.\
-To install Tesseract for your operating system take a look at:\
-https://github.com/tesseract-ocr/tessdoc#500x
-
-And don't forget to download the German language pack to your _tessdata_ folder from here:\
-https://github.com/tesseract-ocr/tessdata
-
-## Poppler
-
-Poppler helps converting PDFs to images for Tesseract.\
-Releases for Windows can be found here:\
-https://github.com/oschwartz10612/poppler-windows/releases \
-After the installation add the _bin_ folder to your PATH.
-
-On Mac OS you can install Poppler via Homebrew:
-
-```
-$ brew install poppler
-````
-
-Linux users usually don't have to worry about Poppler because its preinstalled.\
-If it's missing, however, refer to your package manager to install `poppler-utils`.
+For acceptable OCR performance on PDF files you need CUDA.\
+To install CUDA for your operating system take a look at:\
+https://docs.nvidia.com/cuda/cuda-quick-start-guide/index.html
 
 ## Libmagic
 

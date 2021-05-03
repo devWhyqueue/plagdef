@@ -141,31 +141,31 @@ def test_list_with_doc_dir_containing_pdf_with_no_text(tmp_path):
 
 def test_pdf_reader_poor_extraction():
     text = 'Ein w(cid:246)rtlicher Match.'
-    reader = PdfReader('ger', None)
+    reader = PdfReader(None, None)
     assert reader._poor_extraction(text)
 
 
 def test_pdf_reader_poor_extraction_mark_umlaut():
     text = 'Ein w¨ortlicher Match.'
-    reader = PdfReader('ger', None)
+    reader = PdfReader(None, None)
     assert reader._poor_extraction(text)
 
 
 def test_pdf_reader_poor_extraction_ff():
     text = 'Eine fehlerhafte Veröﬀentlichung.'
-    reader = PdfReader('ger', None)
+    reader = PdfReader(None, None)
     assert reader._poor_extraction(text)
 
 
 def test_pdf_reader_poor_extraction_very_long_word():
     text = 'TheseWordsarewrongfullymergedtogetherduetoextractionproblems.'
-    reader = PdfReader('eng', None)
+    reader = PdfReader(None, None)
     assert reader._poor_extraction(text)
 
 
 def test_pdf_reader_poor_extraction_with_correct_text():
     text = 'This is flawless.'
-    reader = PdfReader('eng', None)
+    reader = PdfReader(None, None)
     assert not reader._poor_extraction(text)
 
 
@@ -177,7 +177,7 @@ def test_pdf_reader_merges_hyphenated_words_at_line_end(tmp_path):
                           'taining one sentence. However there are mul- \n'
                           'tiple line breaks which split words.')
     doc1.output(f'{tmp_path}/doc1.pdf')
-    reader = PdfReader('eng', tmp_path / 'doc1.pdf')
+    reader = PdfReader(tmp_path / 'doc1.pdf', None)
     text = reader._extract()
     assert text == 'This is a PDF file containing one sentence. However there are multiple line breaks' \
                    ' which split words.'
