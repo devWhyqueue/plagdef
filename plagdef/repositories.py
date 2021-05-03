@@ -7,7 +7,6 @@ from ast import literal_eval
 from collections import Counter
 from configparser import ConfigParser
 from copy import deepcopy
-from io import BytesIO
 from json import JSONDecodeError
 from pathlib import Path
 from pickle import dump, load, UnpicklingError
@@ -17,9 +16,10 @@ import jsonpickle
 import magic
 import pdfplumber
 from magic import MagicException
-from ocrmypdf import ocr
+from pdf2image import convert_from_path
+from pytesseract import image_to_string
 from sortedcontainers import SortedSet
-from tqdm.contrib.concurrent import process_map
+from tqdm.contrib.concurrent import thread_map
 
 from plagdef.model import models
 
@@ -43,8 +43,8 @@ class DocumentFileRepository:
 
     def list(self) -> set[models.Document]:
         files = list(self._list_files())
-        docs = process_map(self._read_file, files, desc=f"Reading documents in '{self.dir_path}'",
-                           unit='doc', total=len(files), max_workers=os.cpu_count())
+        docs = thread_map(self._read_file, files, desc=f"Reading documents in '{self.dir_path}'",
+                          unit='doc', total=len(files), max_workers=os.cpu_count())
         return set(filter(None, docs))
 
     def _read_file(self, file):
@@ -142,7 +142,7 @@ class DocumentPickleRepository:
 
 
 class PdfReader:
-    ERROR_HEURISTIC = '¨[aou]|ﬀ|\(cid:\d+\)'
+    ERROR_HEURISTIC = '¨[aou]|ﬀ|\(cid:\d+\)|\w{50}'
 
     def __init__(self, lang, file):
         self._lang = lang if lang == 'eng' else 'deu'
@@ -152,22 +152,23 @@ class PdfReader:
         text = self._extract()
         if self._poor_extraction(text):
             log.warning(f"Poor text extraction in '{self._file.name}' detected! Using OCR...")
-            with BytesIO() as ocr_file:
-                ocr(self._file, ocr_file, language=self._lang, force_ocr=True, progress_bar=False,
-                    max_image_mpixels=512)
-                text = self._extract(ocr_file)
-        return text
+            pages = convert_from_path(self._file, 400)
+            text = ' '.join(image_to_string(page, self._lang) for page in pages)
+            return self._normalize_text(text)
 
     def _extract(self, file=None) -> str:
         if file is None:
             file = self._file
         with pdfplumber.open(file) as pdf:
             text = ' '.join(filter(None, (page.extract_text() for page in pdf.pages)))
-            normalized_text = normalize('NFC', text)
-            return re.sub('-\s?\n', '', normalized_text)  # Merge hyphenated words
+            return self._normalize_text(text)
+
+    def _normalize_text(self, text: str) -> str:
+        normalized_text = normalize('NFC', text)
+        return re.sub('-\s?\n', '', normalized_text)  # Merge hyphenated words
 
     def _poor_extraction(self, text: str) -> bool:
-        return bool(re.search(PdfReader.ERROR_HEURISTIC, text))
+        return not len(text.strip()) or bool(re.search(PdfReader.ERROR_HEURISTIC, text))
 
 
 class UnsupportedFileFormatError(Exception):
