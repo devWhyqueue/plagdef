@@ -7,9 +7,11 @@ from ast import literal_eval
 from collections import Counter
 from configparser import ConfigParser
 from copy import deepcopy
+from functools import partial
 from json import JSONDecodeError
 from pathlib import Path
 from pickle import dump, load, UnpicklingError
+from threading import Lock
 from unicodedata import normalize
 
 import jsonpickle
@@ -45,13 +47,14 @@ class DocumentFileRepository:
 
     def list(self) -> set[models.Document]:
         files = list(self._list_files())
-        docs = thread_map(self._read_file, files, desc=f"Reading documents in '{self.dir_path}'",
+        read_file = partial(self._read_file, lock=Lock())
+        docs = thread_map(read_file, files, desc=f"Reading documents in '{self.dir_path}'",
                           unit='doc', total=len(files), max_workers=os.cpu_count())
         return set(filter(None, docs))
 
-    def _read_file(self, file):
+    def _read_file(self, file, lock):
         if file.suffix == '.pdf':
-            reader = PdfReader(file, self._ocr)
+            reader = PdfReader(file, self._ocr, lock)
             text = reader.extract_text()
             return models.Document(file.stem, str(file.resolve()), text)
         else:
@@ -146,9 +149,10 @@ class DocumentPickleRepository:
 class PdfReader:
     ERROR_HEURISTIC = '¨[aou]|ﬀ|\(cid:\d+\)|\w{50}'
 
-    def __init__(self, file, ocr):
+    def __init__(self, file, ocr, lock):
         self._file = file
         self._ocr = ocr
+        self._lock = lock
 
     def extract_text(self):
         text = self._extract()
@@ -158,7 +162,8 @@ class PdfReader:
             text = ''
             for page in pages:
                 img = numpy.array(page)
-                page_text = ' '.join(self._ocr.readtext(img, detail=0, paragraph=True))
+                with self._lock:
+                    page_text = ' '.join(self._ocr.readtext(img, detail=0, paragraph=True))
                 text += page_text
         return self._normalize_text(text)
 

@@ -31,6 +31,9 @@ For acceptable OCR performance on PDF files you need CUDA.\
 To install CUDA for your operating system take a look at:\
 https://docs.nvidia.com/cuda/cuda-quick-start-guide/index.html
 
+Then install torch and torchvision for your CUDA version:
+https://pytorch.org
+
 ## Libmagic
 
 **After** (important!) you installed PlagDef, install the libmagic library.\
