@@ -154,7 +154,7 @@ class PdfReader:
             log.warning(f"Poor text extraction in '{self._file.name}' detected! Using OCR...")
             pages = convert_from_path(self._file, 400)
             text = ' '.join(image_to_string(page, self._lang) for page in pages)
-            return self._normalize_text(text)
+        return self._normalize_text(text)
 
     def _extract(self, file=None) -> str:
         if file is None:
