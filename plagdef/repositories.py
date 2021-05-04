@@ -9,6 +9,7 @@ from configparser import ConfigParser
 from copy import deepcopy
 from io import BytesIO
 from json import JSONDecodeError
+from multiprocessing import Lock
 from pathlib import Path
 from pickle import dump, load, UnpicklingError
 from unicodedata import normalize
@@ -25,6 +26,7 @@ from plagdef.model import models
 
 log = logging.getLogger(__name__)
 jsonpickle.set_encoder_options('json', indent=4)
+lock = Lock()
 
 
 class DocumentFileRepository:
@@ -142,7 +144,7 @@ class DocumentPickleRepository:
 
 
 class PdfReader:
-    ERROR_HEURISTIC = '¨[aou]|ﬀ|\(cid:\d+\)'
+    ERROR_HEURISTIC = '¨[aou]|ﬀ|\(cid:\d+\)|\w{50}'
 
     def __init__(self, lang, file):
         self._lang = lang if lang == 'eng' else 'deu'
@@ -153,8 +155,9 @@ class PdfReader:
         if self._poor_extraction(text):
             log.warning(f"Poor text extraction in '{self._file.name}' detected! Using OCR...")
             with BytesIO() as ocr_file:
-                ocr(self._file, ocr_file, language=self._lang, force_ocr=True, progress_bar=False,
-                    max_image_mpixels=512)
+                with lock:
+                    ocr(self._file, ocr_file, language=self._lang, force_ocr=True, progress_bar=False,
+                        max_image_mpixels=512)
                 text = self._extract(ocr_file)
         return text
 
@@ -167,7 +170,7 @@ class PdfReader:
             return re.sub('-\s?\n', '', normalized_text)  # Merge hyphenated words
 
     def _poor_extraction(self, text: str) -> bool:
-        return bool(re.search(PdfReader.ERROR_HEURISTIC, text))
+        return not len(text.strip()) or bool(re.search(PdfReader.ERROR_HEURISTIC, text))
 
 
 class UnsupportedFileFormatError(Exception):

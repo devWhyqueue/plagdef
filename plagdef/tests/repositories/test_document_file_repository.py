@@ -157,6 +157,18 @@ def test_pdf_reader_poor_extraction_ff():
     assert reader._poor_extraction(text)
 
 
+def test_pdf_reader_poor_extraction_very_long_word():
+    text = 'TheseWordsarewrongfullymergedtogetherduetoextractionproblems.'
+    reader = PdfReader('eng', None)
+    assert reader._poor_extraction(text)
+
+
+def test_pdf_reader_poor_extraction_no_text():
+    text = '   '
+    reader = PdfReader('eng', None)
+    assert reader._poor_extraction(text)
+
+
 def test_pdf_reader_poor_extraction_with_correct_text():
     text = 'This is flawless.'
     reader = PdfReader('eng', None)
