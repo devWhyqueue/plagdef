@@ -143,7 +143,7 @@ class DocumentPickleRepository:
 
 
 class PdfReader:
-    ERROR_HEURISTIC = '¨[aou]|ﬀ|\(cid:\d+\)|\w{50}'
+    ERROR_HEURISTIC = '¨[aou]|ﬀ|\(cid:\d+\)|[a-zA-Z]{50}'
 
     def __init__(self, lang, file):
         self._lang = lang if lang == 'eng' else 'deu'

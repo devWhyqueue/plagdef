@@ -163,6 +163,12 @@ def test_pdf_reader_poor_extraction_very_long_word():
     assert reader._poor_extraction(text)
 
 
+def test_pdf_reader_poor_extraction_url():
+    text = ' https://www.treatwell.de/partners/inspiration/blog/5-tipps-ihr-team-zu-motivieren'
+    reader = PdfReader('eng', None)
+    assert not reader._poor_extraction(text)
+
+
 def test_pdf_reader_poor_extraction_no_text():
     text = '   '
     reader = PdfReader('eng', None)
