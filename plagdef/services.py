@@ -14,19 +14,20 @@ def find_matches(doc_repo, config_repo, archive_repo=None, common_doc_repo=None)
     try:
         config = config_repo.get()
         doc_matcher = DocumentMatcher(config)
-        common_docs = common_doc_repo.list() if common_doc_repo else None
         archive_docs = None
         if archive_repo:
-            archive_docs = _preprocess_docs(doc_matcher, archive_repo, common_docs)
-        docs = _preprocess_docs(doc_matcher, doc_repo, common_docs)
+            archive_docs = _preprocess_docs(doc_matcher, archive_repo, common_doc_repo)
+        docs = _preprocess_docs(doc_matcher, doc_repo, common_doc_repo)
         doc_pair_matches = doc_matcher.find_matches(docs, archive_docs)
         return doc_pair_matches
     except (ParsingError, UnsupportedFileFormatError, UnsupportedLanguageError) as e:
         raise UsageError(str(e)) from e
 
 
-def _preprocess_docs(doc_matcher, doc_repo, common_docs=None) -> set[Document]:
-    doc_ser = DocumentPickleRepository(doc_repo.dir_path)
+def _preprocess_docs(doc_matcher, doc_repo, common_doc_repo=None) -> set[Document]:
+    common_dir_path = common_doc_repo.dir_path if common_doc_repo else None
+    common_docs = common_doc_repo.list() if common_doc_repo else None
+    doc_ser = DocumentPickleRepository(doc_repo.dir_path, common_dir_path)
     docs = doc_repo.list()
     prep_docs = {d for d in doc_ser.list() if d in docs}
     unprep_docs = docs.difference(prep_docs)
