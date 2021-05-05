@@ -7,6 +7,7 @@ from ast import literal_eval
 from collections import Counter
 from configparser import ConfigParser
 from copy import deepcopy
+from ctypes import c_size_t
 from io import BytesIO
 from json import JSONDecodeError
 from multiprocessing import Lock
@@ -120,12 +121,10 @@ class ConfigFileRepository:
 
 
 class DocumentPickleRepository:
-    FILE_NAME = '_prep_docs.pdef'
-
-    def __init__(self, dir_path: Path):
+    def __init__(self, dir_path: Path, common_dir_path: Path = None):
         if not dir_path.is_dir():
             raise NotADirectoryError(f"The given path '{dir_path}' does not point to an existing directory!")
-        self.file_path = dir_path / DocumentPickleRepository.FILE_NAME
+        self.file_path = dir_path / f'.{c_size_t(hash(common_dir_path)).value}.pdef'
 
     def save(self, docs: set[models.Document]):
         with self.file_path.open('wb') as file:

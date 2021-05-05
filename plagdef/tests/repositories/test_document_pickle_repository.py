@@ -1,4 +1,6 @@
 from collections import Counter
+from ctypes import c_size_t
+from pathlib import Path
 from pickle import dump, load
 
 import pytest
@@ -13,6 +15,16 @@ def test_serialize_docs(tmp_path):
     serializer.save(docs)
     deserialized_docs = serializer.list()
     assert deserialized_docs == docs
+    assert len(list(tmp_path.glob('*'))) == 1
+
+
+def test_serialize_with_different_common_doc_paths(tmp_path):
+    docs = {Document('doc1', 'path/to/doc1', 'Some text.'), Document('doc2', 'path/to/doc2', 'Different text.')}
+    ser = DocumentPickleRepository(tmp_path)
+    ser.save(docs)
+    ser_with_common = DocumentPickleRepository(tmp_path, Path('/some/path'))
+    ser_with_common.save(docs)
+    assert len(list(tmp_path.glob('*'))) == 2
 
 
 def test_serialize_overrides_existing_file(tmp_path):
@@ -39,7 +51,7 @@ def test_init_with_file_fails(tmp_path):
 
 
 def test_file_exists_with_corrupt_content(tmp_path):
-    file_path = tmp_path / DocumentPickleRepository.FILE_NAME
+    file_path = tmp_path / f'.{c_size_t(hash(None)).value}.pdef'
     with file_path.open('w', encoding='utf-8') as f:
         f.write('Invalid content.')
     ser = DocumentPickleRepository(tmp_path)
@@ -48,7 +60,7 @@ def test_file_exists_with_corrupt_content(tmp_path):
 
 
 def test_file_exists_with_no_content(tmp_path):
-    file_path = tmp_path / DocumentPickleRepository.FILE_NAME
+    file_path = tmp_path / f'.{c_size_t(hash(None)).value}.pdef'
     file_path.touch()
     ser = DocumentPickleRepository(tmp_path)
     docs = ser.list()
