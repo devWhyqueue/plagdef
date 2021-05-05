@@ -1,54 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-    <class>home_widget</class>
-    <widget class="QWidget" name="home_widget">
-        <property name="geometry">
-            <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>817</width>
-                <height>613</height>
-            </rect>
-        </property>
-        <property name="styleSheet">
-            <string notr="true">background-color: rgb(77, 80, 87);</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout">
-            <item>
-                <layout class="QHBoxLayout" name="lang_layout">
-                    <item>
-                        <widget class="QPushButton" name="ger_button">
-                            <property name="enabled">
-                                <bool>true</bool>
-                            </property>
-                            <property name="sizePolicy">
-                                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                                    <horstretch>0</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                                <size>
-                                    <width>48</width>
-                                    <height>48</height>
-                                </size>
-                            </property>
-                            <property name="maximumSize">
-                                <size>
-                                    <width>48</width>
-                                    <height>48</height>
-                                </size>
-                            </property>
-                            <property name="font">
-                                <font>
-                                    <pointsize>10</pointsize>
-                                </font>
-                            </property>
-                            <property name="toolTip">
-                                <string>Set the document's language to 'German'.</string>
-                            </property>
-                            <property name="styleSheet">
-                                <string notr="true">:!checked:hover{
+ <class>home_widget</class>
+ <widget class="QWidget" name="home_widget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>817</width>
+    <height>613</height>
+   </rect>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(77, 80, 87);</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="lang_layout">
+     <item>
+      <widget class="QPushButton" name="ger_button">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>48</width>
+         <height>48</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>48</width>
+         <height>48</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="toolTip">
+        <string>Set the document's language to 'German'.</string>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">:!checked:hover{
                                     background-color: #5f636c;
                                     }
 
@@ -56,65 +56,64 @@
                                     border-style: outset;
                                     }
                                 </string>
-                            </property>
-                            <property name="text">
-                                <string/>
-                            </property>
-                            <property name="icon">
-                                <iconset resource="../res/resources.qrc">
-                                    <normaloff>:/ger_flag.png</normaloff>:/ger_flag.png
-                                </iconset>
-                            </property>
-                            <property name="iconSize">
-                                <size>
-                                    <width>32</width>
-                                    <height>32</height>
-                                </size>
-                            </property>
-                            <property name="checkable">
-                                <bool>true</bool>
-                            </property>
-                            <property name="checked">
-                                <bool>true</bool>
-                            </property>
-                            <property name="autoDefault">
-                                <bool>false</bool>
-                            </property>
-                            <property name="default">
-                                <bool>false</bool>
-                            </property>
-                        </widget>
-                    </item>
-                    <item>
-                        <widget class="QPushButton" name="eng_button">
-                            <property name="sizePolicy">
-                                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                                    <horstretch>0</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                                <size>
-                                    <width>48</width>
-                                    <height>48</height>
-                                </size>
-                            </property>
-                            <property name="maximumSize">
-                                <size>
-                                    <width>48</width>
-                                    <height>48</height>
-                                </size>
-                            </property>
-                            <property name="font">
-                                <font>
-                                    <pointsize>10</pointsize>
-                                </font>
-                            </property>
-                            <property name="toolTip">
-                                <string>Set the document's language to 'English'.</string>
-                            </property>
-                            <property name="styleSheet">
-                                <string notr="true">:!checked:hover{
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../res/resources.qrc">
+         <normaloff>:/ger_flag.png</normaloff>:/ger_flag.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+       <property name="default">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="eng_button">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>48</width>
+         <height>48</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>48</width>
+         <height>48</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="toolTip">
+        <string>Set the document's language to 'English'.</string>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">:!checked:hover{
                                     background-color: #5f636c;
                                     }
 
@@ -122,303 +121,299 @@
                                     border-style: outset;
                                     }
                                 </string>
-                            </property>
-                            <property name="text">
-                                <string/>
-                            </property>
-                            <property name="icon">
-                                <iconset resource="../res/resources.qrc">
-                                    <normaloff>:/uk_flag.png</normaloff>:/uk_flag.png
-                                </iconset>
-                            </property>
-                            <property name="iconSize">
-                                <size>
-                                    <width>32</width>
-                                    <height>32</height>
-                                </size>
-                            </property>
-                            <property name="checkable">
-                                <bool>true</bool>
-                            </property>
-                            <property name="checked">
-                                <bool>false</bool>
-                            </property>
-                            <property name="autoDefault">
-                                <bool>false</bool>
-                            </property>
-                            <property name="default">
-                                <bool>false</bool>
-                            </property>
-                        </widget>
-                    </item>
-                    <item>
-                        <spacer name="lang_right_spacer">
-                            <property name="orientation">
-                                <enum>Qt::Horizontal</enum>
-                            </property>
-                            <property name="sizeHint" stdset="0">
-                                <size>
-                                    <width>40</width>
-                                    <height>20</height>
-                                </size>
-                            </property>
-                        </spacer>
-                    </item>
-                    <item>
-                        <widget class="QPushButton" name="open_button">
-                            <property name="sizePolicy">
-                                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                                    <horstretch>0</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                                <size>
-                                    <width>48</width>
-                                    <height>48</height>
-                                </size>
-                            </property>
-                            <property name="maximumSize">
-                                <size>
-                                    <width>48</width>
-                                    <height>48</height>
-                                </size>
-                            </property>
-                            <property name="font">
-                                <font>
-                                    <pointsize>10</pointsize>
-                                </font>
-                            </property>
-                            <property name="toolTip">
-                                <string>Open a directory with JSON reports to display the matches.</string>
-                            </property>
-                            <property name="styleSheet">
-                                <string notr="true">:hover{
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../res/resources.qrc">
+         <normaloff>:/uk_flag.png</normaloff>:/uk_flag.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+       <property name="default">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="lang_right_spacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="open_button">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>48</width>
+         <height>48</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>48</width>
+         <height>48</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="toolTip">
+        <string>Open a directory with JSON reports to display the matches.</string>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">:hover{
                                     background-color: #5f636c;
                                     }
                                 </string>
-                            </property>
-                            <property name="text">
-                                <string/>
-                            </property>
-                            <property name="icon">
-                                <iconset resource="../res/resources.qrc">
-                                    <normaloff>:/open_white.png</normaloff>:/open_white.png
-                                </iconset>
-                            </property>
-                            <property name="iconSize">
-                                <size>
-                                    <width>32</width>
-                                    <height>32</height>
-                                </size>
-                            </property>
-                            <property name="checkable">
-                                <bool>false</bool>
-                            </property>
-                            <property name="checked">
-                                <bool>false</bool>
-                            </property>
-                            <property name="autoDefault">
-                                <bool>false</bool>
-                            </property>
-                            <property name="default">
-                                <bool>false</bool>
-                            </property>
-                        </widget>
-                    </item>
-                    <item>
-                        <widget class="QPushButton" name="settings_button">
-                            <property name="sizePolicy">
-                                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                                    <horstretch>0</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                                <size>
-                                    <width>48</width>
-                                    <height>48</height>
-                                </size>
-                            </property>
-                            <property name="maximumSize">
-                                <size>
-                                    <width>48</width>
-                                    <height>48</height>
-                                </size>
-                            </property>
-                            <property name="font">
-                                <font>
-                                    <pointsize>10</pointsize>
-                                </font>
-                            </property>
-                            <property name="toolTip">
-                                <string>Adjust the sensitivity of the text matching algorithm.
-                                    Higher values may increase precision, lower ones can improve sensitivity.
-                                </string>
-                            </property>
-                            <property name="styleSheet">
-                                <string notr="true">:hover{
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../res/resources.qrc">
+         <normaloff>:/open_white.png</normaloff>:/open_white.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+       <property name="default">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="settings_button">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>48</width>
+         <height>48</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>48</width>
+         <height>48</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="toolTip">
+        <string>Adjust the sensitivity of the text matching algorithm.
+Higher values may increase precision, lower ones can improve sensitivity.</string>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">:hover{
                                     background-color: #5f636c;
                                     }
                                 </string>
-                            </property>
-                            <property name="text">
-                                <string/>
-                            </property>
-                            <property name="icon">
-                                <iconset resource="../res/resources.qrc">
-                                    <normaloff>:/settings_white.png</normaloff>:/settings_white.png
-                                </iconset>
-                            </property>
-                            <property name="iconSize">
-                                <size>
-                                    <width>40</width>
-                                    <height>40</height>
-                                </size>
-                            </property>
-                            <property name="checkable">
-                                <bool>false</bool>
-                            </property>
-                            <property name="checked">
-                                <bool>false</bool>
-                            </property>
-                            <property name="autoDefault">
-                                <bool>false</bool>
-                            </property>
-                            <property name="default">
-                                <bool>false</bool>
-                            </property>
-                        </widget>
-                    </item>
-                </layout>
-            </item>
-            <item>
-                <spacer name="lang_heading_spacer">
-                    <property name="orientation">
-                        <enum>Qt::Vertical</enum>
-                    </property>
-                    <property name="sizeType">
-                        <enum>QSizePolicy::Fixed</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                        <size>
-                            <width>20</width>
-                            <height>20</height>
-                        </size>
-                    </property>
-                </spacer>
-            </item>
-            <item>
-                <widget class="QLabel" name="logo_label">
-                    <property name="sizePolicy">
-                        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                            <horstretch>0</horstretch>
-                            <verstretch>0</verstretch>
-                        </sizepolicy>
-                    </property>
-                    <property name="minimumSize">
-                        <size>
-                            <width>0</width>
-                            <height>43</height>
-                        </size>
-                    </property>
-                    <property name="maximumSize">
-                        <size>
-                            <width>16777215</width>
-                            <height>16777215</height>
-                        </size>
-                    </property>
-                    <property name="text">
-                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;:/logo.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                    </property>
-                </widget>
-            </item>
-            <item>
-                <spacer name="heading_inputs_spacer">
-                    <property name="orientation">
-                        <enum>Qt::Vertical</enum>
-                    </property>
-                    <property name="sizeType">
-                        <enum>QSizePolicy::Fixed</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                        <size>
-                            <width>20</width>
-                            <height>30</height>
-                        </size>
-                    </property>
-                </spacer>
-            </item>
-            <item>
-                <layout class="QHBoxLayout" name="inputs_layout">
-                    <item>
-                        <spacer name="inputs_left_spacer">
-                            <property name="orientation">
-                                <enum>Qt::Horizontal</enum>
-                            </property>
-                            <property name="sizeHint" stdset="0">
-                                <size>
-                                    <width>40</width>
-                                    <height>20</height>
-                                </size>
-                            </property>
-                        </spacer>
-                    </item>
-                    <item>
-                        <layout class="QVBoxLayout" name="archive_layout">
-                            <item alignment="Qt::AlignBottom">
-                                <widget class="QLabel" name="archive_label">
-                                    <property name="sizePolicy">
-                                        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                                            <horstretch>0</horstretch>
-                                            <verstretch>0</verstretch>
-                                        </sizepolicy>
-                                    </property>
-                                    <property name="minimumSize">
-                                        <size>
-                                            <width>90</width>
-                                            <height>25</height>
-                                        </size>
-                                    </property>
-                                    <property name="text">
-                                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../res/resources.qrc">
+         <normaloff>:/settings_white.png</normaloff>:/settings_white.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>40</width>
+         <height>40</height>
+        </size>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+       <property name="default">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <spacer name="lang_heading_spacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QLabel" name="logo_label">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>43</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;:/logo.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="heading_inputs_spacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>30</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="inputs_layout">
+     <item>
+      <spacer name="inputs_left_spacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="archive_layout">
+       <item alignment="Qt::AlignBottom">
+        <widget class="QLabel" name="archive_label">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>90</width>
+           <height>25</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span
                                             style=&quot; font-size:14pt; color:#ffffff;&quot;&gt;Archive&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
                                         </string>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item alignment="Qt::AlignHCenter|Qt::AlignBottom">
-                                <widget class="QPushButton" name="archive_dir_button">
-                                    <property name="sizePolicy">
-                                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                                            <horstretch>0</horstretch>
-                                            <verstretch>0</verstretch>
-                                        </sizepolicy>
-                                    </property>
-                                    <property name="minimumSize">
-                                        <size>
-                                            <width>100</width>
-                                            <height>100</height>
-                                        </size>
-                                    </property>
-                                    <property name="maximumSize">
-                                        <size>
-                                            <width>100</width>
-                                            <height>100</height>
-                                        </size>
-                                    </property>
-                                    <property name="font">
-                                        <font>
-                                            <pointsize>10</pointsize>
-                                        </font>
-                                    </property>
-                                    <property name="toolTip">
-                                        <string>Directory containing documents which should not be compared among
-                                            themselves but only with the other documents.
-                                        </string>
-                                    </property>
-                                    <property name="styleSheet">
-                                        <string notr="true">QPushButton {
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignHCenter|Qt::AlignBottom">
+        <widget class="QPushButton" name="archive_dir_button">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>100</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>100</width>
+           <height>100</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>Directory containing documents
+which should not be compared among themselves
+but only with the other documents.</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
                                             border-radius: 50%;
                                             border-style: outset;
                                             }
@@ -432,81 +427,80 @@
                                             border-style: inset;
                                             }
                                         </string>
-                                    </property>
-                                    <property name="text">
-                                        <string/>
-                                    </property>
-                                    <property name="icon">
-                                        <iconset resource="../res/resources.qrc">
-                                            <normaloff>:/inbox_white.png</normaloff>:/inbox_white.png
-                                        </iconset>
-                                    </property>
-                                    <property name="iconSize">
-                                        <size>
-                                            <width>72</width>
-                                            <height>72</height>
-                                        </size>
-                                    </property>
-                                    <property name="autoDefault">
-                                        <bool>false</bool>
-                                    </property>
-                                    <property name="default">
-                                        <bool>false</bool>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item alignment="Qt::AlignHCenter|Qt::AlignTop">
-                                <widget class="QLabel" name="archive_dir_label">
-                                    <property name="sizePolicy">
-                                        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                                            <horstretch>0</horstretch>
-                                            <verstretch>0</verstretch>
-                                        </sizepolicy>
-                                    </property>
-                                    <property name="minimumSize">
-                                        <size>
-                                            <width>0</width>
-                                            <height>25</height>
-                                        </size>
-                                    </property>
-                                    <property name="text">
-                                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../res/resources.qrc">
+           <normaloff>:/inbox_white.png</normaloff>:/inbox_white.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>72</width>
+           <height>72</height>
+          </size>
+         </property>
+         <property name="autoDefault">
+          <bool>false</bool>
+         </property>
+         <property name="default">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignHCenter|Qt::AlignTop">
+        <widget class="QLabel" name="archive_dir_label">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>25</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span
                                             style=&quot; font-size:12pt; color:#ffffff;&quot;&gt;{folder_name}&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
                                         </string>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item alignment="Qt::AlignHCenter|Qt::AlignTop">
-                                <widget class="QCheckBox" name="archive_rec_check_box">
-                                    <property name="styleSheet">
-                                        <string notr="true">color: rgb(255, 255, 255);</string>
-                                    </property>
-                                    <property name="text">
-                                        <string>Include subfolders</string>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item alignment="Qt::AlignHCenter|Qt::AlignTop">
-                                <widget class="QPushButton" name="archive_rmdir_button">
-                                    <property name="sizePolicy">
-                                        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                                            <horstretch>0</horstretch>
-                                            <verstretch>0</verstretch>
-                                        </sizepolicy>
-                                    </property>
-                                    <property name="minimumSize">
-                                        <size>
-                                            <width>0</width>
-                                            <height>25</height>
-                                        </size>
-                                    </property>
-                                    <property name="font">
-                                        <font>
-                                            <pointsize>10</pointsize>
-                                        </font>
-                                    </property>
-                                    <property name="styleSheet">
-                                        <string notr="true">QPushButton {
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignHCenter|Qt::AlignTop">
+        <widget class="QCheckBox" name="archive_rec_check_box">
+         <property name="styleSheet">
+          <string notr="true">color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="text">
+          <string>Include subfolders</string>
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignHCenter|Qt::AlignTop">
+        <widget class="QPushButton" name="archive_rmdir_button">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>25</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
                                             color: #f28d01;
                                             }
 
@@ -514,86 +508,86 @@
                                             color: #b56900;
                                             }
                                         </string>
-                                    </property>
-                                    <property name="text">
-                                        <string>Remove</string>
-                                    </property>
-                                    <property name="flat">
-                                        <bool>true</bool>
-                                    </property>
-                                </widget>
-                            </item>
-                        </layout>
-                    </item>
-                    <item>
-                        <spacer name="archive_docs_spacer">
-                            <property name="orientation">
-                                <enum>Qt::Horizontal</enum>
-                            </property>
-                            <property name="sizeType">
-                                <enum>QSizePolicy::Fixed</enum>
-                            </property>
-                            <property name="sizeHint" stdset="0">
-                                <size>
-                                    <width>80</width>
-                                    <height>20</height>
-                                </size>
-                            </property>
-                        </spacer>
-                    </item>
-                    <item>
-                        <layout class="QVBoxLayout" name="docs_layout">
-                            <item alignment="Qt::AlignBottom">
-                                <widget class="QLabel" name="docs_label">
-                                    <property name="sizePolicy">
-                                        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                                            <horstretch>0</horstretch>
-                                            <verstretch>0</verstretch>
-                                        </sizepolicy>
-                                    </property>
-                                    <property name="minimumSize">
-                                        <size>
-                                            <width>100</width>
-                                            <height>30</height>
-                                        </size>
-                                    </property>
-                                    <property name="text">
-                                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span
+         </property>
+         <property name="text">
+          <string>Remove</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <spacer name="archive_docs_spacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>80</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="docs_layout">
+       <item alignment="Qt::AlignBottom">
+        <widget class="QLabel" name="docs_label">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span
                                             style=&quot; font-size:18pt; color:#ffffff;&quot;&gt;Documents&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
                                         </string>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-                                <widget class="QPushButton" name="docs_dir_button">
-                                    <property name="sizePolicy">
-                                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                                            <horstretch>0</horstretch>
-                                            <verstretch>0</verstretch>
-                                        </sizepolicy>
-                                    </property>
-                                    <property name="minimumSize">
-                                        <size>
-                                            <width>100</width>
-                                            <height>100</height>
-                                        </size>
-                                    </property>
-                                    <property name="maximumSize">
-                                        <size>
-                                            <width>128</width>
-                                            <height>128</height>
-                                        </size>
-                                    </property>
-                                    <property name="font">
-                                        <font>
-                                            <pointsize>10</pointsize>
-                                        </font>
-                                    </property>
-                                    <property name="toolTip">
-                                        <string>Select a folder containing documents which should be examined.</string>
-                                    </property>
-                                    <property name="styleSheet">
-                                        <string notr="true">QPushButton {
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+        <widget class="QPushButton" name="docs_dir_button">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>100</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>128</width>
+           <height>128</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>Select a folder containing documents which should be examined.</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
                                             border-radius: 50%;
                                             border-style: outset;
                                             }
@@ -607,86 +601,85 @@
                                             border-style: inset;
                                             }
                                         </string>
-                                    </property>
-                                    <property name="text">
-                                        <string/>
-                                    </property>
-                                    <property name="icon">
-                                        <iconset resource="../res/resources.qrc">
-                                            <normaloff>:/add_circle_orange.png</normaloff>:/add_circle_orange.png
-                                        </iconset>
-                                    </property>
-                                    <property name="iconSize">
-                                        <size>
-                                            <width>96</width>
-                                            <height>96</height>
-                                        </size>
-                                    </property>
-                                    <property name="autoDefault">
-                                        <bool>false</bool>
-                                    </property>
-                                    <property name="default">
-                                        <bool>false</bool>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item alignment="Qt::AlignTop">
-                                <widget class="QLabel" name="docs_dir_label">
-                                    <property name="sizePolicy">
-                                        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                                            <horstretch>0</horstretch>
-                                            <verstretch>0</verstretch>
-                                        </sizepolicy>
-                                    </property>
-                                    <property name="minimumSize">
-                                        <size>
-                                            <width>0</width>
-                                            <height>30</height>
-                                        </size>
-                                    </property>
-                                    <property name="text">
-                                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../res/resources.qrc">
+           <normaloff>:/add_circle_orange.png</normaloff>:/add_circle_orange.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>96</width>
+           <height>96</height>
+          </size>
+         </property>
+         <property name="autoDefault">
+          <bool>false</bool>
+         </property>
+         <property name="default">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignTop">
+        <widget class="QLabel" name="docs_dir_label">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span
                                             style=&quot; font-size:16pt; color:#ffffff;&quot;&gt;{folder_name}&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
                                         </string>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item alignment="Qt::AlignTop">
-                                <widget class="QCheckBox" name="docs_rec_check_box">
-                                    <property name="font">
-                                        <font>
-                                            <pointsize>12</pointsize>
-                                        </font>
-                                    </property>
-                                    <property name="styleSheet">
-                                        <string notr="true">color: rgb(255, 255, 255);</string>
-                                    </property>
-                                    <property name="text">
-                                        <string>Include subfolders</string>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item alignment="Qt::AlignHCenter|Qt::AlignTop">
-                                <widget class="QPushButton" name="docs_rmdir_button">
-                                    <property name="sizePolicy">
-                                        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                                            <horstretch>0</horstretch>
-                                            <verstretch>0</verstretch>
-                                        </sizepolicy>
-                                    </property>
-                                    <property name="minimumSize">
-                                        <size>
-                                            <width>0</width>
-                                            <height>25</height>
-                                        </size>
-                                    </property>
-                                    <property name="font">
-                                        <font>
-                                            <pointsize>14</pointsize>
-                                        </font>
-                                    </property>
-                                    <property name="styleSheet">
-                                        <string notr="true">QPushButton {
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignTop">
+        <widget class="QCheckBox" name="docs_rec_check_box">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="text">
+          <string>Include subfolders</string>
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignHCenter|Qt::AlignTop">
+        <widget class="QPushButton" name="docs_rmdir_button">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>25</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>14</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
                                             color: #f28d01;
                                             }
 
@@ -694,90 +687,88 @@
                                             color: #b56900;
                                             }
                                         </string>
-                                    </property>
-                                    <property name="text">
-                                        <string>Remove</string>
-                                    </property>
-                                    <property name="flat">
-                                        <bool>true</bool>
-                                    </property>
-                                </widget>
-                            </item>
-                        </layout>
-                    </item>
-                    <item>
-                        <spacer name="docs_common_spacer">
-                            <property name="orientation">
-                                <enum>Qt::Horizontal</enum>
-                            </property>
-                            <property name="sizeType">
-                                <enum>QSizePolicy::Fixed</enum>
-                            </property>
-                            <property name="sizeHint" stdset="0">
-                                <size>
-                                    <width>80</width>
-                                    <height>20</height>
-                                </size>
-                            </property>
-                        </spacer>
-                    </item>
-                    <item>
-                        <layout class="QVBoxLayout" name="common_layout">
-                            <item alignment="Qt::AlignBottom">
-                                <widget class="QLabel" name="common_label">
-                                    <property name="sizePolicy">
-                                        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                                            <horstretch>0</horstretch>
-                                            <verstretch>0</verstretch>
-                                        </sizepolicy>
-                                    </property>
-                                    <property name="minimumSize">
-                                        <size>
-                                            <width>90</width>
-                                            <height>25</height>
-                                        </size>
-                                    </property>
-                                    <property name="text">
-                                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span
+         </property>
+         <property name="text">
+          <string>Remove</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <spacer name="docs_common_spacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>80</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="common_layout">
+       <item alignment="Qt::AlignBottom">
+        <widget class="QLabel" name="common_label">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>90</width>
+           <height>25</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span
                                             style=&quot; font-size:14pt; color:#ffffff;&quot;&gt;Common&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
                                         </string>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item alignment="Qt::AlignHCenter|Qt::AlignBottom">
-                                <widget class="QPushButton" name="common_dir_button">
-                                    <property name="sizePolicy">
-                                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                                            <horstretch>0</horstretch>
-                                            <verstretch>0</verstretch>
-                                        </sizepolicy>
-                                    </property>
-                                    <property name="minimumSize">
-                                        <size>
-                                            <width>100</width>
-                                            <height>100</height>
-                                        </size>
-                                    </property>
-                                    <property name="maximumSize">
-                                        <size>
-                                            <width>100</width>
-                                            <height>100</height>
-                                        </size>
-                                    </property>
-                                    <property name="font">
-                                        <font>
-                                            <pointsize>10</pointsize>
-                                        </font>
-                                    </property>
-                                    <property name="toolTip">
-                                        <string>Select a folder containing documents which consist of common text.
-                                            Files are read line by line.
-                                            If a sentence in a document contains all words in an arbitrary line it is
-                                            excluded.
-                                        </string>
-                                    </property>
-                                    <property name="styleSheet">
-                                        <string notr="true">QPushButton {
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignHCenter|Qt::AlignBottom">
+        <widget class="QPushButton" name="common_dir_button">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>100</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>100</width>
+           <height>100</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>Select a folder containing documents which consist of common text.
+Files are read line by line.
+If a sentence in a document contains all words in an arbitrary line it is excluded.</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
                                             border-radius: 50%;
                                             border-style: outset;
                                             }
@@ -791,81 +782,80 @@
                                             border-style: inset;
                                             }
                                         </string>
-                                    </property>
-                                    <property name="text">
-                                        <string/>
-                                    </property>
-                                    <property name="icon">
-                                        <iconset resource="../res/resources.qrc">
-                                            <normaloff>:/common_white.png</normaloff>:/common_white.png
-                                        </iconset>
-                                    </property>
-                                    <property name="iconSize">
-                                        <size>
-                                            <width>80</width>
-                                            <height>80</height>
-                                        </size>
-                                    </property>
-                                    <property name="autoDefault">
-                                        <bool>false</bool>
-                                    </property>
-                                    <property name="default">
-                                        <bool>false</bool>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item alignment="Qt::AlignHCenter|Qt::AlignTop">
-                                <widget class="QLabel" name="common_dir_label">
-                                    <property name="sizePolicy">
-                                        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                                            <horstretch>0</horstretch>
-                                            <verstretch>0</verstretch>
-                                        </sizepolicy>
-                                    </property>
-                                    <property name="minimumSize">
-                                        <size>
-                                            <width>0</width>
-                                            <height>25</height>
-                                        </size>
-                                    </property>
-                                    <property name="text">
-                                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../res/resources.qrc">
+           <normaloff>:/common_white.png</normaloff>:/common_white.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>80</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="autoDefault">
+          <bool>false</bool>
+         </property>
+         <property name="default">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignHCenter|Qt::AlignTop">
+        <widget class="QLabel" name="common_dir_label">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>25</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span
                                             style=&quot; font-size:12pt; color:#ffffff;&quot;&gt;{folder_name}&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
                                         </string>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item alignment="Qt::AlignHCenter|Qt::AlignTop">
-                                <widget class="QCheckBox" name="common_rec_check_box">
-                                    <property name="styleSheet">
-                                        <string notr="true">color: rgb(255, 255, 255);</string>
-                                    </property>
-                                    <property name="text">
-                                        <string>Include subfolders</string>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item alignment="Qt::AlignHCenter|Qt::AlignTop">
-                                <widget class="QPushButton" name="common_rmdir_button">
-                                    <property name="sizePolicy">
-                                        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                                            <horstretch>0</horstretch>
-                                            <verstretch>0</verstretch>
-                                        </sizepolicy>
-                                    </property>
-                                    <property name="minimumSize">
-                                        <size>
-                                            <width>0</width>
-                                            <height>25</height>
-                                        </size>
-                                    </property>
-                                    <property name="font">
-                                        <font>
-                                            <pointsize>10</pointsize>
-                                        </font>
-                                    </property>
-                                    <property name="styleSheet">
-                                        <string notr="true">QPushButton {
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignHCenter|Qt::AlignTop">
+        <widget class="QCheckBox" name="common_rec_check_box">
+         <property name="styleSheet">
+          <string notr="true">color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="text">
+          <string>Include subfolders</string>
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignHCenter|Qt::AlignTop">
+        <widget class="QPushButton" name="common_rmdir_button">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>25</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
                                             color: #f28d01;
                                             }
 
@@ -873,93 +863,93 @@
                                             color: #b56900;
                                             }
                                         </string>
-                                    </property>
-                                    <property name="text">
-                                        <string>Remove</string>
-                                    </property>
-                                    <property name="flat">
-                                        <bool>true</bool>
-                                    </property>
-                                </widget>
-                            </item>
-                        </layout>
-                    </item>
-                    <item>
-                        <spacer name="inputs_right_spacer">
-                            <property name="orientation">
-                                <enum>Qt::Horizontal</enum>
-                            </property>
-                            <property name="sizeHint" stdset="0">
-                                <size>
-                                    <width>40</width>
-                                    <height>20</height>
-                                </size>
-                            </property>
-                        </spacer>
-                    </item>
-                </layout>
-            </item>
-            <item>
-                <spacer name="inputs_detect_spacer">
-                    <property name="orientation">
-                        <enum>Qt::Vertical</enum>
-                    </property>
-                    <property name="sizeType">
-                        <enum>QSizePolicy::Fixed</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                        <size>
-                            <width>20</width>
-                            <height>30</height>
-                        </size>
-                    </property>
-                </spacer>
-            </item>
-            <item>
-                <layout class="QHBoxLayout" name="button_layout">
-                    <item>
-                        <spacer name="button_left_spacer">
-                            <property name="orientation">
-                                <enum>Qt::Horizontal</enum>
-                            </property>
-                            <property name="sizeHint" stdset="0">
-                                <size>
-                                    <width>40</width>
-                                    <height>20</height>
-                                </size>
-                            </property>
-                        </spacer>
-                    </item>
-                    <item>
-                        <widget class="QPushButton" name="detect_button">
-                            <property name="enabled">
-                                <bool>false</bool>
-                            </property>
-                            <property name="sizePolicy">
-                                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                                    <horstretch>0</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                                <size>
-                                    <width>200</width>
-                                    <height>60</height>
-                                </size>
-                            </property>
-                            <property name="maximumSize">
-                                <size>
-                                    <width>200</width>
-                                    <height>60</height>
-                                </size>
-                            </property>
-                            <property name="font">
-                                <font>
-                                    <pointsize>16</pointsize>
-                                </font>
-                            </property>
-                            <property name="styleSheet">
-                                <string notr="true">QPushButton {
+         </property>
+         <property name="text">
+          <string>Remove</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <spacer name="inputs_right_spacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <spacer name="inputs_detect_spacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>30</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="button_layout">
+     <item>
+      <spacer name="button_left_spacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="detect_button">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>60</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>200</width>
+         <height>60</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>16</pointsize>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton {
                                     font-size: 16pt;
                                     border-radius: 25px;
                                     border: 3px solid rgb(242, 141, 1);
@@ -980,61 +970,60 @@
                                     border-style: inset;
                                     }
                                 </string>
-                            </property>
-                            <property name="text">
-                                <string>Find matches</string>
-                            </property>
-                            <property name="icon">
-                                <iconset resource="../res/resources.qrc">
-                                    <normaloff>:/search_white.png</normaloff>:/search_white.png
-                                </iconset>
-                            </property>
-                            <property name="iconSize">
-                                <size>
-                                    <width>24</width>
-                                    <height>24</height>
-                                </size>
-                            </property>
-                            <property name="autoDefault">
-                                <bool>false</bool>
-                            </property>
-                            <property name="default">
-                                <bool>false</bool>
-                            </property>
-                        </widget>
-                    </item>
-                    <item>
-                        <spacer name="button_right_spacer">
-                            <property name="orientation">
-                                <enum>Qt::Horizontal</enum>
-                            </property>
-                            <property name="sizeHint" stdset="0">
-                                <size>
-                                    <width>40</width>
-                                    <height>20</height>
-                                </size>
-                            </property>
-                        </spacer>
-                    </item>
-                </layout>
-            </item>
-            <item>
-                <spacer name="bottom_spacer">
-                    <property name="orientation">
-                        <enum>Qt::Vertical</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                        <size>
-                            <width>20</width>
-                            <height>40</height>
-                        </size>
-                    </property>
-                </spacer>
-            </item>
-        </layout>
-    </widget>
-    <resources>
-        <include location="../res/resources.qrc"/>
-    </resources>
-    <connections/>
+       </property>
+       <property name="text">
+        <string>Find matches</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../res/resources.qrc">
+         <normaloff>:/search_white.png</normaloff>:/search_white.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>24</width>
+         <height>24</height>
+        </size>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+       <property name="default">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="button_right_spacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <spacer name="bottom_spacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="../res/resources.qrc"/>
+ </resources>
+ <connections/>
 </ui>
