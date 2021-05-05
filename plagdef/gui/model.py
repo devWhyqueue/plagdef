@@ -29,7 +29,8 @@ class ResultsTableModel(QAbstractTableModel):
             if len(typed_matches):
                 self._doc_pair_matches.append(
                     DocumentPairMatches(matches.doc1, matches.doc2,
-                                        sorted(typed_matches, key=lambda m: m.frag_from_doc(matches.doc1).start_char)))
+                                        sorted(typed_matches,
+                                               key=lambda m, doc1=matches.doc1: m.frag_from_doc(doc1).start_char)))
 
     def headerData(self, section: int, orientation: Qt.Orientation, role: int = Qt.DisplayRole):
         headers = ['Document 1', 'Document 2']
