@@ -3,22 +3,20 @@ from __future__ import annotations
 import logging.config
 import signal
 import sys
+from ast import literal_eval
 from pathlib import Path
 
 import click
 import pkg_resources
 from click import UsageError
+from dependency_injector import providers
+from dependency_injector.containers import DeclarativeContainer
 
-from plagdef import services
+from plagdef import services, repositories
 from plagdef.model.models import DocumentPairMatches
 from plagdef.model.reporting import generate_text_report
-from plagdef.repositories import ConfigFileRepository, DocumentFileRepository, DocumentPairMatchesJsonRepository
-
-# Load configs
-LOGGING_CONFIG = pkg_resources.resource_filename(__name__, str(Path('config/logging.ini')))
-ALG_CONFIG_PATH = pkg_resources.resource_filename(__name__, str(Path('config/alg.ini')))
-logging.config.fileConfig(LOGGING_CONFIG, disable_existing_loggers=False)
-config_repo = ConfigFileRepository(Path(ALG_CONFIG_PATH))
+from plagdef.repositories import DocumentFileRepository, DocumentPairMatchesJsonRepository
+from plagdef.services import update_config
 
 
 @click.command(context_settings=dict(help_option_names=["-h", "--help"]))
@@ -33,8 +31,11 @@ config_repo = ConfigFileRepository(Path(ALG_CONFIG_PATH))
 @click.option('sim_th', '--similarity-threshold', '-s', type=click.FloatRange(0, 1), default=0.6,
               help='Similarity threshold for text matching, defaults to 0.6. Lower values may increase sensitivity, '
                    'higher ones can improve precision.')
+@click.option('ocr', '--ocr', '-o', type=bool, default=True, help='Use OCR for PDFs with poor text layers.'
+                                                                  'May improve text extraction but significantly '
+                                                                  'reduces performance.')
 @click.option('jsondir', '--json', '-j', type=click.Path(), help='Output directory for JSON reports.')
-def cli(docdir: tuple[click.Path, bool], lang: str, common_docdir: [click.Path, bool],
+def cli(docdir: tuple[click.Path, bool], lang: str, ocr: bool, common_docdir: [click.Path, bool],
         archive_docdir: [click.Path, bool], sim_th: float, jsondir: click.Path):
     """
     \b
@@ -44,8 +45,10 @@ def cli(docdir: tuple[click.Path, bool], lang: str, common_docdir: [click.Path, 
     For instance if you would like to recursively search <DOCDIR> the correct command looks like this:
     `plagdef <DOCDIR> True`
     """
-    set_similarity_threshold(sim_th)
-    matches = find_matches(lang, docdir, archive_docdir, common_docdir)
+    _init()
+    update_config({'lang': lang, 'ocr': ocr, 'min_cos_sim': sim_th, 'min_dice_sim': sim_th,
+                   'min_cluster_cos_sim': sim_th})
+    matches = find_matches(docdir, archive_docdir, common_docdir)
     if jsondir:
         if matches:
             try:
@@ -67,6 +70,7 @@ def gui():
     PlagDef supports plagiarism detection for student assignments.
     The GUI for this tool is based on the Qt 6 framework and works on all platforms.
     """
+    _init(is_gui=True)
     from plagdef.gui.main import MyQtApp
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     app = MyQtApp()
@@ -74,17 +78,17 @@ def gui():
     sys.exit(app.exec_())
 
 
-def find_matches(lang: str, docdir: tuple, archive_docdir: tuple, common_docdir: tuple) -> list[DocumentPairMatches]:
+def find_matches(docdir: tuple, archive_docdir: tuple, common_docdir: tuple) -> list[DocumentPairMatches]:
     try:
-        doc_repo = DocumentFileRepository(Path(str(docdir[0])), lang, recursive=docdir[1])
+        doc_repo = DocumentFileRepository(Path(str(docdir[0])), recursive=docdir[1])
         archive_repo = common_repo = None
         if archive_docdir:
             archive_repo = DocumentFileRepository(
-                Path(str(archive_docdir[0])), lang, recursive=archive_docdir[1])
+                Path(str(archive_docdir[0])), recursive=archive_docdir[1])
         if common_docdir:
             common_repo = DocumentFileRepository(
-                Path(str(common_docdir[0])), lang, recursive=common_docdir[1])
-        return services.find_matches(doc_repo, config_repo, archive_repo=archive_repo, common_doc_repo=common_repo)
+                Path(str(common_docdir[0])), recursive=common_docdir[1])
+        return services.find_matches(doc_repo, archive_repo=archive_repo, common_doc_repo=common_repo)
     except NotADirectoryError as e:
         raise UsageError(str(e)) from e
 
@@ -99,12 +103,30 @@ def read_doc_pair_matches_from_json(jsondir) -> set[DocumentPairMatches]:
     return repo.list()
 
 
-def similarity_threshold() -> float:
-    return services.similarity_threshold(config_repo)
+class Container(DeclarativeContainer):
+    config = providers.Configuration()
 
 
-def set_similarity_threshold(th: float):
-    services.set_similarity_threshold(config_repo, th)
+def _init(is_gui=False):
+    logging_config = pkg_resources.resource_filename(__name__, str(Path('config/logging.ini')))
+    app_config_path = pkg_resources.resource_filename(__name__, str(Path('config/app.ini')))
+    logging.config.fileConfig(logging_config, disable_existing_loggers=False)
+    container = Container()
+    container.config.from_ini(app_config_path)
+    _convert_to_types(container.config)
+    if is_gui:
+        from plagdef.gui import views
+        container.wire(modules=[services, repositories, views])
+    else:
+        container.wire(modules=[services, repositories])
+
+
+def _convert_to_types(conf):
+    lang = conf.default.lang()
+    conf.set('default.lang', '-1')
+    typed_dict = {**dict((key, literal_eval(val)) for key, val in conf.default().items()), 'lang': lang}
+    for att, val in typed_dict.items():
+        conf.set(f'default.{att}', val)
 
 
 if __name__ == "__main__":

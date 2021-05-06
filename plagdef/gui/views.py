@@ -8,6 +8,7 @@ from PySide6.QtCore import QFile, QIODevice, Qt
 from PySide6.QtGui import QCursor, QMovie
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QButtonGroup, QMainWindow, QFileDialog, QDialog
+from dependency_injector.wiring import inject, Provide, as_, as_float
 
 from plagdef.gui.model import ResultsTableModel, DocumentPairMatches
 from plagdef.model.models import MatchType
@@ -58,14 +59,16 @@ class View:
 
 
 class HomeView(View):
-    def __init__(self):
+    @inject
+    def __init__(self, lang: str = Provide['config.default.lang']):
         self.widget = _load_ui_file(Path(UI_FILES['home_widget']))
-        self._configure()
+        self._configure(lang)
 
-    def _configure(self):
+    def _configure(self, lang):
         self.widget.lang_button_group = QButtonGroup()
         self.widget.lang_button_group.addButton(self.widget.ger_button)
         self.widget.lang_button_group.addButton(self.widget.eng_button)
+        self.widget.ger_button.click() if lang == 'ger' else self.widget.eng_button.click()
         [element.setVisible(False)
          for element in (self.widget.archive_dir_label, self.widget.archive_rmdir_button, self.widget.docs_dir_label,
                          self.widget.docs_rmdir_button, self.widget.common_dir_label, self.widget.common_rmdir_button)]
@@ -91,9 +94,10 @@ class HomeView(View):
     def lang(self):
         return 'ger' if self.widget.lang_button_group.checkedButton() == self.widget.ger_button else 'eng'
 
-    def register_for_signals(self, open_report_dir=None, select_archive_dir=None, rm_archive_dir=None,
+    def register_for_signals(self, select_lang=None, open_report_dir=None, select_archive_dir=None, rm_archive_dir=None,
                              select_docs_dir=None, rm_docs_dir=None, select_common_dir=None, rm_common_dir=None,
                              detect=None, settings=None):
+        self.widget.lang_button_group.buttonClicked.connect(lambda: select_lang())
         self.widget.settings_button.clicked.connect(lambda: settings())
         self.widget.open_button.clicked.connect(lambda: open_report_dir())
         self.widget.archive_dir_button.clicked.connect(lambda: select_archive_dir())
@@ -313,7 +317,14 @@ class SettingsDialog:
     def similarity_threshold(self) -> float:
         return float(self.widget.value_label.text())
 
-    def open(self, sim: float):
+    @property
+    def ocr(self) -> bool:
+        return self.widget.ocr_check_box.isChecked()
+
+    @inject
+    def open(self, ocr: bool = Provide['config.default.ocr', as_(bool)],
+             sim: float = Provide['config.default.min_cos_sim', as_float()]):
+        self.widget.ocr_check_box.setChecked(ocr)
         self.widget.value_label.setText(str(sim))
         self.widget.sim_slider.setValue(sim * 10)
         self.widget.exec_()
