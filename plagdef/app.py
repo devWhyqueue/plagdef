@@ -18,6 +18,10 @@ from plagdef.model.reporting import generate_text_report
 from plagdef.repositories import DocumentFileRepository, DocumentPairMatchesJsonRepository
 from plagdef.services import update_config
 
+# Logging config
+logging_config = pkg_resources.resource_filename(__name__, str(Path('config/logging.ini')))
+logging.config.fileConfig(logging_config, disable_existing_loggers=False)
+
 
 @click.command(context_settings=dict(help_option_names=["-h", "--help"]))
 @click.version_option(prog_name='PlagDef', package_name='plagdef')
@@ -108,9 +112,7 @@ class Container(DeclarativeContainer):
 
 
 def _init(is_gui=False):
-    logging_config = pkg_resources.resource_filename(__name__, str(Path('config/logging.ini')))
     app_config_path = pkg_resources.resource_filename(__name__, str(Path('config/app.ini')))
-    logging.config.fileConfig(logging_config, disable_existing_loggers=False)
     container = Container()
     container.config.from_ini(app_config_path)
     _convert_to_types(container.config)

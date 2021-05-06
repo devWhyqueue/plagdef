@@ -23,11 +23,3 @@ class FakeDocumentMatcher:
         self.lang = lang
         self.preprocessed_docs = docs
         self.common_docs = common_docs
-
-
-class ConfigFakeRepository:
-    def __init__(self, config: dict):
-        self._config = config
-
-    def get(self) -> dict:
-        return self._config
