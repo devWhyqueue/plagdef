@@ -6,20 +6,20 @@
             <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>320</width>
-                <height>130</height>
+                <width>370</width>
+                <height>200</height>
             </rect>
         </property>
         <property name="minimumSize">
             <size>
-                <width>320</width>
-                <height>130</height>
+                <width>370</width>
+                <height>200</height>
             </size>
         </property>
         <property name="maximumSize">
             <size>
-                <width>320</width>
-                <height>130</height>
+                <width>370</width>
+                <height>200</height>
             </size>
         </property>
         <property name="windowTitle">
@@ -34,8 +34,87 @@
             <string notr="true">background-color: rgb(77, 80, 87);</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
+            <property name="leftMargin">
+                <number>50</number>
+            </property>
+            <property name="topMargin">
+                <number>25</number>
+            </property>
+            <property name="rightMargin">
+                <number>50</number>
+            </property>
             <item alignment="Qt::AlignHCenter">
-                <widget class="QLabel" name="heading_label">
+                <widget class="QLabel" name="extraction_heading_label">
+                    <property name="styleSheet">
+                        <string notr="true">color: rgb(255, 255, 255);
+                            font-size: 12pt;
+                        </string>
+                    </property>
+                    <property name="text">
+                        <string>Text Extraction</string>
+                    </property>
+                </widget>
+            </item>
+            <item>
+                <spacer name="ex_cb_spacer">
+                    <property name="orientation">
+                        <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>QSizePolicy::Fixed</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                        <size>
+                            <width>20</width>
+                            <height>2</height>
+                        </size>
+                    </property>
+                </spacer>
+            </item>
+            <item alignment="Qt::AlignHCenter">
+                <widget class="QCheckBox" name="ocr_check_box">
+                    <property name="font">
+                        <font>
+                            <pointsize>10</pointsize>
+                        </font>
+                    </property>
+                    <property name="toolTip">
+                        <string>Enable OCR for PDFs with poor text layers.
+                            May improve text extraction but significantly reduces performance.
+                        </string>
+                    </property>
+                    <property name="styleSheet">
+                        <string notr="true">QCheckBox {
+                            color: rgb(255, 255, 255);
+                            }
+                        </string>
+                    </property>
+                    <property name="text">
+                        <string>Use OCR for PDFs</string>
+                    </property>
+                    <property name="checked">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+            </item>
+            <item>
+                <spacer name="ex_th_spacer">
+                    <property name="orientation">
+                        <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>QSizePolicy::Fixed</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                        <size>
+                            <width>2</width>
+                            <height>5</height>
+                        </size>
+                    </property>
+                </spacer>
+            </item>
+            <item alignment="Qt::AlignHCenter">
+                <widget class="QLabel" name="th_heading_label">
                     <property name="styleSheet">
                         <string notr="true">color: rgb(255, 255, 255);
                             font-size: 12pt;
@@ -48,28 +127,19 @@
             </item>
             <item alignment="Qt::AlignHCenter">
                 <widget class="QLabel" name="value_label">
+                    <property name="font">
+                        <font>
+                            <pointsize>10</pointsize>
+                        </font>
+                    </property>
                     <property name="styleSheet">
                         <string notr="true">color: rgb(255, 255, 255);
-                            font-size: 12pt;
                         </string>
                     </property>
                     <property name="text">
                         <string>{value}</string>
                     </property>
                 </widget>
-            </item>
-            <item>
-                <spacer name="label_slider_spacer">
-                    <property name="orientation">
-                        <enum>Qt::Vertical</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                        <size>
-                            <width>20</width>
-                            <height>40</height>
-                        </size>
-                    </property>
-                </spacer>
             </item>
             <item>
                 <widget class="QSlider" name="sim_slider">
