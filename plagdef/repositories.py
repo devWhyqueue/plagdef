@@ -3,22 +3,21 @@ from __future__ import annotations
 import logging
 import os
 import re
-from ast import literal_eval
 from collections import Counter
-from configparser import ConfigParser
 from copy import deepcopy
 from ctypes import c_size_t
 from functools import partial
 from json import JSONDecodeError
+from multiprocessing import Lock
 from pathlib import Path
 from pickle import dump, load, UnpicklingError
-from threading import Lock
 from unicodedata import normalize
 
 import jsonpickle
 import magic
 import numpy
 import pdfplumber
+from dependency_injector.wiring import Provide, as_, inject
 from easyocr import easyocr
 from magic import MagicException
 from pdf2image import convert_from_path
@@ -29,14 +28,17 @@ from plagdef.model import models
 
 log = logging.getLogger(__name__)
 jsonpickle.set_encoder_options('json', indent=4)
+lock = Lock()
 
 
 class DocumentFileRepository:
-    def __init__(self, dir_path: Path, lang: str, recursive=False):
+    @inject
+    def __init__(self, dir_path: Path, recursive=False, lang: str = Provide['config.default.lang'],
+                 use_ocr: bool = Provide['config.default.ocr', as_(bool)]):
         self.lang = lang
         self.dir_path = dir_path
         self._recursive = recursive
-        self._ocr = easyocr.Reader(['de', 'en'])
+        self._ocr = easyocr.Reader(['de', 'en']) if use_ocr else None
         if not dir_path.is_dir():
             raise NotADirectoryError(f'The given path {dir_path} does not point to an existing directory!')
 
@@ -101,28 +103,6 @@ class DocumentPairMatchesJsonRepository:
         return doc_pair_matches_list
 
 
-class ConfigFileRepository:
-    def __init__(self, config_path: Path):
-        if not config_path.is_file():
-            raise FileNotFoundError(f'The given path {config_path} does not point to an existing file!')
-        if not config_path.suffix == '.ini':
-            raise UnsupportedFileFormatError(f'The config file format must be INI.')
-        self.config_path = config_path
-        self._custom_config = {}
-
-    def get(self) -> dict:
-        parser = ConfigParser()
-        parser.read(self.config_path)
-        config = {}
-        for section in parser.sections():
-            typed_config = [(key, literal_eval(val)) for key, val in parser.items(section)]
-            config.update(dict(typed_config))
-        return {**config, **self._custom_config}
-
-    def update(self, config: dict):
-        self._custom_config = config
-
-
 class DocumentPickleRepository:
     def __init__(self, dir_path: Path, common_dir_path: Path = None):
         if not dir_path.is_dir():
@@ -155,7 +135,7 @@ class PdfReader:
 
     def extract_text(self):
         text = self._extract()
-        if self._poor_extraction(text):
+        if self._ocr and self._poor_extraction(text):
             log.warning(f"Poor text extraction in '{self._file.name}' detected! Using OCR...")
             pages = convert_from_path(self._file, fmt='jpeg', jpegopt='optimize')
             text = ''

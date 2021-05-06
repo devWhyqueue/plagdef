@@ -6,7 +6,7 @@
 [![Test](https://github.com/devWhyqueue/plagdef/actions/workflows/test.yml/badge.svg)](https://github.com/devWhyqueue/plagdef/actions/workflows/test.yml)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=devWhyqueue_plagdef&metric=coverage)](https://sonarcloud.io/dashboard?id=devWhyqueue_plagdef)
 
-PlagDef supports plagiarism detection for student assignments.
+A tool which makes life hard for students who try to make theirs simple.
 
 # Installation
 

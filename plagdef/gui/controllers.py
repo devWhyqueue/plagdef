@@ -3,11 +3,11 @@ import platform
 import subprocess
 
 import plagdef.gui.main as main
-from plagdef.app import write_doc_pair_matches_to_json, read_doc_pair_matches_from_json, similarity_threshold, \
-    set_similarity_threshold
+from plagdef.app import write_doc_pair_matches_to_json, read_doc_pair_matches_from_json
 from plagdef.gui.views import HomeView, LoadingView, NoResultsView, ErrorView, ResultView, \
     FileDialog, MatchesDialog, MessageDialog, SettingsDialog
 from plagdef.model.models import DocumentPairMatches
+from plagdef.services import update_config
 
 
 class HomeController:
@@ -20,7 +20,8 @@ class HomeController:
         self._connect_slots()
 
     def _connect_slots(self):
-        self.view.register_for_signals(open_report_dir=self.on_open_click,
+        self.view.register_for_signals(select_lang=self.on_select_lang,
+                                       open_report_dir=self.on_open_click,
                                        select_archive_dir=self._on_select_archive_dir,
                                        rm_archive_dir=self._on_remove_archive_dir,
                                        select_docs_dir=self._on_select_docs_dir,
@@ -29,6 +30,9 @@ class HomeController:
                                        rm_common_dir=self._on_remove_common_dir,
                                        detect=self._on_detect,
                                        settings=self._on_settings_click)
+
+    def on_select_lang(self):
+        update_config({'lang': self.view.lang})
 
     def on_open_click(self):
         dialog = FileDialog()
@@ -40,9 +44,11 @@ class HomeController:
                 MessageDialog('The selected folder contains no match files.')
 
     def _on_settings_click(self):
-        sim_threshold = similarity_threshold()
-        self.settings_dialog.open(sim_threshold)
-        set_similarity_threshold(self.settings_dialog.similarity_threshold)
+        self.settings_dialog.open()
+        update_config({'ocr': self.settings_dialog.ocr,
+                       'min_cos_sim': self.settings_dialog.similarity_threshold,
+                       'min_dice_sim': self.settings_dialog.similarity_threshold,
+                       'min_cluster_cos_sim': self.settings_dialog.similarity_threshold})
 
     def _on_select_archive_dir(self):
         if self.archive_dir_dialog.open():
@@ -77,7 +83,7 @@ class HomeController:
             if self.archive_dir_dialog.selected_dir else None
         common_dir = (self.common_dir_dialog.selected_dir, self.view.common_rec) \
             if self.common_dir_dialog.selected_dir else None
-        main.app.find_matches(self.view.lang, doc_dir, archive_dir, common_dir)
+        main.app.find_matches(doc_dir, archive_dir, common_dir)
         main.app.window.switch_to(LoadingView)
         self.archive_dir_dialog.selected_dir = self.common_dir_dialog.selected_dir \
             = self.docs_dir_dialog.selected_dir = None
