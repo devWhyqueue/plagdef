@@ -31,9 +31,9 @@ class MyQtApp(QApplication):
         global app
         app = self
 
-    def find_matches(self, lang: str, docdir: tuple[str, bool], archive_docdir: [str, bool],
+    def find_matches(self, docdir: tuple[str, bool], archive_docdir: [str, bool],
                      common_docdir: [str, bool]):
-        worker = Worker(find_matches, lang, docdir, archive_docdir, common_docdir)
+        worker = Worker(find_matches, docdir, archive_docdir, common_docdir)
         worker.signals.result.connect(self._on_success)
         worker.signals.error.connect(self._on_error)
         pool = QThreadPool.globalInstance()

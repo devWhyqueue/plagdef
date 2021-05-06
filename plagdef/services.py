@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from configparser import ParsingError
-
 from click import UsageError
 from dependency_injector.wiring import Provide, inject
 
@@ -22,7 +20,7 @@ def find_matches(doc_repo, archive_repo=None, common_doc_repo=None, config=Provi
         docs = _preprocess_docs(doc_matcher, config['lang'], doc_repo, common_doc_repo)
         doc_pair_matches = doc_matcher.find_matches(docs, archive_docs)
         return doc_pair_matches
-    except (ParsingError, UnsupportedFileFormatError, UnsupportedLanguageError) as e:
+    except (UnsupportedFileFormatError, UnsupportedLanguageError) as e:
         raise UsageError(str(e)) from e
 
 
