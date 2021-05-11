@@ -8,7 +8,7 @@ def test_common_words(preprocessor, config):
                     '"..," do not matter. This is the end.')
     doc2 = Document('doc2', 'path/to/doc2',
                     'Some text in doc2. There must be identical sentences. But Case or punctuation like this'
-                    ' \';:\' do not matter. A different ending.')
+                    ' \';:\' do not matter. Some different ending.')
     preprocessor.preprocess('eng', [doc1, doc2])
     cluster = Cluster({Seed(doc1.sents(include_common=True)[0], doc2.sents(include_common=True)[0], 0.8, 0.8),
                        Seed(doc1.sents(include_common=True)[1], doc2.sents(include_common=True)[1], 1, 1),
@@ -21,13 +21,26 @@ def test_common_words(preprocessor, config):
     assert {(frag.start_char, frag.end_char) for frag in match.frag_pair} == {(19, 107), (19, 108)}
 
 
+def test_common_words_ends_without_punctuation(preprocessor, config):
+    doc1 = Document('doc1', 'path/to/doc1', 'Some text in doc1. There must be identical sentences')
+    doc2 = Document('doc2', 'path/to/doc2', 'Some text in doc2. There must be identical sentences')
+    preprocessor.preprocess('eng', [doc1, doc2])
+    cluster = Cluster({Seed(doc1.sents(include_common=True)[1], doc2.sents(include_common=True)[1], 1, 1)})
+    config['min_verbatim_match_char_len'] = 25
+    doc_matcher = DocumentMatcher(config)
+    match = doc_matcher._common_words(cluster).pop()
+    assert len(doc_matcher._common_words(cluster)) == 1
+    # Punctuation included
+    assert {(frag.start_char, frag.end_char) for frag in match.frag_pair} == {(19, 52)}
+
+
 def test_common_words_with_two_substrings(preprocessor, config):
     doc1 = Document('doc1', 'path/to/doc1',
                     'Some text in doc1. There must be identical sentences. SEPARATOR But case or punctuation '
                     'like this "..," do not matter. This is the end.')
     doc2 = Document('doc2', 'path/to/doc2',
                     'Some text in doc2. There must be identical sentences. But Case or punctuation like this'
-                    ' \';:\' do not matter. A different ending.')
+                    ' \';:\' do not matter. Some different ending.')
     preprocessor.preprocess('eng', [doc1, doc2])
     cluster = Cluster({Seed(doc1.sents(include_common=True)[0], doc2.sents(include_common=True)[0], 0.8, 0.8),
                        Seed(doc1.sents(include_common=True)[1], doc2.sents(include_common=True)[1], 1, 1),
@@ -52,7 +65,7 @@ def test_resolve_overlaps(preprocessor, config):
                     'like this "..," do not matter. This is the end.')
     doc2 = Document('doc2', 'path/to/doc2',
                     'Some text in doc2. There must be identical sentences. But Case or punctuation like this'
-                    " ';:' do not matter. A different ending.")
+                    " ';:' do not matter. Some different ending.")
     preprocessor.preprocess('eng', [doc1, doc2])
     cluster = Cluster({Seed(doc1.sents(include_common=True)[0], doc2.sents(include_common=True)[0], 0.8, 0.8),
                        Seed(doc1.sents(include_common=True)[1], doc2.sents(include_common=True)[1], 1, 1),
