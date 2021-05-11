@@ -14,7 +14,6 @@ from pickle import dump, load, UnpicklingError
 from unicodedata import normalize
 
 import jsonpickle
-import magic
 import pdfplumber
 from dependency_injector.wiring import Provide, inject, as_
 from magic import MagicException
@@ -59,10 +58,10 @@ class DocumentFileRepository:
             return models.Document(file.stem, str(file.resolve()), text)
         else:
             try:
-                detect_enc = magic.Magic(mime_encoding=True)
-                enc = detect_enc.from_buffer(open(str(file), 'rb').read(2048))
-                enc_str = enc if enc != 'utf-8' else 'utf-8-sig'
-                text = file.read_text(encoding=enc_str)
+                # detect_enc = magic.Magic(mime_encoding=True)
+                # enc = detect_enc.from_buffer(open(str(file), 'rb').read(2048))
+                # enc_str = enc if enc != 'utf-8' else 'utf-8-sig'
+                text = file.read_text(encoding='utf-8')
                 normalized_text = normalize('NFC', text)
                 return models.Document(file.stem, str(file.resolve()), normalized_text)
             except (UnicodeDecodeError, LookupError, MagicException):

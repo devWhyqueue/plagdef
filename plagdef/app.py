@@ -14,7 +14,7 @@ from dependency_injector.containers import DeclarativeContainer
 
 from plagdef import services, repositories
 from plagdef.model.models import DocumentPairMatches
-from plagdef.model.reporting import generate_text_report
+from plagdef.model.reporting import generate_text_report, generate_xml_reports
 from plagdef.repositories import DocumentFileRepository, DocumentPairMatchesJsonRepository
 from plagdef.services import update_config
 
@@ -56,7 +56,8 @@ def cli(docdir: tuple[click.Path, bool], lang: str, ocr: bool, common_docdir: [c
     if jsondir:
         if matches:
             try:
-                write_doc_pair_matches_to_json(matches, jsondir)
+                write_xmls(matches, jsondir)
+                # write_doc_pair_matches_to_json(matches, jsondir)
                 click.echo(f'Successfully wrote JSON reports to {jsondir}.')
             except NotADirectoryError as e:
                 raise UsageError(str(e)) from e
@@ -64,6 +65,13 @@ def cli(docdir: tuple[click.Path, bool], lang: str, ocr: bool, common_docdir: [c
         text_report = generate_text_report(matches)
         click.echo(f'\n{text_report}')
     sys.exit(0)
+
+
+def write_xmls(matches, path):
+    reports = generate_xml_reports(matches)
+    for name, report in reports:
+        with (Path(path) / name).open('w', encoding='utf-8') as f:
+            f.write(report)
 
 
 @click.command(context_settings=dict(help_option_names=["-h", "--help"]))

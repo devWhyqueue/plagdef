@@ -27,7 +27,7 @@ class Preprocessor:
         stop_words = stopwords.ENGLISH if lang == 'eng' else stopwords.GERMAN
         common_word_lists = _common_word_lists(nlp_model, common_docs) if common_docs else []
         thread_map(partial(self._preprocess, nlp_model=nlp_model, common_word_lists=common_word_lists,
-                           stop_words=stop_words), docs, max_workers=os.cpu_count(),
+                           stop_words=stop_words), docs, max_workers=os.cpu_count() - 1,
                    total=len(docs), desc='Preprocessing', unit='doc')
 
     def _preprocess(self, doc: Document, nlp_model: Pipeline, common_word_lists: list[list[str]], stop_words: set[str]):
@@ -88,10 +88,10 @@ class Preprocessor:
 def _nlp_pipe(lang: str) -> Pipeline:
     if lang in LANG_CODES:
         try:
-            return stanza.Pipeline(LANG_CODES[lang], processors=PRCS, logging_level=PIPE_LVL)
+            return stanza.Pipeline(LANG_CODES[lang], processors=PRCS, verbose=False)
         except:  # Unpickling error raises Exception, cannot narrow
-            stanza.download(LANG_CODES[lang], processors=PRCS, logging_level=LOAD_LVL)
-            return stanza.Pipeline(LANG_CODES[lang], processors=PRCS, logging_level=PIPE_LVL)
+            stanza.download(LANG_CODES[lang], processors=PRCS, verbose=False)
+            return stanza.Pipeline(LANG_CODES[lang], processors=PRCS, verbose=False)
     else:
         raise UnsupportedLanguageError(f'The language "{lang}" is currently not supported.')
 
