@@ -122,7 +122,8 @@ def _resolve_match_overlaps(matches: set[Match]) -> set[Match]:
 
 
 def _include_punct(cluster: Cluster, frag1_end_char: int, frag2_end_char: int) -> int:
-    if cluster.doc1.text[frag1_end_char] == cluster.doc2.text[frag2_end_char] \
+    text_ends_with_word = frag1_end_char == len(cluster.doc1.text) or frag2_end_char == len(cluster.doc2.text)
+    if not text_ends_with_word and cluster.doc1.text[frag1_end_char] == cluster.doc2.text[frag2_end_char] \
         and not cluster.doc1.text[frag1_end_char].isspace():
         return 1
     return 0
