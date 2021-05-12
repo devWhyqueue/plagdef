@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import lzma
 import os
 import re
 from collections import Counter
@@ -107,14 +108,14 @@ class DocumentPickleRepository:
         self.file_path = dir_path / f'.{path_hash}.pdef'
 
     def save(self, docs: set[models.Document]):
-        with self.file_path.open('wb') as file:
+        with lzma.open(self.file_path, 'wb') as file:
             dump(docs, file)
 
     def list(self) -> set[models.Document]:
         if self.file_path.exists():
             log.info('Found preprocessing file. Deserializing...')
             try:
-                with self.file_path.open('rb') as file:
+                with lzma.open(self.file_path, 'rb') as file:
                     return load(file)
             except (UnpicklingError, EOFError):
                 log.warning(f"Could not deserialize preprocessing file, '{self.file_path.name}' seems to be corrupted.")
