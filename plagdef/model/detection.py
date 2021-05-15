@@ -13,7 +13,7 @@ from tqdm import tqdm
 from plagdef.model.extension import ClusterBuilder
 from plagdef.model.filtering import ClusterFilter
 from plagdef.model.models import Document, Match, DocumentPairMatches, Cluster, Fragment, MatchType
-from plagdef.model.pairs import pairs
+from plagdef.model.pairs2013 import pairs
 from plagdef.model.preprocessing import Preprocessor
 from plagdef.model.seeding import SeedFinder
 
@@ -66,8 +66,6 @@ class DocumentMatcher:
             if len(verbatim_matches):
                 log.debug(f'Plagiarism type is verbatim. Found these matches:\n{pformat(verbatim_matches)}')
                 doc_pair_matches.update(verbatim_matches)
-                matches.append(doc_pair_matches)
-                continue
             if len(clusters):
                 intelligent_matches = {Match.from_cluster(MatchType.INTELLIGENT, cluster) for cluster in
                                        clusters}.difference(verbatim_matches)
@@ -75,8 +73,6 @@ class DocumentMatcher:
                     log.debug(
                         f'Plagiarism type is intelligent. Found these matches:\n{pformat(intelligent_matches)}')
                     doc_pair_matches.update(intelligent_matches)
-                    matches.append(doc_pair_matches)
-                    continue
             summary_clusters = self._extender.extend(seeds, self._adjacent_sents_gap_summary)
             summary_clusters = self._cluster_filter.filter(summary_clusters)
             if len(summary_clusters):
@@ -89,7 +85,7 @@ class DocumentMatcher:
                     if len(summary_matches):
                         log.debug(f'Plagiarism type is summary. Found these matches:\n{pformat(summary_matches)}')
                         doc_pair_matches.update(summary_matches)
-                        matches.append(doc_pair_matches)
+            matches.append(doc_pair_matches) if len(doc_pair_matches) else None
         return matches
 
     def _verbatim_matches(self, clusters: set[Cluster]) -> set[Match]:
