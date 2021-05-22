@@ -45,7 +45,7 @@
         </font>
        </property>
        <property name="toolTip">
-        <string>Set the document's language to 'German'.</string>
+        <string>Set the documents' language to 'German'.</string>
        </property>
        <property name="styleSheet">
         <string notr="true">:!checked:hover{
@@ -110,7 +110,7 @@
         </font>
        </property>
        <property name="toolTip">
-        <string>Set the document's language to 'English'.</string>
+        <string>Set the documents' language to 'English'.</string>
        </property>
        <property name="styleSheet">
         <string notr="true">:!checked:hover{
