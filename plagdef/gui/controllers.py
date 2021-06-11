@@ -129,10 +129,14 @@ class ResultController:
         self.matches_dialog.register_for_signals(self.on_prev_match, self.on_next_match, self.on_doc_name_click)
 
     def on_export(self):
-        dialog = FileDialog()
-        if dialog.open():
-            write_doc_pair_matches_to_json(self.view.doc_pair_matches, dialog.selected_dir)
-            MessageDialog(f"Successfully generated JSON reports.")
+        selected_matches = self.view.selected_matches
+        if not selected_matches:
+            MessageDialog(f"Please select matches first!")
+        else:
+            dialog = FileDialog()
+            if dialog.open():
+                write_doc_pair_matches_to_json(selected_matches, dialog.selected_dir)
+                MessageDialog(f"Successfully generated {len(selected_matches)} JSON report(s).")
 
     def _on_again(self):
         main.app.window.switch_to(HomeView)

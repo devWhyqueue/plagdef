@@ -239,6 +239,26 @@ class ResultView(View):
         self.widget.doc_pair_tabs.setTabVisible(1, bool(self.widget.intelligent_results.model().rowCount()))
         self.widget.doc_pair_tabs.setTabVisible(2, bool(self.widget.summary_results.model().rowCount()))
 
+    @property
+    def selected_matches(self):
+        matches = []
+        verbatim_indices = self.widget.verbatim_results.selectionModel().selectedIndexes()
+        verbatim_indices = filter(lambda i: i.column() == 0, verbatim_indices)
+        for index in verbatim_indices:
+            verbatim_matches = self.widget.verbatim_results.model().doc_pair_matches(index)
+            matches.append(verbatim_matches)
+        intelligent_indices = self.widget.intelligent_results.selectionModel().selectedIndexes()
+        intelligent_indices = filter(lambda i: i.column() == 0, intelligent_indices)
+        for index in intelligent_indices:
+            intelligent_matches = self.widget.intelligent_results.model().doc_pair_matches(index)
+            matches.append(intelligent_matches)
+        summary_indices = self.widget.summary_results.selectionModel().selectedIndexes()
+        summary_indices = filter(lambda i: i.column() == 0, summary_indices)
+        for index in summary_indices:
+            summary_matches = self.widget.summary_results.model().doc_pair_matches(index)
+            matches.append(summary_matches)
+        return matches
+
     def register_for_signals(self, export=None, again=None, select_pair=None):
         self.widget.export_button.clicked.connect(lambda: export())
         self.widget.again_button_res.clicked.connect(lambda: again())
