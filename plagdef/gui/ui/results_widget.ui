@@ -93,7 +93,7 @@
                         </size>
                     </property>
                     <property name="currentIndex">
-                        <number>0</number>
+                        <number>2</number>
                     </property>
                     <widget class="QWidget" name="verbatim_tab">
                         <attribute name="title">
@@ -287,10 +287,13 @@
                                         <bool>true</bool>
                                     </property>
                                     <property name="selectionMode">
-                                        <enum>QAbstractItemView::SingleSelection</enum>
+                                        <enum>QAbstractItemView::MultiSelection</enum>
                                     </property>
                                     <property name="selectionBehavior">
                                         <enum>QAbstractItemView::SelectRows</enum>
+                                    </property>
+                                    <property name="sortingEnabled">
+                                        <bool>false</bool>
                                     </property>
                                     <attribute name="horizontalHeaderStretchLastSection">
                                         <bool>true</bool>
@@ -491,10 +494,13 @@
                                         <bool>true</bool>
                                     </property>
                                     <property name="selectionMode">
-                                        <enum>QAbstractItemView::SingleSelection</enum>
+                                        <enum>QAbstractItemView::MultiSelection</enum>
                                     </property>
                                     <property name="selectionBehavior">
                                         <enum>QAbstractItemView::SelectRows</enum>
+                                    </property>
+                                    <property name="sortingEnabled">
+                                        <bool>false</bool>
                                     </property>
                                     <attribute name="horizontalHeaderStretchLastSection">
                                         <bool>true</bool>
@@ -695,10 +701,13 @@
                                         <bool>true</bool>
                                     </property>
                                     <property name="selectionMode">
-                                        <enum>QAbstractItemView::SingleSelection</enum>
+                                        <enum>QAbstractItemView::MultiSelection</enum>
                                     </property>
                                     <property name="selectionBehavior">
                                         <enum>QAbstractItemView::SelectRows</enum>
+                                    </property>
+                                    <property name="sortingEnabled">
+                                        <bool>false</bool>
                                     </property>
                                     <attribute name="horizontalHeaderStretchLastSection">
                                         <bool>true</bool>
