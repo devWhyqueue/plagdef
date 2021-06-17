@@ -16,6 +16,16 @@ class DocumentPairMatches:
     doc2: models.Document
     matches: list[models.Match]
 
+    @classmethod
+    def from_model(cls, model: models.DocumentPairMatches, match_type):
+        typed_matches = model.list(match_type)
+        if len(typed_matches):
+            d1 = model.doc1 if model.doc1.name < model.doc2.name else model.doc2
+            d2 = model.doc2 if d1 == model.doc1 else model.doc1
+            return DocumentPairMatches(d1, d2,
+                                       sorted(typed_matches,
+                                              key=lambda m, doc1=d1: m.frag_from_doc(doc1).start_char))
+
     def __len__(self):
         return len(self.matches)
 
@@ -23,17 +33,8 @@ class DocumentPairMatches:
 class ResultsTableModel(QAbstractTableModel):
     def __init__(self, match_type: MatchType, doc_pair_matches: list[models.DocumentPairMatches]):
         super().__init__()
-        self._doc_pair_matches = []
-        for matches in doc_pair_matches:
-            typed_matches = matches.list(match_type)
-            if len(typed_matches):
-                d1 = matches.doc1 if matches.doc1.name < matches.doc2.name else matches.doc2
-                d2 = matches.doc2 if d1 == matches.doc1 else matches.doc1
-                self._doc_pair_matches.append(
-                    DocumentPairMatches(d1, d2,
-                                        sorted(typed_matches,
-                                               key=lambda m, doc1=d1: m.frag_from_doc(doc1).start_char)))
-        self._doc_pair_matches.sort(key=lambda m: m.doc1.name)
+        self._doc_pair_matches = [DocumentPairMatches.from_model(matches, match_type) for matches in doc_pair_matches]
+        self._doc_pair_matches = sorted(filter(None, self._doc_pair_matches), key=lambda m: m.doc1.name)
 
     def headerData(self, section: int, orientation: Qt.Orientation, role: int = Qt.DisplayRole):
         headers = ['Document 1', 'Document 2']

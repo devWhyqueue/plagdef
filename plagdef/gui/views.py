@@ -279,8 +279,35 @@ class MatchesDialog:
     def _configure(self):
         self.widget.doc1_label.setCursor(QCursor(Qt.PointingHandCursor))
         self.widget.doc2_label.setCursor(QCursor(Qt.PointingHandCursor))
+        self.widget.reanalyze_button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.widget.sim_slider.valueChanged.connect(lambda val: self._update_label(val))
+
+    def _update_label(self, sim):
+        self.widget.value_label.setText(str(sim / 10))
+
+    @property
+    def doc1_path(self):
+        return self._doc_pair_matches.doc1.path
+
+    @property
+    def doc2_path(self):
+        return self._doc_pair_matches.doc2.path
+
+    @property
+    def sim_threshold(self) -> float:
+        return float(self.widget.value_label.text())
+
+    @property
+    def match_type(self):
+        return self._doc_pair_matches.matches[0].type
 
     def open(self, doc_pair_matches: DocumentPairMatches):
+        self.widget.value_label.setText(str(settings['min_cos_sim']))
+        self.widget.sim_slider.setValue(settings['min_cos_sim'] * 10)
+        self.set_data(doc_pair_matches)
+        self.widget.exec_()
+
+    def set_data(self, doc_pair_matches):
         self._doc_pair_matches = doc_pair_matches
         self.widget.doc1_label.setText(truncate(self._doc_pair_matches.doc1.name, 50))
         self.widget.doc1_path.setText(f'({truncate(self._doc_pair_matches.doc1.path, 65)})')
@@ -288,7 +315,6 @@ class MatchesDialog:
         self.widget.doc2_path.setText(f'({truncate(self._doc_pair_matches.doc2.path, 65)})')
         self._selected = 0
         self._show_match()
-        self.widget.exec_()
 
     def _show_match(self):
         doc1, doc2 = self._doc_pair_matches.doc1, self._doc_pair_matches.doc2
@@ -302,11 +328,12 @@ class MatchesDialog:
         if self._selected + 1 == len(self._doc_pair_matches):
             self.widget.next_button.setVisible(False)
 
-    def register_for_signals(self, prev_match=None, next_match=None, open_doc=None):
+    def register_for_signals(self, prev_match=None, next_match=None, open_doc=None, reanalyze=None):
         self.widget.prev_button.clicked.connect(lambda: prev_match())
         self.widget.next_button.clicked.connect(lambda: next_match())
         self.widget.doc1_label.clicked.connect(lambda: open_doc(self._doc_pair_matches.doc1.path))
         self.widget.doc2_label.clicked.connect(lambda: open_doc(self._doc_pair_matches.doc2.path))
+        self.widget.reanalyze_button.clicked.connect(lambda: reanalyze())
 
     def prev_match(self):
         self._selected -= 1
@@ -315,6 +342,10 @@ class MatchesDialog:
     def next_match(self):
         self._selected += 1
         self._show_match()
+
+    def reanalyzing(self, loading: bool):
+        self.widget.sim_slider.setEnabled(not loading)
+        self.widget.reanalyze_button.setEnabled(not loading)
 
 
 class MessageDialog:

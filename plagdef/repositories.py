@@ -31,11 +31,13 @@ lock = Lock()
 
 
 class DocumentFileRepository:
-    def __init__(self, dir_path: Path, recursive=False, lang=settings['lang'], use_ocr=settings['ocr']):
+    def __init__(self, dir_path: Path, recursive=False, lang=settings['lang'], use_ocr=settings['ocr'],
+                 doc_path_filter=None):
         self.lang = lang
         self.dir_path = dir_path
         self._use_ocr = use_ocr
         self._recursive = recursive
+        self._doc_path_filter = doc_path_filter
         if not dir_path.is_dir():
             raise NotADirectoryError(f'The given path {dir_path} does not point to an existing directory!')
 
@@ -49,7 +51,7 @@ class DocumentFileRepository:
         files = list(self._list_files())
         docs = process_map(self._read_file, files, desc=f"Reading documents in '{self.dir_path}'",
                            unit='doc', total=len(files), max_workers=os.cpu_count())
-        return set(filter(None, docs))
+        return set(filter(lambda d: d and (not self._doc_path_filter or d.path in self._doc_path_filter), docs))
 
     def _read_file(self, file):
         if file.suffix == '.pdf':

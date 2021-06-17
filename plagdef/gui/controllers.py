@@ -2,12 +2,15 @@ import os
 import platform
 import subprocess
 
+from click import UsageError
+
 import plagdef.gui.main as main
 from plagdef.app import write_doc_pair_matches_to_json, read_doc_pair_matches_from_json
 from plagdef.config import settings
+from plagdef.gui.model import DocumentPairMatches
 from plagdef.gui.views import HomeView, LoadingView, NoResultsView, ErrorView, ResultView, \
     FileDialog, MatchesDialog, MessageDialog, SettingsDialog
-from plagdef.model.models import DocumentPairMatches
+from plagdef.model import models
 
 
 class HomeController:
@@ -83,10 +86,24 @@ class HomeController:
             if self.archive_dir_dialog.selected_dir else None
         common_dir = (self.common_dir_dialog.selected_dir, self.view.common_rec) \
             if self.common_dir_dialog.selected_dir else None
-        main.app.find_matches(doc_dir, archive_dir, common_dir)
+        main.app.find_matches(doc_dir, archive_dir, common_dir, self._on_detect_success, self._on_detect_error)
         main.app.window.switch_to(LoadingView)
         self.archive_dir_dialog.selected_dir = self.common_dir_dialog.selected_dir \
             = self.docs_dir_dialog.selected_dir = None
+
+    def _on_detect_success(self, matches: list[models.DocumentPairMatches]):
+        if matches:
+            main.app.window.switch_to(ResultView, matches)
+        else:
+            main.app.window.switch_to(NoResultsView)
+
+    def _on_detect_error(self, error: (type, Exception)):
+        if error[0] == UsageError:
+            main.app.window.switch_to(ErrorView, str(error[1]))
+        else:
+            main.app.window.switch_to(ErrorView,
+                                      'An error occurred. Please refer to the command line for more details.')
+            raise error[1]
 
 
 class LoadingController:
@@ -126,7 +143,8 @@ class ResultController:
 
     def _connect_slots(self):
         self.view.register_for_signals(self.on_export, self._on_again, self.on_select_pair)
-        self.matches_dialog.register_for_signals(self.on_prev_match, self.on_next_match, self.on_doc_name_click)
+        self.matches_dialog.register_for_signals(self.on_prev_match, self.on_next_match, self.on_doc_name_click,
+                                                 self.on_reanalyze_click)
 
     def on_export(self):
         selected_matches = self.view.selected_matches
@@ -157,3 +175,23 @@ class ResultController:
             os.startfile(path)
         else:  # linux variants
             subprocess.call(('xdg-open', path))
+
+    def on_reanalyze_click(self):
+        self.matches_dialog.reanalyzing(True)
+        main.app.reanalyze_pair(self.matches_dialog.doc1_path, self.matches_dialog.doc2_path,
+                                self.matches_dialog.sim_threshold, self._on_reanalyze_success, self._on_reanalyze_error)
+
+    def _on_reanalyze_success(self, matches: list[models.DocumentPairMatches]):
+        self.matches_dialog.reanalyzing(False)
+        if matches:
+            self.matches_dialog.set_data(DocumentPairMatches.from_model(matches[0], self.matches_dialog.match_type))
+        else:
+            MessageDialog("No matches found.")
+
+    def _on_reanalyze_error(self, error: (type, Exception)):
+        self.matches_dialog.reanalyzing(False)
+        if error[0] == UsageError:
+            MessageDialog(str(error[1]))
+        else:
+            MessageDialog('An error occurred. Please refer to the command line for more details.')
+            raise error[1]
