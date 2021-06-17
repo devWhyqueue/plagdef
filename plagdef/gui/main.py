@@ -7,15 +7,13 @@ import traceback
 
 from PySide6.QtCore import QRunnable, Slot, QObject, Signal, QThreadPool
 from PySide6.QtWidgets import QApplication
-from click import UsageError
 
 # noinspection PyUnresolvedReferences
 import plagdef.gui.resources
-from plagdef.app import find_matches
+from plagdef.app import find_matches, reanalyze_pair
 from plagdef.gui.controllers import HomeController, LoadingController, ErrorController, NoResultsController, \
     ResultController
-from plagdef.gui.model import DocumentPairMatches
-from plagdef.gui.views import MainWindow, ResultView, NoResultsView, ErrorView
+from plagdef.gui.views import MainWindow
 
 app = None
 
@@ -32,25 +30,19 @@ class MyQtApp(QApplication):
         app = self
 
     def find_matches(self, docdir: tuple[str, bool], archive_docdir: [str, bool],
-                     common_docdir: [str, bool]):
+                     common_docdir: [str, bool], on_success, on_error):
         worker = Worker(find_matches, docdir, archive_docdir, common_docdir)
-        worker.signals.result.connect(self._on_success)
-        worker.signals.error.connect(self._on_error)
+        worker.signals.result.connect(on_success)
+        worker.signals.error.connect(on_error)
         pool = QThreadPool.globalInstance()
         pool.start(worker)
 
-    def _on_success(self, matches: list[DocumentPairMatches]):
-        if matches:
-            self.window.switch_to(ResultView, matches)
-        else:
-            self.window.switch_to(NoResultsView)
-
-    def _on_error(self, error: (type, Exception)):
-        if error[0] == UsageError:
-            self.window.switch_to(ErrorView, str(error[1]))
-        else:
-            self.window.switch_to(ErrorView, 'An error occurred. Please refer to the command line for more details.')
-            raise error[1]
+    def reanalyze_pair(self, doc1_path: str, doc2_path: str, sim: float, on_success, on_error):
+        worker = Worker(reanalyze_pair, doc1_path, doc2_path, sim)
+        worker.signals.result.connect(on_success)
+        worker.signals.error.connect(on_error)
+        pool = QThreadPool.globalInstance()
+        pool.start(worker)
 
 
 class Worker(QRunnable):

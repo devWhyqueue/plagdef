@@ -228,6 +228,113 @@
                 </layout>
             </item>
             <item>
+                <spacer name="matches_button_spacer">
+                    <property name="orientation">
+                        <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>QSizePolicy::Fixed</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                        <size>
+                            <width>20</width>
+                            <height>10</height>
+                        </size>
+                    </property>
+                </spacer>
+            </item>
+            <item alignment="Qt::AlignHCenter">
+                <widget class="QPushButton" name="reanalyze_button">
+                    <property name="minimumSize">
+                        <size>
+                            <width>150</width>
+                            <height>50</height>
+                        </size>
+                    </property>
+                    <property name="toolTip">
+                        <string>Export all matches as JSON reports.</string>
+                    </property>
+                    <property name="styleSheet">
+                        <string notr="true">QPushButton {
+                            font-size: 12pt;
+                            border-radius: 25px;
+                            border: 3px solid rgb(242, 141, 1);
+                            border-style: outset;
+                            color: rgb(255, 255, 255);
+                            }
+
+                            :enabled {
+                            background-color: rgb(242, 141, 1);
+                            }
+
+                            :hover{
+                            background-color: #b56900;
+                            border-color: #b56900;
+                            }
+
+                            :pressed {
+                            border-style: inset;
+                            }
+                        </string>
+                    </property>
+                    <property name="text">
+                        <string>Reanalyze</string>
+                    </property>
+                    <property name="icon">
+                        <iconset resource="../res/resources.qrc">
+                            <normaloff>:/search_white.png</normaloff>:/search_white.png
+                        </iconset>
+                    </property>
+                </widget>
+            </item>
+            <item alignment="Qt::AlignHCenter">
+                <widget class="QSlider" name="sim_slider">
+                    <property name="minimumSize">
+                        <size>
+                            <width>300</width>
+                            <height>0</height>
+                        </size>
+                    </property>
+                    <property name="maximum">
+                        <number>10</number>
+                    </property>
+                    <property name="singleStep">
+                        <number>1</number>
+                    </property>
+                    <property name="pageStep">
+                        <number>1</number>
+                    </property>
+                    <property name="value">
+                        <number>6</number>
+                    </property>
+                    <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="tickPosition">
+                        <enum>QSlider::TicksBelow</enum>
+                    </property>
+                    <property name="tickInterval">
+                        <number>1</number>
+                    </property>
+                </widget>
+            </item>
+            <item alignment="Qt::AlignHCenter">
+                <widget class="QLabel" name="value_label">
+                    <property name="font">
+                        <font>
+                            <pointsize>10</pointsize>
+                        </font>
+                    </property>
+                    <property name="styleSheet">
+                        <string notr="true">color: rgb(255, 255, 255);
+                        </string>
+                    </property>
+                    <property name="text">
+                        <string>{value}</string>
+                    </property>
+                </widget>
+            </item>
+            <item>
                 <spacer name="bottom_spacer">
                     <property name="orientation">
                         <enum>Qt::Vertical</enum>
