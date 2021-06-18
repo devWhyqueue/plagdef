@@ -5,7 +5,6 @@ name = "pypi"
 
 [packages]
 click = "~=8.0"
-dependency-injector = "~=4.32"
 jsonpickle = "~=2.0"
 networkx = "~=2.5"
 numpy = "~=1.20"

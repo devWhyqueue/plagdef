@@ -8,8 +8,8 @@ from PySide6.QtCore import QFile, QIODevice, Qt
 from PySide6.QtGui import QCursor, QMovie
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QButtonGroup, QMainWindow, QFileDialog, QDialog
-from dependency_injector.wiring import inject, Provide, as_, as_float
 
+from plagdef.config import settings
 from plagdef.gui.model import ResultsTableModel, DocumentPairMatches
 from plagdef.model.models import MatchType
 from plagdef.model.util import version, truncate
@@ -59,8 +59,7 @@ class View:
 
 
 class HomeView(View):
-    @inject
-    def __init__(self, lang: str = Provide['config.default.lang']):
+    def __init__(self, lang=settings['lang']):
         self.widget = _load_ui_file(Path(UI_FILES['home_widget']))
         self._configure(lang)
 
@@ -341,9 +340,7 @@ class SettingsDialog:
     def ocr(self) -> bool:
         return self.widget.ocr_check_box.isChecked()
 
-    @inject
-    def open(self, ocr: bool = Provide['config.default.ocr', as_(bool)],
-             sim: float = Provide['config.default.min_cos_sim', as_float()]):
+    def open(self, ocr=settings['ocr'], sim=settings['min_cos_sim']):
         self.widget.ocr_check_box.setChecked(ocr)
         self.widget.value_label.setText(str(sim))
         self.widget.sim_slider.setValue(sim * 10)

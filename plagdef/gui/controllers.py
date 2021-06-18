@@ -4,10 +4,10 @@ import subprocess
 
 import plagdef.gui.main as main
 from plagdef.app import write_doc_pair_matches_to_json, read_doc_pair_matches_from_json
+from plagdef.config import settings
 from plagdef.gui.views import HomeView, LoadingView, NoResultsView, ErrorView, ResultView, \
     FileDialog, MatchesDialog, MessageDialog, SettingsDialog
 from plagdef.model.models import DocumentPairMatches
-from plagdef.services import update_config
 
 
 class HomeController:
@@ -32,7 +32,7 @@ class HomeController:
                                        settings=self._on_settings_click)
 
     def on_select_lang(self):
-        update_config({'lang': self.view.lang})
+        settings.update({'lang': self.view.lang})
 
     def on_open_click(self):
         dialog = FileDialog()
@@ -45,10 +45,10 @@ class HomeController:
 
     def _on_settings_click(self):
         self.settings_dialog.open()
-        update_config({'ocr': self.settings_dialog.ocr,
-                       'min_cos_sim': self.settings_dialog.similarity_threshold,
-                       'min_dice_sim': self.settings_dialog.similarity_threshold,
-                       'min_cluster_cos_sim': self.settings_dialog.similarity_threshold})
+        settings.update({'ocr': self.settings_dialog.ocr,
+                         'min_cos_sim': self.settings_dialog.similarity_threshold,
+                         'min_dice_sim': self.settings_dialog.similarity_threshold,
+                         'min_cluster_cos_sim': self.settings_dialog.similarity_threshold})
 
     def _on_select_archive_dir(self):
         if self.archive_dir_dialog.open():

@@ -17,12 +17,12 @@ from unicodedata import normalize
 import jsonpickle
 import magic
 import pdfplumber
-from dependency_injector.wiring import Provide, inject, as_
 from magic import MagicException
 from ocrmypdf import ocr
 from sortedcontainers import SortedSet
 from tqdm.contrib.concurrent import process_map
 
+from plagdef.config import settings
 from plagdef.model import models
 
 log = logging.getLogger(__name__)
@@ -31,9 +31,7 @@ lock = Lock()
 
 
 class DocumentFileRepository:
-    @inject
-    def __init__(self, dir_path: Path, recursive=False, lang: str = Provide['config.default.lang'],
-                 use_ocr: bool = Provide['config.default.ocr', as_(bool)]):
+    def __init__(self, dir_path: Path, recursive=False, lang=settings['lang'], use_ocr=settings['ocr']):
         self.lang = lang
         self.dir_path = dir_path
         self._use_ocr = use_ocr

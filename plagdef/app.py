@@ -1,26 +1,17 @@
 from __future__ import annotations
 
-import logging.config
 import signal
 import sys
-from ast import literal_eval
 from pathlib import Path
 
 import click
-import pkg_resources
 from click import UsageError
-from dependency_injector import providers
-from dependency_injector.containers import DeclarativeContainer
 
-from plagdef import services, repositories
+from plagdef import services
+from plagdef.config import settings
 from plagdef.model.models import DocumentPairMatches
 from plagdef.model.reporting import generate_text_report
 from plagdef.repositories import DocumentFileRepository, DocumentPairMatchesJsonRepository
-from plagdef.services import update_config
-
-# Logging config
-logging_config = pkg_resources.resource_filename(__name__, str(Path('config/logging.ini')))
-logging.config.fileConfig(logging_config, disable_existing_loggers=False)
 
 
 @click.command(context_settings=dict(help_option_names=["-h", "--help"]))
@@ -49,9 +40,8 @@ def cli(docdir: tuple[click.Path, bool], lang: str, ocr: bool, common_docdir: [c
     For instance if you would like to recursively search <DOCDIR> the correct command looks like this:
     `plagdef <DOCDIR> True`
     """
-    _init()
-    update_config({'lang': lang, 'ocr': ocr, 'min_cos_sim': sim_th, 'min_dice_sim': sim_th,
-                   'min_cluster_cos_sim': sim_th})
+    settings.update({'lang': lang, 'ocr': ocr, 'min_cos_sim': sim_th, 'min_dice_sim': sim_th,
+                     'min_cluster_cos_sim': sim_th})
     matches = find_matches(docdir, archive_docdir, common_docdir)
     if jsondir:
         if matches:
@@ -74,7 +64,6 @@ def gui():
     PlagDef supports plagiarism detection for student assignments.
     The GUI for this tool is based on the Qt 6 framework and works on all platforms.
     """
-    _init(is_gui=True)
     from plagdef.gui.main import MyQtApp
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     app = MyQtApp()
@@ -105,30 +94,6 @@ def write_doc_pair_matches_to_json(matches, jsondir):
 def read_doc_pair_matches_from_json(jsondir) -> set[DocumentPairMatches]:
     repo = DocumentPairMatchesJsonRepository(Path(str(jsondir)))
     return repo.list()
-
-
-class Container(DeclarativeContainer):
-    config = providers.Configuration()
-
-
-def _init(is_gui=False):
-    app_config_path = pkg_resources.resource_filename(__name__, str(Path('config/app.ini')))
-    container = Container()
-    container.config.from_ini(app_config_path)
-    _convert_to_types(container.config)
-    if is_gui:
-        from plagdef.gui import views
-        container.wire(modules=[services, repositories, views])
-    else:
-        container.wire(modules=[services, repositories])
-
-
-def _convert_to_types(conf):
-    lang = conf.default.lang()
-    conf.set('default.lang', '-1')
-    typed_dict = {**dict((key, literal_eval(val)) for key, val in conf.default().items()), 'lang': lang}
-    for att, val in typed_dict.items():
-        conf.set(f'default.{att}', val)
 
 
 if __name__ == "__main__":
