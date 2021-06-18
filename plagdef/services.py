@@ -1,16 +1,15 @@
 from __future__ import annotations
 
 from click import UsageError
-from dependency_injector.wiring import Provide, inject
 
+from plagdef.config import settings
 from plagdef.model.detection import DocumentMatcher
 from plagdef.model.models import DocumentPairMatches, Document
 from plagdef.model.preprocessing import UnsupportedLanguageError
 from plagdef.repositories import UnsupportedFileFormatError, DocumentPickleRepository
 
 
-@inject
-def find_matches(doc_repo, archive_repo=None, common_doc_repo=None, config=Provide['config.default']) \
+def find_matches(doc_repo, archive_repo=None, common_doc_repo=None, config=settings) \
     -> list[DocumentPairMatches]:
     try:
         doc_matcher = DocumentMatcher(config)
@@ -39,9 +38,3 @@ def _preprocess_docs(doc_matcher, lang, doc_repo, common_doc_repo=None) -> set[D
 
 def write_json_reports(matches: list[DocumentPairMatches], repo):
     [repo.save(m) for m in matches]
-
-
-@inject
-def update_config(d: dict, container=Provide['<container>']):
-    for att, val in d.items():
-        container.config.set(f'default.{att}', val)
