@@ -15,7 +15,7 @@ def download_nlp_models():
 @fixture(scope='session')
 def config():
     return {
-        'lang': 'eng',
+        'lang': 'eng', 'ser': True,
         'min_cos_sim': 0.3, 'min_dice_sim': 0.33, 'min_cluster_cos_sim': 0.34,
         'adjacent_sents_gap': 4, 'min_adjacent_sents_gap': 0, 'adjacent_sents_gap_summary': 24,
         'min_verbatim_match_char_len': 256, 'min_sent_number': 1, 'min_sent_len': 3, 'min_cluster_char_len': 15,
