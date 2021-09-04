@@ -30,43 +30,87 @@ jsonpickle.set_encoder_options('json', indent=4)
 lock = Lock()
 
 
-class DocumentFileRepository:
-    def __init__(self, dir_path: Path, recursive=False, lang=None, use_ocr=None):
-        self.lang = lang if lang else settings['lang']
+class FileRepository:
+    def __init__(self, dir_path: Path, recursive=False):
         self.dir_path = dir_path
-        self._use_ocr = use_ocr if use_ocr else settings['ocr']
         self._recursive = recursive
         if not dir_path.is_dir():
             raise NotADirectoryError(f'The given path {dir_path} does not point to an existing directory!')
 
-    def _list_files(self):
-        if self._recursive:
-            return (file for file in self.dir_path.rglob('*') if file.is_file() and file.suffix != '.pdef')
+    def list(self) -> set[models.File]:
+        files = set()
+        f_gen = self.dir_path.rglob('*') if self._recursive else self.dir_path.iterdir()
+        for f in f_gen:
+            if f.is_file():
+                binary = not magic.Magic(mime=True).from_buffer(open(f, 'rb').read(2048)).startswith("text")
+                try:
+                    content = f.read_bytes() if binary else self._read_text(f)
+                    files.add(models.File(f.name, content, binary))
+                except UnsupportedFileFormatError as e:
+                    log.error(e)
+                    log.debug('Following error occurred:', exc_info=True)
+        return files
+
+    def _read_text(self, file_path: Path):
+        try:
+            detect_enc = magic.Magic(mime_encoding=True)
+            enc = detect_enc.from_buffer(open(file_path, 'rb').read(2048))
+            enc_str = enc if enc != 'utf-8' else 'utf-8-sig'
+            text = file_path.read_text(encoding=enc_str)
+            return normalize('NFC', text)
+        except (UnicodeDecodeError, LookupError, MagicException):
+            raise UnsupportedFileFormatError(
+                f"The file '{file_path.name}' has an unsupported encoding and cannot be read.")
+
+    def save(self, file: models.File):
+        file_path = Path(f"{self.dir_path}/{file.name}")
+        if file_path.exists():
+            raise FileExistsError(f'The file "{file_path}" already exists!')
+        if file.binary:
+            with Path(file_path).open('wb') as f:
+                f.write(file.content)
         else:
-            return (file for file in self.dir_path.iterdir() if file.is_file() and file.suffix != '.pdef')
+            with Path(file_path).open('w', encoding="utf-8") as f:
+                f.write(file.content)
+
+    def save_all(self, files: set[models.File]):
+        for file in files:
+            try:
+                self.save(file)
+            except FileExistsError:
+                log.warning(f'Ignoring already existing external source "{file.name}".')
+
+
+class DocumentFileRepository:
+    def __init__(self, dir_path: Path, recursive=False, lang=None, use_ocr=None):
+        self._file_repo = FileRepository(dir_path, recursive)
+        self.lang = lang if lang else settings['lang']
+        self._use_ocr = use_ocr if use_ocr else settings['ocr']
+
+    @property
+    def dir_path(self):
+        return self._file_repo.dir_path
 
     def list(self) -> set[models.Document]:
-        files = list(self._list_files())
-        docs = process_map(self._read_file, files, desc=f"Reading documents in '{self.dir_path}'",
+        files = list(filter(lambda f: not f.name.lower().endswith(".pdef"), self._file_repo.list()))
+        docs = process_map(self._create_doc, files, desc=f"Reading documents in '{self.dir_path}'",
                            unit='doc', total=len(files), max_workers=os.cpu_count())
         return set(filter(None, docs))
 
-    def _read_file(self, file):
-        if file.suffix.lower() == '.pdf':
-            reader = PdfReader(file, self.lang, self._use_ocr)
+    def _create_doc(self, file: models.File) -> models.Document:
+        name = file.name.rsplit(".", 1)[0]
+        doc_path = Path(f"{self.dir_path}/{file.name}").resolve()
+        if file.name.lower().endswith('.pdf'):
+            reader = PdfReader(doc_path, self.lang, self._use_ocr)
             text = reader.extract_text()
-            return models.Document(file.stem, str(file.resolve()), text)
+            doc = models.Document(name, str(doc_path), text)
+            doc.urls = reader.extract_urls()
+        elif not file.binary:
+            doc = models.Document(name, str(doc_path), file.content)
         else:
-            try:
-                detect_enc = magic.Magic(mime_encoding=True)
-                enc = detect_enc.from_buffer(open(str(file), 'rb').read(2048))
-                enc_str = enc if enc != 'utf-8' else 'utf-8-sig'
-                text = file.read_text(encoding=enc_str)
-                normalized_text = normalize('NFC', text)
-                return models.Document(file.stem, str(file.resolve()), normalized_text)
-            except (UnicodeDecodeError, LookupError, MagicException):
-                log.error(f"The file '{file.name}' has an unsupported encoding and cannot be read.")
-                log.debug('Following error occurred:', exc_info=True)
+            log.warning(f'Ignoring unsupported binary file "{file.name}".')
+            doc = None
+        return doc
 
 
 class DocumentPairRepository:
@@ -137,6 +181,10 @@ class PdfReader:
         self._file = file
         self._lang = lang if lang == 'eng' else 'deu'
         self._use_ocr = use_ocr
+
+    def extract_urls(self):
+        with pdfplumber.open(self._file) as pdf:
+            return {uri_obj['uri'] for uri_obj in pdf.hyperlinks}
 
     def extract_text(self):
         text = self._extract()
