@@ -101,7 +101,8 @@ class DocumentFileRepository:
             reader = PdfReader(file.path, self.lang, self._use_ocr)
             text = reader.extract_text()
             doc = models.Document(file.path.stem, str(file.path), text)
-            doc.urls = reader.extract_urls()
+            urls = reader.extract_urls()
+            doc.urls.update(urls) if urls else None
         elif not file.binary:
             doc = models.Document(file.path.stem, str(file.path), file.content)
         else:
