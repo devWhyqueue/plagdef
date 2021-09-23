@@ -1,4 +1,5 @@
 import logging.config
+import warnings
 from ast import literal_eval
 from configparser import ConfigParser
 from pathlib import Path
@@ -23,3 +24,6 @@ logging.config.fileConfig(logging_config, disable_existing_loggers=False)
 # App config
 app_config_path = pkg_resources.resource_filename(__name__, str(Path('config/app.ini')))
 settings = _read_config(app_config_path)
+
+# Ignore warnings from Torch
+warnings.filterwarnings("ignore")

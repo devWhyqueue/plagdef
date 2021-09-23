@@ -68,7 +68,7 @@ def gui():
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     app = MyQtApp()
     app.window.show()
-    sys.exit(app.exec())
+    sys.exit(app.exec_())
 
 
 def find_matches(docdir: tuple, archive_docdir: tuple, common_docdir: tuple) -> list[DocumentPairMatches]:

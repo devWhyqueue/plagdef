@@ -47,4 +47,4 @@ def _download_page(url: str, target_dir: Path) -> File:
         file = File(Path(f"{target_dir}/{filename}{ext}"), content, binary) if len(content) else None
         return file
     except RequestException:
-        log.warning(f'Could not download from "{url}".')
+        log.debug(f'Could not download from "{url}".')
