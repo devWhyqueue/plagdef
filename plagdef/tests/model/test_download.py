@@ -47,6 +47,13 @@ def test_download_page_with_different_content_type(req_mock, tmp_path):
     assert file.binary
 
 
+@patch("requests.get", return_value=FakeResponse({}, b'Content', 'Content'))
+def test_download_page_with_no_content_type(req_mock, tmp_path):
+    file = _download_page("https://google.de", tmp_path)
+    assert file.path.name == "google.de.txt"
+    assert not file.binary
+
+
 @patch("requests.get", side_effect=requests.ConnectionError())
 def test_download_page_catches_timeout_error(req_mock, tmp_path):
     file = _download_page("https://google.de", tmp_path)

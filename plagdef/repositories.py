@@ -13,6 +13,7 @@ from multiprocessing import Lock
 from pathlib import Path
 from pickle import dump, load, UnpicklingError
 from unicodedata import normalize
+from urllib.parse import urlparse
 
 import jsonpickle
 import magic
@@ -180,11 +181,13 @@ class PdfReader:
         self._lang = lang if lang == 'eng' else 'deu'
         self._use_ocr = use_ocr
 
-    def extract_urls(self):
+    def extract_urls(self) -> set[str]:
         # Temporary fix for: https://github.com/jsvine/pdfplumber/issues/463
         try:
             with pdfplumber.open(self._file) as pdf:
-                return {uri_obj['uri'].rstrip('/') for uri_obj in pdf.hyperlinks}
+                parsed_urls = {urlparse(uri_obj['uri'], "https") for uri_obj in pdf.hyperlinks}
+                return {parsed_url.geturl().rstrip('/').replace("///", "//")
+                        for parsed_url in filter(lambda url: url.scheme in ("http", "https"), parsed_urls)}
         except UnicodeDecodeError:
             log.warning(f'Could not extract hyperlinks from PDF "{self._file.name}".')
 

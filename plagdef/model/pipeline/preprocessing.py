@@ -94,7 +94,9 @@ def _extract_urls(doc: Document, extractor=URLExtract()):
     urls = extractor.find_urls(doc.text, only_unique=True, check_dns=True)
     for url in urls:
         url = url[:-1] if url[-1] in string.punctuation else url
-        doc.urls.add(urlparse(url, "https").geturl().rstrip("/").replace("///", "//"))
+        parsed_url = urlparse(url, "https")
+        if parsed_url.scheme in ("http", "https"):
+            doc.urls.add(parsed_url.geturl().rstrip("/").replace("///", "//"))
 
 
 def _nlp_pipe(lang: str) -> Pipeline:
