@@ -20,14 +20,16 @@ log = logging.getLogger(__name__)
 
 def download_all_external_sources(docs: set[Document], target_dir: Path) -> set[File]:
     urls = {url for doc in docs for url in doc.urls}
-    return set(filter(None, thread_map(partial(_download_page, target_dir=target_dir), urls, max_workers=os.cpu_count(),
-                                       total=len(urls), desc='Downloading', unit='external sources')))
+    files = filter(None, thread_map(partial(_download_page, target_dir=target_dir), urls, max_workers=os.cpu_count(),
+                                    total=len(urls), desc='Downloading', unit='external sources'))
+    return set({file.content: file for file in files}.values())
 
 
 def download_external_sources(doc: Document, target_dir: Path) -> set[File]:
-    return set(filter(None, thread_map(partial(_download_page, target_dir=target_dir), doc.urls,
-                                       max_workers=os.cpu_count(), total=len(doc.urls), desc='Downloading',
-                                       unit='external sources')))
+    files = filter(None, thread_map(partial(_download_page, target_dir=target_dir), doc.urls,
+                                    max_workers=os.cpu_count(), total=len(doc.urls), desc='Downloading',
+                                    unit='external sources'))
+    return set({file.content: file for file in files}.values())
 
 
 def _download_page(url: str, target_dir: Path) -> File:

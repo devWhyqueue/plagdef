@@ -76,6 +76,16 @@ def test_download_external_sources_filters_none(req_mock, tmp_path):
 
 @patch("requests.get", return_value=FakeResponse({'content-type': 'text/html'}, b'Content', 'Content'))
 @patch.object(BeautifulSoup, 'get_text', return_value='Content')
+def test_download_external_sources_filters_by_same_contents(req_mock, bs_mock, tmp_path):
+    doc1 = Document("doc1", "path/to/doc1", "https://website.com, https://samewebsite.com")
+    doc1.urls = {"https://website.com", "https://samewebsite.com"}
+    files = download_external_sources(doc1, tmp_path)
+    assert len(files) == 1
+
+
+@patch("requests.get", side_effect=[FakeResponse({'content-type': 'text/html'}, b'Google...', 'Google...'),
+                                    FakeResponse({'content-type': 'text/html'}, b'Bing...', 'Bing...')])
+@patch.object(BeautifulSoup, 'get_text', side_effect=['Google...', 'Bing...'])
 def test_download_all_external_sources(req_mock, bs_mock, tmp_path):
     doc1 = Document("doc1", "path/to/doc1", "Google.com is the most popular search engine.")
     doc1.urls = {"https://google.com"}
@@ -84,3 +94,14 @@ def test_download_all_external_sources(req_mock, bs_mock, tmp_path):
     files = download_all_external_sources({doc1, doc2}, tmp_path)
     assert len(files) == 2
     assert "google.com.txt", "bing.com.txt" in [file.path.name for file in files]
+
+
+@patch("requests.get", return_value=FakeResponse({'content-type': 'text/html'}, b'Content', 'Content'))
+@patch.object(BeautifulSoup, 'get_text', return_value='Content')
+def test_download_all_external_sources_filters_by_same_contents(req_mock, bs_mock, tmp_path):
+    doc1 = Document("doc1", "path/to/doc1", "https://website.com")
+    doc1.urls = {"https://website.com"}
+    doc2 = Document("doc2", "path/to/doc2", "https://samewebsite.com")
+    doc2.urls = {"https://samewebsite.com"}
+    files = download_all_external_sources({doc1, doc2}, tmp_path)
+    assert len(files) == 1
