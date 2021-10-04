@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 
 from plagdef.model.models import Document
@@ -26,8 +25,11 @@ class FakeDocumentMatcher:
         self.common_docs = common_docs
 
 
-@dataclass(frozen=True)
 class FakeResponse:
-    headers: dict
-    content: bytes
-    text: str
+    def __init__(self, headers: dict, content: bytes, text: str):
+        self.headers = headers
+        self.content = content
+        self.text = text
+
+    def raise_for_status(self):
+        pass

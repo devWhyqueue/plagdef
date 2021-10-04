@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import requests
 from bs4 import BeautifulSoup
-from requests.exceptions import SSLError
+from requests.exceptions import SSLError, HTTPError
 
 from plagdef.model.download import _download_page, download_external_sources, download_all_external_sources
 from plagdef.model.models import Document
@@ -52,6 +52,13 @@ def test_download_page_with_no_content_type(req_mock, tmp_path):
     file = _download_page("https://google.de", tmp_path)
     assert file.path.name == "google.de.txt"
     assert not file.binary
+
+
+@patch("requests.get", return_value=FakeResponse({'content-type': 'text/html'}, b'Content', 'Content'))
+@patch.object(FakeResponse, "raise_for_status", side_effect=HTTPError())
+def test_download_page_with_status_404(req_mock, tmp_path):
+    file = _download_page("https://google.de/not_existing_subpath", tmp_path)
+    assert not file
 
 
 @patch("requests.get", side_effect=requests.ConnectionError())

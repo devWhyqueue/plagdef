@@ -39,6 +39,7 @@ def _download_page(url: str, target_dir: Path) -> File:
     filename = secure_filename(filename)
     try:
         resp = requests.get(url)
+        resp.raise_for_status()
         mime_type = resp.headers['content-type'] if 'content-type' in resp.headers else 'text/html'
         binary = not mime_type.startswith('text')
         content = resp.content if binary else resp.text
