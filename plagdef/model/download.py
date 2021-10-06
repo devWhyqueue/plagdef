@@ -35,7 +35,7 @@ def download_external_sources(doc: Document, target_dir: Path) -> set[File]:
 def _download_page(url: str, target_dir: Path) -> File:
     parsed_url = urlparse(url)
     filename = parsed_url.netloc if not parsed_url.path else \
-        f'{parsed_url.path[parsed_url.path.rindex("/") + 1:]}_from_{parsed_url.netloc}'
+        f'{parsed_url.path.rstrip("/")[parsed_url.path.rstrip("/").rindex("/") + 1:]}_from_{parsed_url.netloc}'
     filename = secure_filename(filename)
     try:
         resp = requests.get(url)

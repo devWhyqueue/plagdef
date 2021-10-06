@@ -269,8 +269,8 @@ def test_tag_common_sents_with_words(preprocessor):
 
 def test_tag_common_sents_with_non_identical_sents(preprocessor):
     doc1 = Document('doc1', 'path/to/doc1', 'This is the first document.\n'
-                                            'Presenting the last sentence:\n'
-                                            'Last sentence is expected to be common to all docs.')
+                                            'Intro to the last sentence,\n'
+                                            'last sentence is expected to be common to all docs.')
     doc2 = Document('doc2', 'path/to/doc2', 'This sentence could be part of doc1 but is not.\n'
                                             'Last sentence is expected to be common to all docs.')
     preprocessor.preprocess('eng', [doc1], [doc2])
