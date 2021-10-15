@@ -47,6 +47,13 @@ def test_download_page_with_url_including_fragment(req_mock, bs_mock, tmp_path):
     assert file.path.name == "path_from_abc.de.txt"
 
 
+@patch("requests.get", return_value=FakeResponse({'content-type': 'text/html'}, b'Content', 'Content'))
+@patch.object(BeautifulSoup, 'get_text', return_value='Content')
+def test_download_page_with_url_including_fragment_without_path(req_mock, bs_mock, tmp_path):
+    file = _download_page("https://abc.de/#fragment", tmp_path)
+    assert file.path.name == "abc.de.txt"
+
+
 @patch("requests.get", return_value=FakeResponse({'content-type': 'application/pdf'}, b'Content', 'Content'))
 def test_download_page_with_different_content_type(req_mock, tmp_path):
     file = _download_page("https://google.de", tmp_path)
