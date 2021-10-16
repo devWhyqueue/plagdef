@@ -13,6 +13,7 @@ from requests.exceptions import RequestException
 from tqdm.contrib.concurrent import thread_map
 from werkzeug.utils import secure_filename
 
+from plagdef.config import settings
 from plagdef.model.models import Document, File
 
 log = logging.getLogger(__name__)
@@ -47,7 +48,8 @@ def _download_page(url: str, target_dir: Path) -> File:
         if mime_type.startswith("text/html"):
             content = BeautifulSoup(resp.text, features="lxml").get_text(" ", True)
             ext = ".txt"
-        file = File(Path(f"{target_dir}/{filename}{ext}"), content, binary) if len(content) else None
+        file = File(Path(f"{target_dir}/{filename}{ext}"), content, binary) \
+            if len(content) >= settings['min_ext_size'] else None
         return file
     except RequestException:
         log.debug(f'Could not download from "{url}".')
