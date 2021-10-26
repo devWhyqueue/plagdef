@@ -47,8 +47,7 @@ def test_list_normalizes_texts(tmp_path):
     with (tmp_path / 'doc2.txt').open('w', encoding='utf-8') as f:
         f.write('Nicht nur ähnlich, sondern gleich.')
     repo = FileRepository(tmp_path)
-    file1, file2 = repo.list()
-    assert file1.content == file2.content
+    assert len(repo.list()) == 1
 
 
 def test_list_removes_bom(tmp_path):
@@ -57,8 +56,7 @@ def test_list_removes_bom(tmp_path):
     with (tmp_path / 'doc2.txt').open('w', encoding='utf-8') as f:
         f.write('Files should be identical although one starts with BOM.')
     repo = FileRepository(tmp_path)
-    file1, file2 = repo.list()
-    assert file1.content == file2.content
+    assert len(repo.list()) == 1
 
 
 def test_list_with_file_containing_special_characters(tmp_path):
@@ -113,33 +111,44 @@ def test_list_recursive(tmp_path):
     assert len(files) == 3
 
 
-def test_save(tmp_path):
-    file = File(Path(tmp_path / "doc.txt"), "Hello World!", False)
-    file_repo = FileRepository(tmp_path)
-    file_repo.save(file)
-    assert Path(tmp_path / "doc.txt").read_text() == "Hello World!"
-
-
-def test_save_binary(tmp_path):
-    content = urandom(128)
-    file = File(Path(tmp_path / "doc.pdef"), content, True)
-    file_repo = FileRepository(tmp_path)
-    file_repo.save(file)
-    assert Path(tmp_path / "doc.pdef").read_bytes() == content
-
-
-def test_save_if_file_exists(tmp_path):
-    file = File(Path(tmp_path / "doc.txt"), "Hello World!", False)
-    file_repo = FileRepository(tmp_path)
-    file_repo.save(file)
-    with pytest.raises(FileExistsError):
-        file_repo.save(File(Path(tmp_path / "doc.txt"), "Other content.", False))
-    assert Path(tmp_path / "doc.txt").read_text() == "Hello World!"
-
-
 def test_save_all(tmp_path):
+    file = File(Path(tmp_path / "doc.txt"), "Hello World!", False)
+    file_repo = FileRepository(tmp_path)
+    file_repo.save_all({file})
+    assert Path(tmp_path / "doc.txt").read_text() == "Hello World!"
+
+
+def test_save_all_with_multiple_files(tmp_path):
     files = {File(Path(tmp_path / "doc1.txt"), "Hello World!", False),
              File(Path(tmp_path / "doc2.txt"), "Heyho World!", False)}
     file_repo = FileRepository(tmp_path)
     file_repo.save_all(files)
     assert len(list(Path(tmp_path).iterdir())) == 2
+
+
+def test_save_all_with_binary_file(tmp_path):
+    content = urandom(128)
+    file = File(Path(tmp_path / "doc.pdef"), content, True)
+    file_repo = FileRepository(tmp_path)
+    file_repo.save_all({file})
+    assert Path(tmp_path / "doc.pdef").read_bytes() == content
+
+
+def test_save_all_if_file_with_same_name_exists(tmp_path):
+    files = {File(Path(tmp_path / "doc.txt"), "Hello World!", False),
+             File(Path(tmp_path / "doc.txt"), "Other content.", False),
+             File(Path(tmp_path / "doc.txt"), "Different content.", False)}
+    file_repo = FileRepository(tmp_path)
+    file_repo.save_all(files)
+    assert len(list(Path(tmp_path).iterdir())) == 3
+    assert Path(tmp_path / "doc_1.txt").exists()
+    assert Path(tmp_path / "doc_2.txt").exists()
+
+
+def test_save_if_file_with_identical_content_exists(tmp_path):
+    files = {File(Path(tmp_path / "doc1.txt"), "Same content.", False),
+             File(Path(tmp_path / "doc2.txt"), "Same content.", False)}
+    file_repo = FileRepository(tmp_path)
+    file_repo.save_all(files)
+    assert len(list(Path(tmp_path).iterdir())) == 1
+    assert Path(tmp_path / "doc1.txt").exists()

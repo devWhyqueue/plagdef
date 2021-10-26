@@ -4,7 +4,7 @@ import bz2
 import logging
 import os
 import re
-from collections import Counter
+from collections import Counter, defaultdict
 from copy import deepcopy
 from hashlib import blake2b
 from io import BytesIO
@@ -39,18 +39,23 @@ class FileRepository:
             raise NotADirectoryError(f'The given path {base_path} does not point to an existing directory!')
 
     def list(self) -> set[models.File]:
-        files = set()
+        files = list()
         f_gen = self.base_path.rglob('*') if self._recursive else self.base_path.iterdir()
         for f in f_gen:
             if f.is_file():
                 binary = not magic.Magic(mime=True).from_buffer(open(f, 'rb').read(2048)).startswith("text")
                 try:
                     content = f.read_bytes() if binary else self._read_text(f)
-                    files.add(models.File(f, content, binary))
+                    files.append(models.File(f, content, binary))
                 except UnsupportedFileFormatError as e:
                     log.error(e)
                     log.debug('Following error occurred:', exc_info=True)
-        return files
+        file_groups = defaultdict(list)
+        [file_groups[f].append(f) for f in files]
+        duplicate_files = list(filter(lambda file_group: len(file_group) > 1, file_groups.values()))
+        log.warning(f'Only one representative of the following file groups is included because group members have '
+                    f'identical contents: {str(duplicate_files)}') if len(files) != len(file_groups) else None
+        return set(file_groups.keys())
 
     def _read_text(self, file_path: Path):
         try:
@@ -63,22 +68,34 @@ class FileRepository:
             raise UnsupportedFileFormatError(
                 f"The file '{file_path.name}' has an unsupported encoding and cannot be read.")
 
-    def save(self, file: models.File):
-        if file.path.exists():
-            raise FileExistsError(f'The file "{file.path.name}" already exists!')
-        if file.binary:
-            with file.path.open('wb') as f:
-                f.write(file.content)
-        else:
-            with file.path.open('w', encoding="utf-8") as f:
-                f.write(file.content)
-
     def save_all(self, files: set[models.File]):
+        existing_files = self.list()
         for file in files:
             try:
-                self.save(file)
+                self._save(file, existing_files)
+                existing_files.add(file)
             except FileExistsError as e:
                 log.debug(e)
+
+    def _save(self, file: models.File, existing_files: set[models.File]):
+        suffix = 1
+        saved = False
+        while not saved:
+            if file in existing_files:
+                raise FileExistsError(f'File "{file.path.name} was not saved because there already is a file with '
+                                      f'identical contents.')
+            if file.path.exists():
+                file.path = file.path.with_name(f'{file.path.stem.replace(f"_{suffix - 1}", "")}_{suffix}'
+                                                f'{file.path.suffix}')
+                suffix = suffix + 1
+                continue
+            if file.binary:
+                with file.path.open('wb') as f:
+                    f.write(file.content)
+            else:
+                with file.path.open('w', encoding="utf-8") as f:
+                    f.write(file.content)
+            saved = True
 
 
 class DocumentFileRepository:

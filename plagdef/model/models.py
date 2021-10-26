@@ -12,11 +12,22 @@ from sortedcontainers import SortedSet
 from plagdef import util
 
 
-@dataclass(frozen=True)
 class File:
-    path: Path
-    content: any
-    binary: bool
+    def __init__(self, path: Path, content: any, binary: bool):
+        self.path = path
+        self.content = content
+        self.binary = binary
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.content == other.content
+        return False
+
+    def __hash__(self):
+        return hash(self.content)
+
+    def __repr__(self):
+        return f"File('{self.path.stem}')"
 
 
 class Document:
@@ -42,11 +53,11 @@ class Document:
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self.name == other.name and self.text == other.text
+            return self.text == other.text
         return False
 
     def __hash__(self):
-        return hash((self.name, self.text))
+        return hash(self.text)
 
     def __repr__(self):
         return f"Document('{self.name}')"

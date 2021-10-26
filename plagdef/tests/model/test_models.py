@@ -1,12 +1,19 @@
 from collections import Counter
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 
 from plagdef.model.models import Document, Sentence, Cluster, Fragment, Word, RatedCluster, Match, \
     DocumentPairMatches, \
-    DifferentDocumentPairError, SameDocumentError, MatchType
+    DifferentDocumentPairError, SameDocumentError, MatchType, File
 from plagdef.tests.model.pipeline.test_extension import _create_seeds
+
+
+def test_files_are_equal():
+    file1 = File(Path("a/path"), "Identical content", False)
+    file2 = File(Path("another/path"), "Identical content", False)
+    assert file1 == file2
 
 
 def test_document_sents():
@@ -70,7 +77,7 @@ def test_fragment_overlaps():
 
 
 def test_fragment_overlaps_with_different_docs():
-    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', 'a'), Document('doc2', 'path/to/doc2', 'b')
     frag1 = Fragment(0, 15, doc1)
     frag2 = Fragment(14, 16, doc2)
     assert not frag1.overlaps_with(frag2) and not frag2.overlaps_with(frag1)
@@ -333,14 +340,14 @@ def test_match_from_cluster():
 
 
 def test_match_overlaps_with():
-    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', 'a'), Document('doc2', 'path/to/doc2', 'b')
     match1 = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(13, 15, doc2))
     match2 = Match(MatchType.VERBATIM, Fragment(10, 15, doc2), Fragment(6, 9, doc1))
     assert match1.overlaps_with(match2) and match2.overlaps_with(match1)
 
 
 def test_match_frag_from_doc():
-    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', 'a'), Document('doc2', 'path/to/doc2', 'b')
     match = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(13, 15, doc2))
     frag1, frag2 = match.frag_from_doc(doc1), match.frag_from_doc(doc2)
     assert frag1.doc == doc1
@@ -348,34 +355,34 @@ def test_match_frag_from_doc():
 
 
 def test_match_frag_from_doc_with_other_doc():
-    doc1, doc2, doc3 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', ''), \
-                       Document('doc3', 'path/to/doc3', '')
+    doc1, doc2, doc3 = Document('doc1', 'path/to/doc1', 'a'), Document('doc2', 'path/to/doc2', 'b'), \
+                       Document('doc3', 'path/to/doc3', 'c')
     match = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(13, 15, doc2))
     frag = match.frag_from_doc(doc3)
     assert frag is None
 
 
 def test_matches_do_not_overlap_if_overlap_only_in_one_frag():
-    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', 'a'), Document('doc2', 'path/to/doc2', 'b')
     match1 = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(0, 4, doc2))
     match2 = Match(MatchType.VERBATIM, Fragment(10, 15, doc2), Fragment(6, 9, doc1))
     assert not match1.overlaps_with(match2) and not match2.overlaps_with(match1)
 
 
 def test_match_len():
-    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', 'a'), Document('doc2', 'path/to/doc2', 'b')
     match = Match(MatchType.VERBATIM, Fragment(0, 5, doc1), Fragment(0, 30, doc2))
     assert len(match) == 35
 
 
 def test_doc_pair_matches_init():
-    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', 'a'), Document('doc2', 'path/to/doc2', 'b')
     doc_pair_matches = DocumentPairMatches(doc1, doc2)
     assert doc_pair_matches._matches == {}
 
 
 def test_doc_pair_matches_init_with_matches():
-    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', 'a'), Document('doc2', 'path/to/doc2', 'b')
     match1 = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(0, 4, doc2))
     match2 = Match(MatchType.INTELLIGENT, Fragment(10, 15, doc2), Fragment(6, 9, doc1))
     doc_pair_matches = DocumentPairMatches(doc1, doc2, {match1, match2})
@@ -396,7 +403,7 @@ def test_doc_pair_matches_from_matches(matches):
 
 
 def test_doc_pair_matches_equal_if_docs_are_the_same():
-    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', 'a'), Document('doc2', 'path/to/doc2', 'b')
     match = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(0, 4, doc2))
     doc_pair_matches1 = DocumentPairMatches(doc1, doc2)
     doc_pair_matches2 = DocumentPairMatches(doc2, doc1, {match})
@@ -404,7 +411,7 @@ def test_doc_pair_matches_equal_if_docs_are_the_same():
 
 
 def test_doc_pair_matches_add():
-    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', 'a'), Document('doc2', 'path/to/doc2', 'b')
     match1 = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(0, 4, doc2))
     match2 = Match(MatchType.VERBATIM, Fragment(10, 15, doc2), Fragment(6, 9, doc1))
     doc_pair_matches = DocumentPairMatches(doc1, doc2)
@@ -415,7 +422,7 @@ def test_doc_pair_matches_add():
 
 
 def test_doc_pair_matches_add_same_match_twice():
-    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', 'a'), Document('doc2', 'path/to/doc2', 'b')
     match = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(0, 4, doc2))
     doc_pair_matches = DocumentPairMatches(doc1, doc2)
     doc_pair_matches.add(match)
@@ -425,8 +432,8 @@ def test_doc_pair_matches_add_same_match_twice():
 
 
 def test_doc_pair_matches_add_match_from_other_pair_fails():
-    doc1, doc2, doc3 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', ''), \
-                       Document('doc3', 'path/to/doc3', '')
+    doc1, doc2, doc3 = Document('doc1', 'path/to/doc1', 'a'), Document('doc2', 'path/to/doc2', 'b'), \
+                       Document('doc3', 'path/to/doc3', 'c')
     match1 = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(0, 4, doc2))
     match2 = Match(MatchType.VERBATIM, Fragment(10, 15, doc2), Fragment(6, 9, doc3))
     doc_pair_matches = DocumentPairMatches(doc1, doc2)
@@ -438,7 +445,7 @@ def test_doc_pair_matches_add_match_from_other_pair_fails():
 
 
 def test_doc_pair_matches_update():
-    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', 'a'), Document('doc2', 'path/to/doc2', 'b')
     matches = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(0, 4, doc2)), \
               Match(MatchType.VERBATIM, Fragment(10, 15, doc2), Fragment(6, 9, doc1))
     doc_pair_matches = DocumentPairMatches(doc1, doc2)
@@ -447,7 +454,7 @@ def test_doc_pair_matches_update():
 
 
 def test_doc_pair_matches_list():
-    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', 'a'), Document('doc2', 'path/to/doc2', 'b')
     match1 = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(0, 4, doc2))
     match2 = Match(MatchType.VERBATIM, Fragment(10, 15, doc1), Fragment(6, 9, doc2))
     doc_pair_matches = DocumentPairMatches(doc1, doc2, {match1, match2})
@@ -456,7 +463,7 @@ def test_doc_pair_matches_list():
 
 
 def test_doc_pair_matches_len():
-    doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
+    doc1, doc2 = Document('doc1', 'path/to/doc1', 'a'), Document('doc2', 'path/to/doc2', 'b')
     match1 = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(0, 4, doc2))
     match2 = Match(MatchType.VERBATIM, Fragment(10, 15, doc1), Fragment(6, 9, doc2))
     doc_pair_matches = DocumentPairMatches(doc1, doc2, {match1, match2})

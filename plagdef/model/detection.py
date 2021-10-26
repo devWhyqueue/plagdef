@@ -34,7 +34,10 @@ class DocumentMatcher:
     def find_matches(self, docs: set[Document], archive_docs=None) -> list[DocumentPairMatches]:
         doc_combs = set(combinations(docs, 2))
         if archive_docs:
-            doc_combs.update(product(docs, archive_docs))
+            doc_overlap = docs.intersection(archive_docs)
+            log.warning(f'The following documents have counterparts with identical contents in the archive: '
+                        f'[{str(doc_overlap)[1:-1]}]') if len(doc_overlap) else None
+            doc_combs.update(product(docs, archive_docs.difference(doc_overlap)))
         return parallelize(self._find_matches, list(doc_combs))
 
     def _find_matches(self, doc_combs, pos=0) -> list[DocumentPairMatches]:

@@ -23,14 +23,14 @@ def download_all_external_sources(docs: set[Document], target_dir: Path) -> set[
     urls = {url for doc in docs for url in doc.urls}
     files = filter(None, thread_map(partial(_download_page, target_dir=target_dir), urls, max_workers=os.cpu_count(),
                                     total=len(urls), desc='Downloading', unit='external sources'))
-    return set({file.content: file for file in files}.values())
+    return set(files)
 
 
 def download_external_sources(doc: Document, target_dir: Path) -> set[File]:
     files = filter(None, thread_map(partial(_download_page, target_dir=target_dir), doc.urls,
                                     max_workers=os.cpu_count(), total=len(doc.urls), desc='Downloading',
                                     unit='external sources'))
-    return set({file.content: file for file in files}.values())
+    return set(files)
 
 
 def _download_page(url: str, target_dir: Path) -> File:
