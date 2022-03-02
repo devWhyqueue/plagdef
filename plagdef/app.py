@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import signal
 import sys
 from pathlib import Path
@@ -65,6 +66,7 @@ def gui():
     The GUI for this tool is based on the Qt 6 framework and works on all platforms.
     """
     from plagdef.gui.main import MyQtApp
+    os.environ["QT_LOGGING_RULES"] = "*.warning=false"
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     app = MyQtApp()
     app.window.show()
