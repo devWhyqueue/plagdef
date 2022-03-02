@@ -199,14 +199,10 @@ class PdfReader:
         self._use_ocr = use_ocr
 
     def extract_urls(self) -> set[str]:
-        # Temporary fix for: https://github.com/jsvine/pdfplumber/issues/463
-        try:
-            with pdfplumber.open(self._file) as pdf:
-                parsed_urls = {urlparse(uri_obj['uri'], "https") for uri_obj in pdf.hyperlinks}
-                return {parsed_url.geturl().rstrip('/').replace("///", "//")
-                        for parsed_url in filter(lambda url: url.scheme in ("http", "https"), parsed_urls)}
-        except UnicodeDecodeError:
-            log.warning(f'Could not extract hyperlinks from PDF "{self._file.name}".')
+        with pdfplumber.open(self._file) as pdf:
+            parsed_urls = {urlparse(uri_obj['uri'], "https") for uri_obj in pdf.hyperlinks}
+            return {parsed_url.geturl().rstrip('/').replace("///", "//")
+                    for parsed_url in filter(lambda url: url.scheme in ("http", "https"), parsed_urls)}
 
     def extract_text(self):
         text = self._extract()

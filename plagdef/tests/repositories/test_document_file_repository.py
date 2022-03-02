@@ -131,10 +131,3 @@ def test_pdf_reader_merges_hyphenated_words_at_line_end(tmp_path):
     text = reader._extract()
     assert text == 'This is a PDF file containing one sentence. However there are multiple line breaks' \
                    ' which split words.'
-
-
-@patch("pdfplumber.open", side_effect=UnicodeDecodeError("", bytes(), -1, -1, ""))
-def test_pdf_reader_extract_urls_returns_none_on_unicode_decode_error(pdf_mock, tmp_path):
-    reader = PdfReader(tmp_path, lang='eng', use_ocr=True)
-    urls = reader.extract_urls()
-    assert not urls
