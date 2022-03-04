@@ -152,3 +152,22 @@ def test_save_if_file_with_identical_content_exists(tmp_path):
     file_repo.save_all(files)
     assert len(list(Path(tmp_path).iterdir())) == 1
     assert Path(tmp_path / "doc1.txt").exists()
+
+
+def test_remove_all(tmp_path):
+    file1 = File(Path(tmp_path / "doc1.txt"), "Hello World!", False)
+    file2 = File(Path(tmp_path / "doc2.txt"), "Hallo Welt!", False)
+    file_repo = FileRepository(tmp_path)
+    with file1.path.open('w', encoding="utf-8") as f:
+        f.write(file1.content)
+    with file2.path.open('w', encoding="utf-8") as f:
+        f.write(file2.content)
+    file_repo.remove_all({file1, file2})
+    assert not len(list(tmp_path.glob('*')))
+
+
+def test_remove_all_if_file_not_exists_is_noop(tmp_path):
+    file = File(Path(tmp_path / "doc.txt"), "Hello World!", False)
+    file_repo = FileRepository(tmp_path)
+    file_repo.remove_all({file})
+    assert not len(list(tmp_path.glob('*')))

@@ -95,7 +95,7 @@
                     </property>
                 </widget>
             </item>
-            <item alignment="Qt::AlignHCenter|Qt::AlignTop">
+            <item alignment="Qt::AlignTop">
                 <widget class="QLabel" name="error_msg_label">
                     <property name="frameShape">
                         <enum>QFrame::NoFrame</enum>
@@ -104,6 +104,9 @@
                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span
                             style=&quot; font-size:14pt; color:#ffffff;&quot;&gt;{errorMsg}&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
                         </string>
+                    </property>
+                    <property name="scaledContents">
+                        <bool>false</bool>
                     </property>
                     <property name="wordWrap">
                         <bool>false</bool>

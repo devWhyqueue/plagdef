@@ -10,7 +10,7 @@ def test_common_words(preprocessor, config):
     doc2 = Document('doc2', 'path/to/doc2',
                     'Some text in doc2. There must be identical sentences. But Case or punctuation like this'
                     ' \';:\' do not matter. Some different ending.')
-    preprocessor.preprocess('eng', [doc1, doc2])
+    preprocessor.preprocess('en', [doc1, doc2])
     cluster = Cluster({Seed(doc1.sents(include_common=True)[0], doc2.sents(include_common=True)[0], 0.8, 0.8),
                        Seed(doc1.sents(include_common=True)[1], doc2.sents(include_common=True)[1], 1, 1),
                        Seed(doc1.sents(include_common=True)[2], doc2.sents(include_common=True)[2], 0.4, 0.4)})
@@ -24,7 +24,7 @@ def test_common_words(preprocessor, config):
 def test_common_words_ends_without_punctuation(preprocessor, config):
     doc1 = Document('doc1', 'path/to/doc1', 'Some text in doc1. There must be identical sentences')
     doc2 = Document('doc2', 'path/to/doc2', 'Some text in doc2. There must be identical sentences')
-    preprocessor.preprocess('eng', [doc1, doc2])
+    preprocessor.preprocess('en', [doc1, doc2])
     cluster = Cluster({Seed(doc1.sents(include_common=True)[1], doc2.sents(include_common=True)[1], 1, 1)})
     verbatim_matcher = VerbatimMatcher(25)
     match = verbatim_matcher._common_words(cluster).pop()
@@ -40,7 +40,7 @@ def test_common_words_with_two_substrings(preprocessor, config):
     doc2 = Document('doc2', 'path/to/doc2',
                     'Some text in doc2. There must be identical sentences. But Case or punctuation like this'
                     ' \';:\' do not matter. Some different ending.')
-    preprocessor.preprocess('eng', [doc1, doc2])
+    preprocessor.preprocess('en', [doc1, doc2])
     cluster = Cluster({Seed(doc1.sents(include_common=True)[0], doc2.sents(include_common=True)[0], 0.8, 0.8),
                        Seed(doc1.sents(include_common=True)[1], doc2.sents(include_common=True)[1], 1, 1),
                        Seed(doc1.sents(include_common=True)[2], doc2.sents(include_common=True)[2], 0.4, 0.4)})
@@ -64,7 +64,7 @@ def test_resolve_overlaps(preprocessor, config):
     doc2 = Document('doc2', 'path/to/doc2',
                     'Some text in doc2. There must be identical sentences. But Case or punctuation like this'
                     " ';:' do not matter. Some different ending.")
-    preprocessor.preprocess('eng', [doc1, doc2])
+    preprocessor.preprocess('en', [doc1, doc2])
     cluster = Cluster({Seed(doc1.sents(include_common=True)[0], doc2.sents(include_common=True)[0], 0.8, 0.8),
                        Seed(doc1.sents(include_common=True)[1], doc2.sents(include_common=True)[1], 1, 1),
                        Seed(doc1.sents(include_common=True)[2], doc2.sents(include_common=True)[2], 0.4, 0.4)})
@@ -84,7 +84,7 @@ def test_verbatim_matches(preprocessor, config):
     doc1 = Document('doc1', 'path/to/doc1', 'Some identical text. This is a sentence. This as well. More similar text.')
     doc2 = Document('doc2', 'path/to/doc2',
                     'Some identical text. Totally different words. These are too. More similar text.')
-    preprocessor.preprocess('eng', [doc1, doc2])
+    preprocessor.preprocess('en', [doc1, doc2])
     clusters = {Cluster({Seed(doc1.sents(include_common=True)[0], doc2.sents(include_common=True)[0], 1, 1)}),
                 Cluster({Seed(doc1.sents(include_common=True)[3], doc2.sents(include_common=True)[3], 1, 1)})}
     verbatim_matcher = VerbatimMatcher(5)
@@ -100,7 +100,7 @@ def test_find_matches_with_verbatim_case(config):
                     'Some identical text. Totally different words. These are too. More similar text.')
     config['min_verbatim_match_char_len'] = 5
     doc_matcher = DocumentMatcher(config)
-    doc_matcher.preprocess('eng', {doc1, doc2})
+    doc_matcher.preprocess('en', {doc1, doc2})
     doc_pair_matches = doc_matcher.find_matches({doc1, doc2})
     assert len(doc_pair_matches.pop().list(MatchType.VERBATIM)) == 2
 
@@ -110,7 +110,7 @@ def test_find_matches_with_verbatim_case_removes_identical_intelligent_case(conf
     doc2 = Document('doc2', 'path/to/doc2', 'Some absolutely identical text. This is nothing alike.')
     config['min_verbatim_match_char_len'] = 5
     doc_matcher = DocumentMatcher(config)
-    doc_matcher.preprocess('eng', {doc1, doc2})
+    doc_matcher.preprocess('en', {doc1, doc2})
     doc_pair_matches = doc_matcher.find_matches({doc1, doc2})
     assert len(doc_pair_matches) == 1
     assert len(doc_pair_matches.pop().list(MatchType.VERBATIM)) == 1
@@ -126,7 +126,7 @@ def test_find_matches_with_intelligent_case(config):
                     ' Here is more fairly similar text.')
     config['min_verbatim_match_char_len'] = 15
     doc_matcher = DocumentMatcher(config)
-    doc_matcher.preprocess('eng', {doc1, doc2})
+    doc_matcher.preprocess('en', {doc1, doc2})
     doc_pair_matches = doc_matcher.find_matches({doc1, doc2})
     assert len(doc_pair_matches.pop().list(MatchType.INTELLIGENT)) == 2
 
@@ -160,7 +160,7 @@ def test_find_matches_with_summary_case(config):
     config['min_verbatim_match_char_len'] = 256
     config['adjacent_sents_gap'] = 1
     doc_matcher = DocumentMatcher(config)
-    doc_matcher.preprocess('eng', {doc1, doc2})
+    doc_matcher.preprocess('en', {doc1, doc2})
     doc_pair_matches = doc_matcher.find_matches({doc1, doc2})
     assert len(doc_pair_matches[0].list(MatchType.INTELLIGENT)) == 2
     assert len(doc_pair_matches[0].list(MatchType.SUMMARY)) == 1
@@ -176,7 +176,7 @@ def test_find_matches_returns_a_match(config):
     docs = {Document('doc1', 'path/to/doc1', 'This is an awesome document. And some text in it.\n'),
             Document('doc2', 'path/to/doc2', 'It\'s a great one. This is an awesome document.\n')}
     doc_matcher = DocumentMatcher(config)
-    doc_matcher.preprocess('eng', docs)
+    doc_matcher.preprocess('en', docs)
     matches = doc_matcher.find_matches(set(docs))
     assert len(matches) == 1
 
@@ -192,7 +192,7 @@ def test_find_matches_with_archive_docs(config):
                     Document('doc5', 'path/to/doc5',
                              'This sentence is equal. And this is fantastic.')}
     doc_matcher = DocumentMatcher(config)
-    doc_matcher.preprocess('eng', docs)
-    doc_matcher.preprocess('eng', archive_docs)
+    doc_matcher.preprocess('en', docs)
+    doc_matcher.preprocess('en', archive_docs)
     matches = doc_matcher.find_matches(set(docs), archive_docs=archive_docs)
     assert len(matches) == 4

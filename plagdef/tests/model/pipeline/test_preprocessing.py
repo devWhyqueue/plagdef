@@ -2,19 +2,19 @@ from collections import Counter
 
 import pytest
 
-from plagdef.model.pipeline.preprocessing import UnsupportedLanguageError, Document, Preprocessor, _nlp_pipe, \
+from plagdef.model.pipeline.preprocessing import Document, Preprocessor, _nlp_pipe, \
     _extract_urls
 
 
 def test_nlp_model():
-    en = _nlp_pipe('eng')
-    de = _nlp_pipe('ger')
+    en = _nlp_pipe('en')
+    de = _nlp_pipe('de')
     assert en.lang == 'en'
     assert de.lang == 'de'
 
 
 def test_nlp_model_with_wrong_lang():
-    with pytest.raises(UnsupportedLanguageError):
+    with pytest.raises(ValueError):
         _nlp_pipe('fre')
 
 
@@ -65,7 +65,7 @@ def test_tokenize_voc_contains_german_lemmas(preprocessor):
                    'weitere Wortbildung dienen kann. Es handelt sich demnach um '
                    'ein potenziell unvollständiges Gebilde, das als Gegenstück zu '
                    'einem Affix auftreten kann.')
-    preprocessor.preprocess('ger', [doc])
+    preprocessor.preprocess('de', [doc])
     # Errors (ignored):
     # Term 'sich' is mapped to 'er|sie|es' but not 'es'
     # Either map all (reflexive) pronouns to 'er|es|sie' or none
@@ -82,7 +82,7 @@ def test_preprocessed_voc_contains_no_stop_words():
     preprocessor = Preprocessor(3, True)
     doc1 = Document('doc1', 'path/to/doc1', 'This is a sentence with five stop words.')
     doc2 = Document('doc2', 'path/to/doc2', 'Another document for good measure.')
-    preprocessor.preprocess('eng', [doc1, doc2])
+    preprocessor.preprocess('en', [doc1, doc2])
     assert len(doc1.vocab.keys()) == 3
 
 
@@ -98,7 +98,7 @@ def test_preprocessed_voc_contains_only_lowercase_tokens(preprocessed_docs):
 
 def test_preprocessed_words(preprocessor):
     doc = Document('doc', 'path/to/doc', 'This is a document. It consists of two sentences: one and two.')
-    preprocessor.preprocess('eng', [doc])
+    preprocessor.preprocess('en', [doc])
     sent1_word_texts = [word.text.lower() for word in doc.sents(include_common=True)[0].words]
     sent2_word_texts = [word.text.lower() for word in doc.sents(include_common=True)[1].words]
     assert sent1_word_texts == ['this', 'is', 'document']
@@ -107,7 +107,7 @@ def test_preprocessed_words(preprocessor):
 
 def test_preprocessed_words_are_alphanumeric(preprocessor):
     doc = Document('doc', 'path/to/doc', 'This is a n3xt l€v€l document.')
-    preprocessor.preprocess('eng', [doc])
+    preprocessor.preprocess('en', [doc])
     sent_word_texts = [word.text.lower() for word in doc.sents(include_common=True)[0].words]
     assert sent_word_texts == ['this', 'is', 'n3xt', 'document']
 
@@ -121,7 +121,7 @@ def test_preprocessed_sent_start_end_chars(preprocessed_docs):
 def test_preprocessed_sent_start_end_chars_after_join(preprocessor):
     doc1 = Document('doc1', 'path/to/doc1', 'Short sentence. Short sentence should be joined with this one.')
     doc2 = Document('doc2', 'path/to/doc2', 'Another document for good measure.')
-    preprocessor.preprocess('eng', [doc1, doc2])
+    preprocessor.preprocess('en', [doc1, doc2])
     # First sentence: (0, 15)
     # Second sentence: (16, 46)
     # Combined: (0, 62) because of whitespace gap between sents
@@ -144,7 +144,7 @@ def test_preprocessed_sent_bows(preprocessed_docs):
 def test_preprocessed_not_any_of_sent_bows_empty(preprocessor):
     doc1 = Document('doc1', 'path/to/doc1', 'Das ist ein schöner Satz.\n\nNoch ein schöner Satz.')
     doc2 = Document('doc2', 'path/to/doc2', 'Another document for good measure.')
-    preprocessor.preprocess('ger', [doc1, doc2])
+    preprocessor.preprocess('de', [doc1, doc2])
     assert len([sent.bow for sent in doc1.sents(include_common=True)]) == 2
     assert any([len(sent.bow) for sent in doc1.sents(include_common=True)])
 
@@ -159,7 +159,7 @@ def test_preprocessed_bows_contains_only_lowercase_tokens(preprocessed_docs):
 def test_join_small_sents_at_start(preprocessor):
     doc1 = Document('doc1', 'path/to/doc1', 'Short sentence. Short sentence should be joined with this one.')
     doc2 = Document('doc2', 'path/to/doc2', 'Another document for good measure.')
-    preprocessor.preprocess('eng', [doc1, doc2])
+    preprocessor.preprocess('en', [doc1, doc2])
     assert len(doc1.sents(include_common=True)) == 1
     assert [sent.bow for sent in doc1.sents(include_common=True)] == \
            [Counter({'short': 2, 'sentence': 2, 'should': 1, 'be': 1, 'join': 1, 'with': 1, 'this': 1, 'one': 1})]
@@ -170,7 +170,7 @@ def test_join_small_sents_at_start(preprocessor):
 def test_join_multiple_small_sents(preprocessor):
     doc1 = Document('doc1', 'path/to/doc1', 'Short. Still. But this is a longer one.')
     doc2 = Document('doc2', 'path/to/doc2', 'Another document for good measure.')
-    preprocessor.preprocess('eng', [doc1, doc2])
+    preprocessor.preprocess('en', [doc1, doc2])
     assert len(doc1.sents(include_common=True)) == 1
     assert [sent.bow for sent in doc1.sents(include_common=True)] == \
            [Counter({'short': 1, 'still': 1, 'but': 1, 'this': 1, 'be': 1, 'long': 1, 'one': 1})]
@@ -184,7 +184,7 @@ def test_join_small_sents_in_the_middle(preprocessor):
     doc1 = Document('doc1', 'path/to/doc1', 'This is a long sentence. Short sentence. Short sentence should be '
                                             'joined with this one.')
     doc2 = Document('doc2', 'path/to/doc2', 'Another document for good measure.')
-    preprocessor.preprocess('eng', [doc1, doc2])
+    preprocessor.preprocess('en', [doc1, doc2])
     assert len(doc1.sents(include_common=True)) == 2
     assert [sent.bow for sent in doc1.sents(include_common=True)] == \
            [Counter({'this': 1, 'be': 1, 'long': 1, 'sentence': 1}),
@@ -197,7 +197,7 @@ def test_join_small_sents_at_the_end(preprocessor):
     doc1 = Document('doc1', 'path/to/doc1', 'This is a long sentence. Short sentence should be '
                                             'joined with this one. Short sentence.')
     doc2 = Document('doc2', 'path/to/doc2', 'Another document for good measure.')
-    preprocessor.preprocess('eng', [doc1, doc2])
+    preprocessor.preprocess('en', [doc1, doc2])
     assert len(doc1.sents(include_common=True)) == 2
     assert [sent.bow for sent in doc1.sents(include_common=True)] == \
            [Counter({'this': 1, 'be': 1, 'long': 1, 'sentence': 1}),
@@ -209,7 +209,7 @@ def test_join_small_sents_at_the_end(preprocessor):
 def test_join_small_sents_contains_words_of_both_sents(preprocessor):
     doc1 = Document('doc1', 'path/to/doc1', 'Short sentence. Short sentence should be joined with this one.')
     doc2 = Document('doc2', 'path/to/doc2', 'Another document for good measure.')
-    preprocessor.preprocess('eng', [doc1, doc2])
+    preprocessor.preprocess('en', [doc1, doc2])
     assert len(doc1.sents(include_common=True)) == 1
     assert [word.text for word in doc1.sents(include_common=True)[0].words] == \
            ['Short', 'sentence', 'Short', 'sentence', 'should', 'be', 'joined', 'with', 'this', 'one']
@@ -218,7 +218,7 @@ def test_join_small_sents_contains_words_of_both_sents(preprocessor):
 def test_join_small_sents_does_not_join_common_sent(preprocessor):
     doc1 = Document('doc1', 'path/to/doc1', 'This is the first document. Common sent.')
     doc2 = Document('doc2', 'path/to/doc2', 'This sentence could be part of doc1 but is not.\nCommon sent.')
-    preprocessor.preprocess('eng', [doc1], [doc2])
+    preprocessor.preprocess('en', [doc1], [doc2])
     assert len(doc1.sents(include_common=True)) == 2
     assert doc1.sents(include_common=True)[1].common
     assert doc1.vocab == Counter({'this': 1, 'be': 1, 'the': 1, 'first': 1, 'document': 1})
@@ -227,7 +227,7 @@ def test_join_small_sents_does_not_join_common_sent(preprocessor):
 def test_remove_small_sents_near_common_sents(preprocessor):
     doc1 = Document('doc1', 'path/to/doc1', 'This is the first document. Common sent. Remove this.')
     doc2 = Document('doc2', 'path/to/doc2', 'This sentence could be part of doc1 but is not.\nCommon sent.')
-    preprocessor.preprocess('eng', [doc1], [doc2])
+    preprocessor.preprocess('en', [doc1], [doc2])
     assert len(doc1.sents(include_common=True)) == 2
     assert doc1.sents(include_common=True)[1].common
     assert doc1.vocab == Counter({'this': 1, 'be': 1, 'the': 1, 'first': 1, 'document': 1})
@@ -238,7 +238,7 @@ def test_tag_common_sents(preprocessor):
                     'This is the first document. Last sentence is expected to be common to all docs.')
     doc2 = Document('doc2', 'path/to/doc2', 'This sentence could be part of doc1 but is not.\n'
                                             'Last Sentence, is expected to be common to all docs.')
-    preprocessor.preprocess('eng', [doc1], [doc2])
+    preprocessor.preprocess('en', [doc1], [doc2])
     assert len(doc1.sents(include_common=True)) == 2
     assert doc1.sents(include_common=True)[1].common
     assert doc1.vocab == Counter({'this': 1, 'be': 1, 'the': 1, 'first': 1, 'document': 1})
@@ -250,7 +250,7 @@ def test_tag_common_sents_with_empty_line(preprocessor):
     doc2 = Document('doc2', 'path/to/doc2', 'This sentence could be part of doc1 but is not.\n'
                                             '\n'
                                             'Last Sentence, is expected to be common to all docs.')
-    preprocessor.preprocess('eng', [doc1], [doc2])
+    preprocessor.preprocess('en', [doc1], [doc2])
     assert len(doc1.sents(include_common=True)) == 2
     assert len(list(doc1.sents())) == 1
     assert doc1.sents(include_common=True)[1].common
@@ -261,7 +261,7 @@ def test_tag_common_sents_with_words(preprocessor):
     doc1 = Document('doc1', 'path/to/doc1',
                     'This is the first document. Last sentence is expected to be common to all docs.')
     doc2 = Document('doc2', 'path/to/doc2', 'Some. random. words\nand something more. relevant:\ncommon to be expected')
-    preprocessor.preprocess('eng', [doc1], [doc2])
+    preprocessor.preprocess('en', [doc1], [doc2])
     assert len(doc1.sents(include_common=True)) == 2
     assert doc1.sents(include_common=True)[1].common
     assert doc1.vocab == Counter({'this': 1, 'be': 1, 'the': 1, 'first': 1, 'document': 1})
@@ -273,7 +273,7 @@ def test_tag_common_sents_with_non_identical_sents(preprocessor):
                                             'last sentence is expected to be common to all docs.')
     doc2 = Document('doc2', 'path/to/doc2', 'This sentence could be part of doc1 but is not.\n'
                                             'Last sentence is expected to be common to all docs.')
-    preprocessor.preprocess('eng', [doc1], [doc2])
+    preprocessor.preprocess('en', [doc1], [doc2])
     assert len(doc1.sents(include_common=True)) == 2
     assert doc1.sents(include_common=True)[1].common
     assert doc1.vocab == Counter({'this': 1, 'be': 1, 'the': 1, 'first': 1, 'document': 1})
@@ -291,7 +291,7 @@ def test_extract_urls_if_urls_present(preprocessor):
     doc1 = Document("doc1", "path/to/doc", "This is an URL: www.google.de/search?q=python")
     doc1.urls = {"https://www.bing.de"}
     doc2 = Document('doc2', 'path/to/doc2', 'Another document for good measure.')
-    preprocessor.preprocess('eng', [doc1], [doc2])
+    preprocessor.preprocess('en', [doc1], [doc2])
     assert doc1.urls == {"https://www.bing.de", "https://www.google.de/search?q=python"}
 
 

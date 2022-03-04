@@ -35,6 +35,7 @@ class Document:
         self.name = name
         self.path = path
         self.text = text
+        self.lang = None
         self.vocab = Counter()  # <lemma, sent_freq>
         self.urls = set()
         self._sents = SortedSet()
