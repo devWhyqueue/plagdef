@@ -15,11 +15,11 @@ def download_nlp_models():
 @fixture(scope='session')
 def config():
     return {
-        'lang': 'eng', 'ser': True,
+        'lang': 'en', 'ser': True,
         'min_cos_sim': 0.3, 'min_dice_sim': 0.33, 'min_cluster_cos_sim': 0.34,
         'adjacent_sents_gap': 4, 'min_adjacent_sents_gap': 0, 'adjacent_sents_gap_summary': 24,
         'min_verbatim_match_char_len': 256, 'min_sent_number': 1, 'min_sent_len': 3, 'min_cluster_char_len': 15,
-        'rem_stop_words': False, 'download_path': ''
+        'rem_stop_words': False, 'download_path': '', 'dl_api_key': 'xxx'
     }
 
 
@@ -50,7 +50,7 @@ def preprocessed_docs(preprocessor):
                     'plagiarist with a benefit in exchange for what is specifically supposed to be original '
                     'content. Plagiarism is not the same as copyright infringement. Acts of plagiarism may '
                     'sometimes also form part of a claim for breach of the plagiarist\'s contract.')
-    preprocessor.preprocess('eng', [doc1, doc2])
+    preprocessor.preprocess('en', [doc1, doc2])
     return doc1, doc2
 
 

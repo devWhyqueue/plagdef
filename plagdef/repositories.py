@@ -97,6 +97,10 @@ class FileRepository:
                     f.write(file.content)
             saved = True
 
+    def remove_all(self, files: set[models.File]):
+        for file in files:
+            file.path.unlink(missing_ok=True)
+
 
 class DocumentFileRepository:
     def __init__(self, dir_path: Path, recursive=False, lang=None, use_ocr=None):
@@ -124,9 +128,17 @@ class DocumentFileRepository:
         elif not file.binary:
             doc = models.Document(file.path.stem, str(file.path), file.content)
         else:
-            log.warning(f'Ignoring unsupported file "{file.path.name}", as it cannot be read.')
+            log.error(f'The file "{file.path.name}" has an unsupported encoding and cannot be read.')
             doc = None
         return doc
+
+    def save_all(self, docs: set[models.Document]):
+        files = {models.File(Path(doc.path), doc.text, False) for doc in docs}
+        self._file_repo.save_all(files)
+
+    def remove_all(self, docs: set[models.Document]):
+        files = {models.File(Path(doc.path), doc.text, False) for doc in docs}
+        self._file_repo.remove_all(files)
 
 
 class DocumentPairRepository:
@@ -195,7 +207,7 @@ class PdfReader:
 
     def __init__(self, file, lang, use_ocr):
         self._file = file
-        self._lang = lang if lang == 'eng' else 'deu'
+        self._lang = 'eng' if lang == 'en' else 'deu'
         self._use_ocr = use_ocr
 
     def extract_urls(self) -> set[str]:

@@ -67,7 +67,7 @@ class HomeView(View):
         self.widget.lang_button_group = QButtonGroup()
         self.widget.lang_button_group.addButton(self.widget.ger_button)
         self.widget.lang_button_group.addButton(self.widget.eng_button)
-        self.widget.ger_button.click() if lang == 'ger' else self.widget.eng_button.click()
+        self.widget.ger_button.click() if lang == 'de' else self.widget.eng_button.click()
         [element.setVisible(False)
          for element in (self.widget.archive_dir_label, self.widget.archive_rmdir_button, self.widget.docs_dir_label,
                          self.widget.docs_rmdir_button, self.widget.common_dir_label, self.widget.common_rmdir_button)]
@@ -91,7 +91,7 @@ class HomeView(View):
 
     @property
     def lang(self):
-        return 'ger' if self.widget.lang_button_group.checkedButton() == self.widget.ger_button else 'eng'
+        return 'de' if self.widget.lang_button_group.checkedButton() == self.widget.ger_button else 'en'
 
     def register_for_signals(self, select_lang=None, open_report_dir=None, select_archive_dir=None, rm_archive_dir=None,
                              select_docs_dir=None, rm_docs_dir=None, select_common_dir=None, rm_common_dir=None,

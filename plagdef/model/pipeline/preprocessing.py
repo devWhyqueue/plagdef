@@ -17,7 +17,6 @@ from plagdef.model.models import Document, Sentence, Word
 PRCS = 'tokenize,mwt,pos,lemma'
 PIPE_LVL = 'WARN'
 LOAD_LVL = 'INFO'
-LANG_CODES = {'ger': 'de', 'eng': 'en'}
 
 
 class Preprocessor:
@@ -27,7 +26,7 @@ class Preprocessor:
 
     def preprocess(self, lang: str, docs: set[Document], common_docs: list[Document] = None):
         nlp_model = _nlp_pipe(lang)
-        stop_words = stopwords.ENGLISH if lang == 'eng' else stopwords.GERMAN
+        stop_words = stopwords.ENGLISH if lang == 'en' else stopwords.GERMAN
         common_word_lists = _common_word_lists(nlp_model, common_docs) if common_docs else []
         thread_map(partial(self._preprocess, nlp_model=nlp_model, common_word_lists=common_word_lists,
                            stop_words=stop_words), docs, max_workers=os.cpu_count(),
@@ -100,14 +99,11 @@ def _extract_urls(doc: Document, extractor=URLExtract()):
 
 
 def _nlp_pipe(lang: str) -> Pipeline:
-    if lang in LANG_CODES:
-        try:
-            return stanza.Pipeline(LANG_CODES[lang], processors=PRCS, logging_level=PIPE_LVL)
-        except:  # Unpickling error raises Exception, cannot narrow
-            stanza.download(LANG_CODES[lang], processors=PRCS, logging_level=LOAD_LVL)
-            return stanza.Pipeline(LANG_CODES[lang], processors=PRCS, logging_level=PIPE_LVL)
-    else:
-        raise UnsupportedLanguageError(f'The language "{lang}" is currently not supported.')
+    try:
+        return stanza.Pipeline(lang, processors=PRCS, logging_level=PIPE_LVL)
+    except:  # Unpickling error raises Exception, cannot narrow
+        stanza.download(lang, processors=PRCS, logging_level=LOAD_LVL)
+        return stanza.Pipeline(lang, processors=PRCS, logging_level=PIPE_LVL)
 
 
 def _common_word_lists(pipe: Pipeline, common_docs: list[Document]) -> list[list[str]]:
@@ -132,7 +128,3 @@ def _sent_contains_common_words(sent_words: list[Word], common_word_lists: list[
         if all(common_word in sent_word_texts for common_word in common_word_list):
             return True
     return False
-
-
-class UnsupportedLanguageError(Exception):
-    pass
