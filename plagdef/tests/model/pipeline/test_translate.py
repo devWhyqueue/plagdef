@@ -3,7 +3,7 @@ from unittest.mock import patch
 from deep_translator import GoogleTranslator
 
 from plagdef.model.models import Document
-from plagdef.model.pipeline.translate import detect_lang, docs_in_other_langs, translate
+from plagdef.model.pipeline.translate import detect_lang, docs_in_other_langs, translate, _split_text_at_punct
 
 
 def test_detect_lang():
@@ -85,3 +85,21 @@ def test_translate_with_same_source_lang(t_mock):
     doc.lang = "en"
     translate({doc}, "en")
     t_mock.assert_not_called()
+
+
+def test_split_text_at_punct():
+    text = "This is some text. Should be split at dot."
+    chunks = _split_text_at_punct(text, 25)
+    assert chunks == ['This is some text. ', 'Should be split at dot.']
+
+
+def test_split_text_at_punct_with_max_len_greater_than_text():
+    text = "This is some text. Should not be split at dot."
+    chunks = _split_text_at_punct(text, 100)
+    assert chunks == ['This is some text. Should not be split at dot.']
+
+
+def test_split_text_at_punct_with_sent_longer_than_max_len():
+    text = "This is some text. Should be split at dot."
+    chunks = _split_text_at_punct(text, 10)
+    assert chunks == ['This is so', 'me text. ', 'Should be ', 'split at d', 'ot.']
