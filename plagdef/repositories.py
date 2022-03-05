@@ -142,8 +142,9 @@ class DocumentFileRepository:
 
 
 class DocumentPairRepository:
-    def __init__(self, doc1: models.Document, doc2: models.Document):
+    def __init__(self, doc1: models.Document, doc2: models.Document, lang=None):
         self._docs = {doc1, doc2}
+        self.lang = lang if lang else settings['lang']
 
     def list(self) -> set[models.Document]:
         return self._docs
