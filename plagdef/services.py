@@ -16,7 +16,7 @@ from plagdef.repositories import UnsupportedFileFormatError, DocumentPickleRepos
 log = logging.getLogger(__name__)
 
 
-def find_matches(doc_repo, archive_repo=None, common_doc_repo=None, config=settings) \
+def find_matches(doc_repo, archive_repo=None, common_doc_repo=None, config=settings, download=True) \
     -> list[DocumentPairMatches]:
     try:
         doc_matcher = DocumentMatcher(config)
@@ -24,7 +24,7 @@ def find_matches(doc_repo, archive_repo=None, common_doc_repo=None, config=setti
         if archive_repo:
             archive_docs = _preprocess_docs(doc_matcher, config['ser'], archive_repo, common_doc_repo)
         docs = _preprocess_docs(doc_matcher, config['ser'], doc_repo, common_doc_repo)
-        if config['download_path']:
+        if download and config['download_path']:
             _save_all_external_sources(docs, config['download_path'])
             ext_docs = _preprocess_docs(doc_matcher,
                                         config['ser'], DocumentFileRepository(Path(config['download_path'])),

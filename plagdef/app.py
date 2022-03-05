@@ -98,7 +98,7 @@ def reanalyze_pair(doc1: Document, doc2: Document, sim: float):
             Path(str(settings['last_common_docdir'][0])), recursive=settings['last_common_docdir'][1])
     doc_repo = DocumentPairRepository(Document(doc1.name, doc1.path, doc1.text),
                                       Document(doc2.name, doc2.path, doc2.text))
-    matches = services.find_matches(doc_repo, common_doc_repo=common_repo)
+    matches = services.find_matches(doc_repo, common_doc_repo=common_repo, download=False)
     settings.update({'ser': ser, 'min_cos_sim': last_sim, 'min_dice_sim': last_sim, 'min_cluster_cos_sim': last_sim})
     return matches
 
