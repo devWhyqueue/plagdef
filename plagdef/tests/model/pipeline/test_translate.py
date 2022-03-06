@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import patch, call
 
 from deep_translator import GoogleTranslator
 
@@ -61,13 +61,13 @@ def test_translate_without_lang(t_mock):
     assert doc.text == "Hallo Welt!"
 
 
-@patch.object(GoogleTranslator, "translate", return_value="Hallo! " * 720)
+@patch.object(GoogleTranslator, "translate", return_value="A" * 5000)
 def test_translate_with_long_doc(t_mock):
-    doc = Document('doc', 'path/to/doc', "Hello! " * 720)
+    doc = Document('doc', 'path/to/doc', "A" * 5000)
     doc.lang = "en"
     translate({doc}, "de")
-    assert len(doc.text) > 5000
-    assert "Hallo!" in doc.text
+    calls = [call(text='A' * 4999), call(text='A')]
+    t_mock.assert_has_calls(calls)
 
 
 @patch("plagdef.model.pipeline.translate._translate")
