@@ -1,6 +1,8 @@
 from unittest.mock import patch, call
 
+import pytest
 from deep_translator import GoogleTranslator
+from deep_translator.exceptions import RequestError
 
 from plagdef.model.models import Document
 from plagdef.model.pipeline.translate import detect_lang, docs_in_other_langs, translate, _split_text_at_punct
@@ -85,6 +87,22 @@ def test_translate_with_same_source_lang(t_mock):
     doc.lang = "en"
     translate({doc}, "en")
     t_mock.assert_not_called()
+
+
+@patch.object(GoogleTranslator, "translate", side_effect=[RequestError(), 'Inhalt.'])
+def test_translate_retries_on_request_error(t_mock):
+    doc = Document('doc', 'path/to/doc', "Content.")
+    doc.lang = "en"
+    translate({doc}, "de", 2)
+    assert t_mock.call_count == 2
+
+
+@patch.object(GoogleTranslator, "translate", side_effect=[RequestError(), RequestError()])
+def test_translate_stops_retrying_at_retry_limit(t_mock):
+    doc = Document('doc', 'path/to/doc', "Content.")
+    doc.lang = "en"
+    with pytest.raises(RequestError):
+        translate({doc}, "de", 2)
 
 
 def test_split_text_at_punct():
