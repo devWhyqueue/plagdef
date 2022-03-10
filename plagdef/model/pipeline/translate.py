@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import logging
+import random
 import re
+from time import sleep
 
 from deep_translator import GoogleTranslator
+from deep_translator.exceptions import RequestError
 from langdetect import detect
 from tqdm import tqdm
 
@@ -21,23 +24,34 @@ def docs_in_other_langs(docs: set[Document], expected_lang: str) -> set[Document
     return {doc for doc in docs if doc.lang != expected_lang}
 
 
-def translate(docs: set[Document], target_lang: str) -> set[Document]:
+def translate(docs: set[Document], target_lang: str, retry_limit=3) -> set[Document]:
     translated = set()
     for doc in tqdm(docs, desc='Translating', unit='doc'):
         if doc.lang != target_lang:
             if len(doc.text) < 50000:
-                _translate(doc, target_lang)
+                _translate(doc, target_lang, retry_limit)
                 translated.add(doc)
             else:
                 log.warning(f'Skipping translation of {doc} because its text length is greater than 50k chars.')
     return translated
 
 
-def _translate(doc: Document, target_lang: str) -> None:
+def _translate(doc: Document, target_lang: str, retry_limit: int) -> None:
     # The limit of Google Translate Web is less than 5000 chars per request
     chunks = _split_text_at_punct(doc.text, 4999)
     for i, chunk in enumerate(chunks):
-        chunks[i] = GoogleTranslator(target=target_lang).translate(text=chunk)
+        attempt = 1
+        while True:
+            try:
+                chunks[i] = GoogleTranslator(target=target_lang).translate(text=chunk)
+                sleep(random.choice([1, 1, 1, random.randint(1, 3)]))
+                break
+            except RequestError as e:
+                if attempt == retry_limit:
+                    raise e
+                log.warning(f"Request to Google Translate failed. Retrying ({attempt}/{retry_limit})...")
+                attempt += 1
+                sleep(3)
     doc.text = "".join(chunks)
 
 

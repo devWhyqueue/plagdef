@@ -139,9 +139,9 @@ def test_pdf_reader_merges_hyphenated_words_at_line_end(tmp_path):
     doc1 = FPDF()
     doc1.add_page()
     doc1.set_font('helvetica', size=12)
-    doc1.multi_cell(0, 5, 'This is a PDF file con-\n'
-                          'taining one sentence. However there are mul- \n'
-                          'tiple line breaks which split words.')
+    doc1.cell(txt="This is a PDF file con-", ln=1)
+    doc1.cell(txt="taining one sentence. However there are mul- ", ln=1)
+    doc1.cell(txt="tiple line breaks which split words.")
     doc1.output(f'{tmp_path}/doc1.pdf')
     reader = PdfReader(tmp_path / 'doc1.pdf', lang='en', use_ocr=True, )
     text = reader._extract()
