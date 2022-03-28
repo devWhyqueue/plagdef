@@ -40,18 +40,18 @@ def _translate(doc: Document, target_lang: str, retry_limit: int) -> None:
     # The limit of Google Translate Web is less than 5000 chars per request
     chunks = _split_text_at_punct(doc.text, 4999)
     for i, chunk in enumerate(chunks):
-        attempt = 1
+        attempt = 0
         while True:
             try:
                 chunks[i] = GoogleTranslator(target=target_lang).translate(text=chunk)
-                sleep(random.choice([1, 1, 1, random.randint(1, 3)]))
+                sleep(random.randint(1, 5))
                 break
             except RequestError as e:
-                if attempt == retry_limit:
+                if attempt >= retry_limit:
                     raise e
                 log.warning(f"Request to Google Translate failed. Retrying ({attempt}/{retry_limit})...")
                 attempt += 1
-                sleep(3)
+                sleep(10)
     doc.text = "".join(chunks)
 
 

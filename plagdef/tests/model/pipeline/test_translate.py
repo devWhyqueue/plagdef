@@ -97,7 +97,7 @@ def test_translate_retries_on_request_error(t_mock):
     assert t_mock.call_count == 2
 
 
-@patch.object(GoogleTranslator, "translate", side_effect=[RequestError(), RequestError()])
+@patch.object(GoogleTranslator, "translate", side_effect=[RequestError(), RequestError(), RequestError()])
 def test_translate_stops_retrying_at_retry_limit(t_mock):
     doc = Document('doc', 'path/to/doc', "Content.")
     doc.lang = "en"

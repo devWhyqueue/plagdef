@@ -18,6 +18,9 @@ PRCS = 'tokenize,mwt,pos,lemma'
 PIPE_LVL = 'WARN'
 LOAD_LVL = 'INFO'
 
+# Update TLDs
+URLExtract().update_when_older(7)
+
 
 class Preprocessor:
     def __init__(self, min_sent_len: int, rem_stop_words: bool):
@@ -89,7 +92,6 @@ class Preprocessor:
 
 
 def _extract_urls(doc: Document, extractor=URLExtract()):
-    extractor.update_when_older(7)
     urls = extractor.find_urls(doc.text, only_unique=True, check_dns=True)
     for url in urls:
         url = url[:-1] if url[-1] in string.punctuation else url
