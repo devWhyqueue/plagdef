@@ -1,8 +1,7 @@
 from unittest.mock import patch, call
 
-import pytest
 from deep_translator import GoogleTranslator
-from deep_translator.exceptions import RequestError
+from deep_translator.exceptions import TooManyRequests
 
 from plagdef.model.models import Document
 from plagdef.model.pipeline.translate import detect_lang, docs_in_other_langs, translate, _split_text_at_punct
@@ -69,7 +68,7 @@ def test_translate_with_long_doc(t_mock):
     doc.lang = "en"
     translate({doc}, "de")
     calls = [call(text='A' * 4999), call(text='A')]
-    t_mock.assert_has_calls(calls)
+    t_mock.assert_has_calls(calls, any_order=True)
 
 
 @patch("plagdef.model.pipeline.translate._translate")
@@ -89,20 +88,13 @@ def test_translate_with_same_source_lang(t_mock):
     t_mock.assert_not_called()
 
 
-@patch.object(GoogleTranslator, "translate", side_effect=[RequestError(), 'Inhalt.'])
-def test_translate_retries_on_request_error(t_mock):
+@patch.object(GoogleTranslator, "translate", side_effect=[TooManyRequests(), 'Inhalt.'])
+@patch("plagdef.model.pipeline.translate._get_proxies", return_value=["1.2.3.4:80", "5.6.7.8:80"])
+def test_translate_retries_on_proxy_error(prox_mock, gtr_mock):
     doc = Document('doc', 'path/to/doc', "Content.")
     doc.lang = "en"
-    translate({doc}, "de", 2)
-    assert t_mock.call_count == 2
-
-
-@patch.object(GoogleTranslator, "translate", side_effect=[RequestError(), RequestError(), RequestError()])
-def test_translate_stops_retrying_at_retry_limit(t_mock):
-    doc = Document('doc', 'path/to/doc', "Content.")
-    doc.lang = "en"
-    with pytest.raises(RequestError):
-        translate({doc}, "de", 2)
+    translate({doc}, "de")
+    assert gtr_mock.call_count == 2
 
 
 def test_split_text_at_punct():

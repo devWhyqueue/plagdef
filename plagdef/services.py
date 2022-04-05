@@ -69,7 +69,7 @@ def _translate_docs(doc_repo: DocumentFileRepository) -> set[Document]:
             doc_repo.remove_all({doc})
             doc.path = new_path
         doc_repo.save_all(translated_docs)
-    return docs
+    return {doc for doc in docs if doc.lang == doc_repo.lang}
 
 
 def write_json_reports(matches: list[DocumentPairMatches], repo):
