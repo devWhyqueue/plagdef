@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "plagdef"
-version = "1.4.7"
+version = "1.4.8"
 description = "A tool which makes life hard for students who try to make theirs simple."
 authors = ["Yannik Queisler"]
 license = "GPL-3.0-or-later"
@@ -14,7 +14,7 @@ classifiers = [
 exclude = ["*/tests"]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.10"
+python = ">=3.9,<3.11"
 beautifulsoup4 = "^4.10"
 click = "^8.0"
 deep-translator = "^1.7"
@@ -48,15 +48,20 @@ plagdef-gui = "plagdef.app:gui"
 legacy_tox_ini = """
 [tox]
 isolated_build = True
-envlist = py39
+envlist = py39, py310
 
 [gh-actions]
 python =
     3.9: py39
+    3.10: py310
 
 [testenv:py39]
 whitelist_externals = make
 commands = make coverage-ci
+
+[testenv:py310]
+whitelist_externals = make
+commands = make test-ci
 """
 
 [build-system]
