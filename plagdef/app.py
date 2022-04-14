@@ -24,6 +24,8 @@ from plagdef.repositories import DocumentFileRepository, DocumentPairMatchesJson
                    'the documents in <DOCDIR>.')
 @click.option('common_docdir', '--common-docs', '-c', type=(click.Path(exists=True), bool),
               help='Directory containing documents with sentences which should be excluded from detection.')
+@click.option('download_path', '--download-path', '-d', type=(click.Path(exists=True)),
+              help='If set, it enables the download of external sources into the defined folder.')
 @click.option('sim_th', '--similarity-threshold', '-s', type=click.FloatRange(0, 1), default=0.6,
               help='Similarity threshold for text matching, defaults to 0.6. Lower values may increase sensitivity, '
                    'higher ones can improve precision.')
@@ -32,7 +34,7 @@ from plagdef.repositories import DocumentFileRepository, DocumentPairMatchesJson
                                                                   'reduces performance.')
 @click.option('jsondir', '--json', '-j', type=click.Path(), help='Output directory for JSON reports.')
 def cli(docdir: tuple[click.Path, bool], lang: str, ocr: bool, common_docdir: [click.Path, bool],
-        archive_docdir: [click.Path, bool], sim_th: float, jsondir: click.Path):
+        archive_docdir: [click.Path, bool], sim_th: float, jsondir: click.Path, download_path: click.Path):
     """
     \b
     PlagDef supports plagiarism detection for student assignments.
@@ -42,7 +44,7 @@ def cli(docdir: tuple[click.Path, bool], lang: str, ocr: bool, common_docdir: [c
     `plagdef <DOCDIR> True`
     """
     settings.update({'lang': lang, 'ocr': ocr, 'min_cos_sim': sim_th, 'min_dice_sim': sim_th,
-                     'min_cluster_cos_sim': sim_th})
+                     'min_cluster_cos_sim': sim_th, 'download_path': str(download_path)})
     matches = find_matches(docdir, archive_docdir, common_docdir)
     if jsondir:
         if matches:

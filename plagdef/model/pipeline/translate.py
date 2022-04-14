@@ -5,6 +5,7 @@ import logging
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import partial
+from time import sleep
 
 import requests
 from deep_translator import GoogleTranslator
@@ -78,6 +79,7 @@ def _split_text_at_punct(text: str, max_len: int, chunks: list[str] = None) -> l
 
 def _translate_chunk(chunk: tuple[int, str], target_lang: str, proxy: str):
     try:
+        sleep(1)
         return chunk[0], GoogleTranslator(target=target_lang, proxies={"https": proxy}).translate(text=chunk[1])
     except (RequestError, TooManyRequests):
         return None
