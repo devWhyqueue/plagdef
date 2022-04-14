@@ -31,21 +31,21 @@ def docs_in_other_langs(docs: set[Document], expected_lang: str) -> set[Document
 
 
 def translate(docs: set[Document], target_lang: str) -> set[Document]:
+    proxies = _get_proxies()
     translated = set()
     for doc in tqdm(docs, desc='Translating', unit='doc'):
         if doc.lang != target_lang:
             if len(doc.text) < 50000:
-                _translate(doc, target_lang)
+                _translate(doc, target_lang, proxies)
                 translated.add(doc)
             else:
                 log.warning(f'Skipping translation of {doc} because its text length is greater than 50k chars.')
     return translated
 
 
-def _translate(doc: Document, target_lang: str) -> None:
+def _translate(doc: Document, target_lang: str, proxies: list[str]) -> None:
     # The limit of Google Translate Web is less than 5000 chars per request
     chunks = {(i, chunk) for i, chunk in enumerate(_split_text_at_punct(doc.text, 4999))}
-    proxies = _get_proxies()
     translated = set()
     while len(chunks) > len(translated):
         chunks = chunks.difference(translated)
