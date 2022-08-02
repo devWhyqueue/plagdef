@@ -101,10 +101,6 @@ def _extract_urls(doc: Document, extractor=URLExtract()):
 
 
 def _nlp_pipe(lang: str) -> Pipeline:
-    try:
-        return stanza.Pipeline(lang, processors=PRCS, logging_level=PIPE_LVL)
-    except:  # Unpickling error raises Exception, cannot narrow
-        stanza.download(lang, processors=PRCS, logging_level=LOAD_LVL)
         return stanza.Pipeline(lang, processors=PRCS, logging_level=PIPE_LVL)
 
 

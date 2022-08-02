@@ -6,12 +6,6 @@ from plagdef.model.pipeline.preprocessing import Preprocessor, Document
 from plagdef.model.pipeline.seeding import SeedFinder
 
 
-@fixture(scope="session", autouse=True)
-def download_nlp_models():
-    stanza.download('en', processors='tokenize,mwt,pos,lemma', logging_level='WARN')
-    stanza.download('de', processors='tokenize,mwt,pos,lemma', logging_level='WARN')
-
-
 @fixture(scope='session')
 def config():
     return {
