@@ -71,13 +71,15 @@ def test_translate_with_long_doc(t_mock):
     t_mock.assert_has_calls(calls, any_order=True)
 
 
+@patch("plagdef.model.pipeline.translate._translate_large_doc")
 @patch("plagdef.model.pipeline.translate._translate")
-def test_translate_with_extremely_long_doc(t_mock):
+def test_translate_with_extremely_long_doc(t_mock, tl_mock):
     doc = Document('doc', 'path/to/doc', "Hello Joe!" * 5001)
     doc.lang = "en"
     translate({doc}, "de")
     assert len(doc.text) > 50000
     t_mock.assert_not_called()
+    tl_mock.assert_called_once()
 
 
 @patch("plagdef.model.pipeline.translate._translate")

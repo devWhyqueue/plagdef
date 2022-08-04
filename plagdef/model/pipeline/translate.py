@@ -14,6 +14,7 @@ from langdetect import detect
 from tqdm import tqdm
 
 from plagdef.model.models import Document
+from plagdef.model.pipeline.doc_translate import translate_doc, TranslationError
 
 WEBSHARE_PROXIES = "https://proxy.webshare.io/proxy/list/download/rzeoaimkyxecclzdabargzhwodnrgicaedlyppgc/-/http" \
                    "/username/direct/"
@@ -39,7 +40,7 @@ def translate(docs: set[Document], target_lang: str) -> set[Document]:
                 _translate(doc, target_lang, proxies)
                 translated.add(doc)
             else:
-                log.warning(f'Skipping translation of {doc} because its text length is greater than 50k chars.')
+                _translate_large_doc(doc, target_lang)
     return translated
 
 
@@ -91,3 +92,11 @@ def _get_proxies() -> list[str]:
         address = proxy.split(":")
         proxies.append(f"http://{address[2]}:{address[3]}@{address[0]}:{address[1]}")
     return proxies
+
+
+def _translate_large_doc(doc: Document, target_lang: str):
+    try:
+        translate_doc(doc, target_lang)
+    except TranslationError as e:
+        log.warning(e)
+        log.debug('Following error occurred:', exc_info=True)

@@ -26,6 +26,11 @@ $ pip install dist/plagdef-{VERSION}.tar.gz
 
 # Requirements
 
+## Chrome
+
+PlagDef uses Selenium to automate the translation of documents.
+By default, it uses a headless version of Chrome.
+
 ## OCRMyPDF
 
 This library is used for improved PDF text extraction.\
