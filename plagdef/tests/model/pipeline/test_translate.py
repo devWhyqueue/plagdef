@@ -38,7 +38,8 @@ def test_docs_in_other_langs():
 
 
 @patch.object(GoogleTranslator, "translate", return_value="Hallo Welt!")
-def test_translate(t_mock):
+@patch("plagdef.model.pipeline.translate._get_proxies", return_value=['localhost'])
+def test_translate(t_mock, p_mock):
     doc = Document('doc', 'path/to/doc', "Hello World!")
     doc.lang = "en"
     translate({doc}, "de")
@@ -46,7 +47,8 @@ def test_translate(t_mock):
 
 
 @patch.object(GoogleTranslator, "translate", return_value="Dies ist ein englisches Dokument.")
-def test_translate_with_multiple_docs(t_mock):
+@patch("plagdef.model.pipeline.translate._get_proxies", return_value=['localhost'])
+def test_translate_with_multiple_docs(t_mock, p_mock):
     doc1 = Document('doc1', 'path/to/doc1', 'This is an English document.')
     doc2 = Document('doc2', 'path/to/doc2', 'Das ist ein deutsches Dokument.')
     doc1.lang, doc2.lang = "en", "de"
@@ -56,14 +58,16 @@ def test_translate_with_multiple_docs(t_mock):
 
 
 @patch.object(GoogleTranslator, "translate", return_value="Hallo Welt!")
-def test_translate_without_lang(t_mock):
+@patch("plagdef.model.pipeline.translate._get_proxies", return_value=['localhost'])
+def test_translate_without_lang(t_mock, p_mock):
     doc = Document('doc', 'path/to/doc', "Hello World!")
     translate({doc}, "de")
     assert doc.text == "Hallo Welt!"
 
 
+@patch("plagdef.model.pipeline.translate._get_proxies", return_value=['localhost'])
 @patch.object(GoogleTranslator, "translate", return_value="A" * 5000)
-def test_translate_with_long_doc(t_mock):
+def test_translate_with_long_doc(t_mock, p_mock):
     doc = Document('doc', 'path/to/doc', "A" * 5000)
     doc.lang = "en"
     translate({doc}, "de")
@@ -71,9 +75,10 @@ def test_translate_with_long_doc(t_mock):
     t_mock.assert_has_calls(calls, any_order=True)
 
 
+@patch("plagdef.model.pipeline.translate._get_proxies", return_value=['localhost'])
 @patch("plagdef.model.pipeline.translate._translate_large_doc")
 @patch("plagdef.model.pipeline.translate._translate")
-def test_translate_with_extremely_long_doc(t_mock, tl_mock):
+def test_translate_with_extremely_long_doc(t_mock, tl_mock, p_mock):
     doc = Document('doc', 'path/to/doc', "Hello Joe!" * 5001)
     doc.lang = "en"
     translate({doc}, "de")
@@ -82,8 +87,9 @@ def test_translate_with_extremely_long_doc(t_mock, tl_mock):
     tl_mock.assert_called_once()
 
 
+@patch("plagdef.model.pipeline.translate._get_proxies", return_value=['localhost'])
 @patch("plagdef.model.pipeline.translate._translate")
-def test_translate_with_same_source_lang(t_mock):
+def test_translate_with_same_source_lang(t_mock, p_mock):
     doc = Document('doc', 'path/to/doc', "Hello World!")
     doc.lang = "en"
     translate({doc}, "en")

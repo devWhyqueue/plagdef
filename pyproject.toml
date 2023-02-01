@@ -59,11 +59,11 @@ python =
     3.10: py310
 
 [testenv:py39]
-whitelist_externals = make
+allowlist_externals = make
 commands = make coverage-ci
 
 [testenv:py310]
-whitelist_externals = make
+allowlist_externals = make
 commands = make test-ci
 """
 

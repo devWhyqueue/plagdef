@@ -18,7 +18,8 @@ import jsonpickle
 import magic
 import pdfplumber
 from magic import MagicException
-from ocrmypdf import ocr
+from ocrmypdf import ocr, EncryptedPdfError
+from pdfminer.pdfdocument import PDFPasswordIncorrect
 from sortedcontainers import SortedSet
 from tqdm.contrib.concurrent import process_map
 from unicodedata import normalize
@@ -120,11 +121,15 @@ class DocumentFileRepository:
 
     def _create_doc(self, file: models.File) -> models.Document:
         if file.path.suffix.lower() == '.pdf':
-            reader = PdfReader(file.path, self.lang, self._use_ocr)
-            text = reader.extract_text()
-            doc = models.Document(file.path.stem, str(file.path), text)
-            urls = reader.extract_urls()
-            doc.urls.update(urls) if urls else None
+            try:
+                reader = PdfReader(file.path, self.lang, self._use_ocr)
+                text = reader.extract_text()
+                doc = models.Document(file.path.stem, str(file.path), text)
+                urls = reader.extract_urls()
+                doc.urls.update(urls) if urls else None
+            except (EncryptedPdfError, PDFPasswordIncorrect):
+                log.error(f"Could not read '{file.path.name}' because the file is encrypted.")
+                doc = None
         elif not file.binary:
             doc = models.Document(file.path.stem, str(file.path), file.content)
         else:
@@ -235,10 +240,10 @@ class PdfReader:
     def _extract(self, file=None) -> str:
         if file is None:
             file = self._file
-        with pdfplumber.open(file) as pdf:
-            text = ' '.join(filter(None, (page.extract_text() for page in pdf.pages)))
-            normalized_text = normalize('NFC', text)
-            return re.sub('-\s?\n', '', normalized_text)  # Merge hyphenated words
+            with pdfplumber.open(file) as pdf:
+                text = ' '.join(filter(None, (page.extract_text() for page in pdf.pages)))
+                normalized_text = normalize('NFC', text)
+                return re.sub('-\s?\n', '', normalized_text)  # Merge hyphenated words
 
     def _poor_extraction(self, text: str) -> bool:
         return not len(text.strip()) or bool(re.search(PdfReader.ERROR_HEURISTIC, text))

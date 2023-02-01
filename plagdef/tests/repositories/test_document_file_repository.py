@@ -2,6 +2,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 from fpdf import FPDF
+from ocrmypdf import EncryptedPdfError
+from pdfminer.pdfdocument import PDFPasswordIncorrect
 
 from plagdef.model.models import File, Document
 from plagdef.repositories import DocumentFileRepository, PdfReader, FileRepository
@@ -154,3 +156,19 @@ def test_pdf_reader_extract_urls_returns_none_on_unicode_decode_error(pdf_mock, 
     reader = PdfReader(tmp_path, lang='eng', use_ocr=True)
     urls = reader.extract_urls()
     assert not urls
+
+
+@patch.object(PdfReader, 'extract_text', side_effect=EncryptedPdfError())
+def test_create_doc_extract_text_ignores_encrypted_pdf_error(extract_mock, tmp_path):
+    doc_repo = DocumentFileRepository(tmp_path, use_ocr=True)
+    file_path = Path(f"{tmp_path}/sub/dir/doc.pdf")
+    file = File(file_path, "Hello World!", False)
+    doc_repo._create_doc(file)
+
+
+@patch.object(PdfReader, 'extract_text', side_effect=PDFPasswordIncorrect())
+def test_create_doc_extract_text_ignores_pdf_password_incorrect_error(extract_mock, tmp_path):
+    doc_repo = DocumentFileRepository(tmp_path, use_ocr=True)
+    file_path = Path(f"{tmp_path}/sub/dir/doc.pdf")
+    file = File(file_path, "Hello World!", False)
+    doc_repo._create_doc(file)
