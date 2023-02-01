@@ -326,7 +326,7 @@ class DocumentPairMatches:
 
     def add(self, match: Match):
         frag1, frag2 = match.frag_pair
-        if not {self.doc1, self.doc2} == {frag1.doc, frag2.doc}:
+        if {self.doc1, self.doc2} != {frag1.doc, frag2.doc}:
             raise DifferentDocumentPairError(f'Only matches of document pair ({self.doc1}, {self.doc2})'
                                              f'can be added.')
         self._matches[str(match.type)].add(match)

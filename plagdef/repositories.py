@@ -12,7 +12,6 @@ from json import JSONDecodeError
 from multiprocessing import Lock
 from pathlib import Path
 from pickle import dump, load, UnpicklingError
-from unicodedata import normalize
 from urllib.parse import urlparse
 
 import jsonpickle
@@ -22,6 +21,7 @@ from magic import MagicException
 from ocrmypdf import ocr
 from sortedcontainers import SortedSet
 from tqdm.contrib.concurrent import process_map
+from unicodedata import normalize
 
 from plagdef.config import settings
 from plagdef.model import models
@@ -113,7 +113,7 @@ class DocumentFileRepository:
         return self._file_repo.base_path
 
     def list(self) -> set[models.Document]:
-        files = list(filter(lambda f: not f.path.suffix.lower() == '.pdef', self._file_repo.list()))
+        files = list(filter(lambda f: f.path.suffix.lower() != '.pdef', self._file_repo.list()))
         docs = process_map(self._create_doc, files, desc=f"Reading documents in '{self.base_path}'",
                            unit='doc', total=len(files), max_workers=os.cpu_count())
         return set(filter(None, docs))

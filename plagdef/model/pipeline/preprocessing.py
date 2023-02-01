@@ -117,7 +117,7 @@ def _common_word_lists(pipe: Pipeline, common_docs: list[Document]) -> list[list
 
 
 def _word_filter(stanza_words: list) -> list:
-    return [word for word in stanza_words if not word.upos == 'PUNCT' and word.text.isalnum() and len(word.text) > 1]
+    return [word for word in stanza_words if word.upos != 'PUNCT' and word.text.isalnum() and len(word.text) > 1]
 
 
 def _sent_contains_common_words(sent_words: list[Word], common_word_lists: list[list[str]]) -> bool:
