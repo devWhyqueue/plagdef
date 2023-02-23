@@ -27,3 +27,6 @@ coverage-ci: ## check code coverage quickly with the default Python
 
 run: ## starts the CLI
 	poetry run app.py
+
+run-gui: ## starts the CLI
+	poetry run app.py gui

@@ -12,6 +12,7 @@ from json import JSONDecodeError
 from multiprocessing import Lock
 from pathlib import Path
 from pickle import dump, load, UnpicklingError
+from unicodedata import normalize
 from urllib.parse import urlparse
 
 import jsonpickle
@@ -22,7 +23,6 @@ from ocrmypdf import ocr, EncryptedPdfError
 from pdfminer.pdfdocument import PDFPasswordIncorrect
 from sortedcontainers import SortedSet
 from tqdm.contrib.concurrent import process_map
-from unicodedata import normalize
 
 from plagdef.config import settings
 from plagdef.model import models
@@ -240,10 +240,10 @@ class PdfReader:
     def _extract(self, file=None) -> str:
         if file is None:
             file = self._file
-            with pdfplumber.open(file) as pdf:
-                text = ' '.join(filter(None, (page.extract_text() for page in pdf.pages)))
-                normalized_text = normalize('NFC', text)
-                return re.sub('-\s?\n', '', normalized_text)  # Merge hyphenated words
+        with pdfplumber.open(file) as pdf:
+            text = ' '.join(filter(None, (page.extract_text() for page in pdf.pages)))
+            normalized_text = normalize('NFC', text)
+            return re.sub('-\s?\n', '', normalized_text)  # Merge hyphenated words
 
     def _poor_extraction(self, text: str) -> bool:
         return not len(text.strip()) or bool(re.search(PdfReader.ERROR_HEURISTIC, text))
