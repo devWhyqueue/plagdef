@@ -372,17 +372,23 @@ class SettingsDialog:
         return self.widget.ocr_check_box.isChecked()
 
     @property
-    def download_path(self) -> bool:
+    def download_path(self) -> str:
         return self.widget.es_line_edit.text()
+
+    @property
+    def translate(self) -> bool:
+        return self.widget.es_transl_check.isChecked()
 
     def register_for_signals(self, select_download_path=None):
         self.widget.es_button.clicked.connect(lambda: select_download_path())
 
-    def open(self, ocr=None, sim=None, download_path=None):
+    def open(self, ocr=None, sim=None, download_path=None, translate=None):
         ocr = settings['ocr'] if not ocr else ocr
         sim = settings['min_cos_sim'] if not sim else sim
         download_path = settings['download_path'] if not download_path else download_path
+        translate = settings['transl'] if not translate else translate
         self.widget.ocr_check_box.setChecked(ocr)
+        self.widget.es_transl_check.setChecked(translate)
         self.widget.es_line_edit.setText(download_path)
         self.widget.value_label.setText(str(sim))
         self.widget.sim_slider.setValue(sim * 10)

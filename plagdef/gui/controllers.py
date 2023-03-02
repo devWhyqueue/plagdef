@@ -52,6 +52,7 @@ class HomeController:
         self.settings_controller.view.open()
         settings.update({'ocr': self.settings_controller.view.ocr,
                          'download_path': self.settings_controller.view.download_path,
+                         'transl': self.settings_controller.view.translate,
                          'min_cos_sim': self.settings_controller.view.similarity_threshold,
                          'min_dice_sim': self.settings_controller.view.similarity_threshold,
                          'min_cluster_cos_sim': self.settings_controller.view.similarity_threshold})

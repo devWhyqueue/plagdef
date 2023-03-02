@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+import os
+import shutil
 from pathlib import Path
 
 from click import UsageError
@@ -27,8 +29,9 @@ def find_matches(doc_repo, archive_repo=None, common_doc_repo=None, config=setti
         if download and config['download_path']:
             _save_all_external_sources(docs, config['download_path'])
             ext_docs = _preprocess_docs(doc_matcher,
-                                        config['ser'], DocumentFileRepository(Path(config['download_path'])),
-                                        common_doc_repo, trans=True)
+                                        config['ser'],
+                                        DocumentFileRepository(Path(config['download_path']), recursive=True),
+                                        common_doc_repo, trans=config['transl'])
             archive_docs = archive_docs.union(ext_docs) if archive_docs else ext_docs
         doc_pair_matches = doc_matcher.find_matches(docs, archive_docs)
         return doc_pair_matches
@@ -39,7 +42,7 @@ def find_matches(doc_repo, archive_repo=None, common_doc_repo=None, config=setti
 def _preprocess_docs(doc_matcher, use_serialization, doc_repo, common_doc_repo=None, trans=False) -> set[Document]:
     common_dir_path = common_doc_repo.base_path if common_doc_repo else None
     common_docs = common_doc_repo.list() if common_doc_repo else None
-    docs = _translate_docs(doc_repo) if trans else doc_repo.list()
+    docs = _translate_docs(doc_repo) if trans else _move_foreign_lang_docs(doc_repo)
     if use_serialization:
         doc_ser = DocumentPickleRepository(doc_repo.base_path, common_dir_path)
         prep_docs = {d for d in doc_ser.list() if d in docs}
@@ -70,6 +73,20 @@ def _translate_docs(doc_repo: DocumentFileRepository) -> set[Document]:
             doc.path = new_path
         doc_repo.save_all(translated_docs)
     return {doc for doc in docs if doc.lang == doc_repo.lang}
+
+
+def _move_foreign_lang_docs(doc_repo: DocumentFileRepository) -> set[Document]:
+    docs = doc_repo.list()
+    detect_lang(docs)
+    foreign_docs = docs_in_other_langs(docs, doc_repo.lang)
+    foreign_dir = os.path.join(doc_repo.base_path, 'foreign_lang')
+    os.makedirs(foreign_dir, exist_ok=True)
+    for doc in foreign_docs:
+        file_name = os.path.basename(doc.path)
+        new_file_path = os.path.join(foreign_dir, file_name)
+        shutil.move(doc.path, new_file_path)
+        doc.path = new_file_path
+    return docs
 
 
 def write_json_reports(matches: list[DocumentPairMatches], repo):

@@ -31,7 +31,8 @@
             </iconset>
         </property>
         <property name="styleSheet">
-            <string notr="true">background-color: rgb(77, 80, 87);</string>
+            <string notr="true">background-color: rgb(77, 80, 87);
+            </string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
             <item alignment="Qt::AlignHCenter">
@@ -216,6 +217,19 @@
                             </property>
                             <property name="text">
                                 <string>Open...</string>
+                            </property>
+                        </widget>
+                    </item>
+                    <item>
+                        <widget class="QCheckBox" name="es_transl_check">
+                            <property name="styleSheet">
+                                <string notr="true">QCheckBox {
+                                    color: rgb(255, 255, 255);
+                                    }
+                                </string>
+                            </property>
+                            <property name="text">
+                                <string>Translate</string>
                             </property>
                         </widget>
                     </item>
