@@ -64,10 +64,10 @@ class Document:
         return f"Document('{self.name}')"
 
     def __getstate__(self):
-        return self.name, self.path, self.text, self.vocab, self.urls, tuple(self._sents)
+        return self.name, self.path, self.text, self.lang, self.vocab, self.urls, tuple(self._sents)
 
     def __setstate__(self, state):
-        self.name, self.path, self.text, self.vocab, self.urls, sents = state
+        self.name, self.path, self.text, self.lang, self.vocab, self.urls, sents = state
         self._sents = SortedSet()
         for sent in sents:
             sent.doc = self
