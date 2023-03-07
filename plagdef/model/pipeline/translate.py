@@ -10,7 +10,7 @@ from time import sleep
 import requests
 from deep_translator import GoogleTranslator
 from deep_translator.exceptions import RequestError, TooManyRequests
-from langdetect import detect
+from langdetect import detect, LangDetectException
 from tqdm import tqdm
 
 from plagdef.model.models import Document
@@ -24,7 +24,10 @@ log = logging.getLogger(__name__)
 
 def detect_lang(docs: set[Document]) -> None:
     for doc in docs:
-        doc.lang = detect(doc.text) if doc.text else None
+        try:
+            doc.lang = detect(doc.text) if doc.text else None
+        except LangDetectException:
+            continue
 
 
 def docs_in_other_langs(docs: set[Document], expected_lang: str) -> set[Document]:
