@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "plagdef"
-version = "1.5.2"
+version = "1.5.3"
 description = "A tool which makes life hard for students who try to make theirs simple."
 authors = ["Yannik Queisler"]
 license = "GPL-3.0-or-later"
@@ -14,34 +14,36 @@ classifiers = [
 exclude = ["*/tests"]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.11"
-beautifulsoup4 = "^4.11"
-click = "^8.1"
-deep-translator = "^1.9"
-fpdf2 = "^2.6"
-jsonpickle = "^3.0"
-langdetect = "^1.0"
-networkx = "^3.0"
-numpy = "^1.24"
-ocrmypdf = "^14.0"
-pdfplumber = "^0.7"
-PyPDF2 = "^3.0"
-pyside6 = "^6.4"
-python-magic = "^0.4"
-sortedcontainers = "^2.4"
-selenium = "^4.8"
-stanza = "^1.4"
-tqdm = "^4.64"
-urlextract = "^1.8"
-webdriver-manager = "^3.8"
-Werkzeug = "^2.2"
+python = ">=3.10,<3.11"
+beautifulsoup4 = "^4.13.4"
+click = "^8.2.1"
+deep-translator = "^1.11.4"
+fpdf2 = "^2.8.3"
+jsonpickle = "^4.1.1"
+langdetect = "^1.0.9"
+networkx = "^3.4.2"
+numpy = "^1.26.4"
+ocrmypdf = "^16.10.4"
+pdfplumber = "^0.11.7"
+PyPDF2 = "^3.0.1"
+pyside6 = "~6.4"
+python-magic = "^0.4.27"
+sortedcontainers = "^2.4.0"
+selenium = "^4.34.2"
+stanza = "~1.9"
+torch = "~2.5"
+tqdm = "^4.67.1"
+urlextract = "^1.9.0"
+webdriver-manager = "^4.0.2"
+Werkzeug = "^3.1.3"
 
-[tool.poetry.dev-dependencies]
-coverage = "^7.1"
-flake8 = "^6.0"
-pytest = "^7.2"
-tox = "^4.4"
-tox-gh-actions = "^3.0"
+[tool.poetry.group.dev.dependencies]
+coverage = "^7.10.1"
+flake8 = "^7.3.0"
+pytest = "^8.4.1"
+setuptools = "^80.9.0"
+tox = "^4.28.3"
+tox-gh-actions = "^3.3.0"
 
 [tool.poetry.scripts]
 plagdef = "plagdef.app:cli"
@@ -55,16 +57,11 @@ envlist = py39, py310
 
 [gh-actions]
 python =
-    3.9: py39
     3.10: py310
-
-[testenv:py39]
-allowlist_externals = make
-commands = make coverage-ci
 
 [testenv:py310]
 allowlist_externals = make
-commands = make test-ci
+commands = make coverage-ci
 """
 
 [build-system]
