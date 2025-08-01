@@ -1,7 +1,6 @@
 from collections import Counter
 
 import pytest
-
 from plagdef.model.pipeline.preprocessing import Document, Preprocessor, _nlp_pipe, \
     _extract_urls
 
@@ -55,7 +54,7 @@ def test_preprocessed_voc_contains_lemmas_with_sentence_frequency(preprocessed_d
         {'be': 3, 'infringement': 2, 'the': 2, 'copyright': 2, 'plagiarism': 1, 'not': 1, 'same': 1, 'as': 1,
          'to': 1, 'concept': 1, 'apply': 1, 'they': 1, 'may': 1, 'while': 1, 'different': 1, 'act': 1, 'particular': 1,
          'term': 1, 'both': 1, 'material': 1, 'consent': 1, 'holder': 1, 'whose': 1, 'violation': 1, 'of': 1, 'use': 1,
-         'without': 1, 'restrict': 1, 'when': 1, 'rights': 1, 'by': 1})
+         'without': 1, 'restrict': 1, 'when': 1, 'right': 1, 'by': 1})
 
 
 def test_tokenize_voc_contains_german_lemmas(preprocessor):
@@ -73,7 +72,7 @@ def test_tokenize_voc_contains_german_lemmas(preprocessor):
            == ['als', 'Wortstamm', 'oder', 'kurz', 'Stamm', 'bezeichnen', 'man',
                'in', 'der', 'Grammatik', 'ein', 'Bestandteil', 'Wort',
                'Ausgangsbasis', 'für', 'weit', 'Wortbildung', 'dienen', 'können',
-               'es', 'handeln', 'er|es|sie', 'demnach', 'um', 'potenziell',
+               'es', 'handeln', 'sich', 'demnach', 'um', 'potenziell',
                'unvollständig', 'Gebilde', 'Gegenstück', 'zu', 'Affix',
                'auftreten']
 
@@ -137,7 +136,7 @@ def test_preprocessed_sent_bows(preprocessed_docs):
         Counter({'while': 1, 'both': 1, 'term': 1, 'may': 1, 'apply': 1, 'to': 1, 'particular': 1, 'act': 1,
                  'they': 1, 'be': 1, 'different': 1, 'concept': 1}),
         Counter({'copyright': 3, 'be': 3, 'of': 2, 'use': 2, 'infringement': 1, 'violation': 1, 'the': 1,
-                 'rights': 1, 'holder': 1, 'when': 1, 'material': 1, 'whose': 1, 'restrict': 1, 'by': 1, 'without': 1,
+                 'right': 1, 'holder': 1, 'when': 1, 'material': 1, 'whose': 1, 'restrict': 1, 'by': 1, 'without': 1,
                  'consent': 1})]
 
 
